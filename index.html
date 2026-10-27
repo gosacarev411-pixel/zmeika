@@ -1,1506 +1,693 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>ВЛАСТЕЛИН ЭПОХ — Средневековая стратегия</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:#1a0f08;font-family:Georgia,'Times New Roman',serif;color:#e8d9b0}
-:root{
-  --parchment:#d4b896;--parchment-dark:#a88860;--ink:#2a1810;
-  --gold:#d4af37;--gold-dark:#8b7220;--blood:#8b0000;
-  --forest:#2d5016;--stone:#5a5a5a;--water:#1a3a5c;
-}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-
-#menu{position:fixed;inset:0;z-index:100;background:
-  radial-gradient(circle at 50% 30%,rgba(212,175,55,.15),transparent 60%),
-  linear-gradient(180deg,#1a0f08 0%,#0a0504 100%);
-  display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;text-align:center;overflow-y:auto}
-#menu h1{font-size:clamp(40px,10vw,80px);font-weight:900;letter-spacing:4px;
-  background:linear-gradient(180deg,#f4d77a,#d4af37,#8b7220);
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 4px 20px rgba(212,175,55,.4));margin-bottom:10px}
-#menu .sub{font-size:14px;color:#a88860;letter-spacing:3px;margin-bottom:30px;font-style:italic}
-.menu-form{background:rgba(42,24,16,.7);border:2px solid var(--gold-dark);border-radius:12px;
-  padding:24px;max-width:420px;width:100%;backdrop-filter:blur(10px)}
-.menu-form h3{color:var(--gold);margin-bottom:14px;font-size:18px;letter-spacing:2px}
-.form-row{margin-bottom:14px;text-align:left}
-.form-row label{display:block;font-size:12px;color:#a88860;margin-bottom:4px;letter-spacing:1px}
-.form-row input,.form-row select{width:100%;padding:10px;background:rgba(0,0,0,.4);
-  border:1px solid var(--gold-dark);border-radius:6px;color:var(--parchment);font-size:14px;font-family:inherit}
-.form-row input:focus,.form-row select:focus{outline:none;border-color:var(--gold)}
-.start-btn{background:linear-gradient(180deg,#d4af37,#8b7220);color:#1a0f08;
-  padding:14px 40px;border-radius:8px;font-size:16px;font-weight:900;letter-spacing:3px;
-  margin-top:10px;box-shadow:0 6px 20px rgba(212,175,55,.3);transition:transform .15s;width:100%}
-.start-btn:active{transform:scale(.96)}
-
-#game{position:fixed;inset:0;display:none;flex-direction:column}
-#game.active{display:flex}
-
-#topbar{background:linear-gradient(180deg,#2a1810,#1a0f08);border-bottom:2px solid var(--gold-dark);
-  padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;z-index:10}
-.res-group{display:flex;gap:6px;flex-wrap:wrap}
-.res{background:rgba(212,175,55,.08);border:1px solid var(--gold-dark);border-radius:6px;
-  padding:4px 10px;display:flex;align-items:center;gap:6px;font-size:12px}
-.res .ico{font-size:16px}
-.res .val{color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums}
-.res .delta{font-size:10px;opacity:.7}
-.res .delta.pos{color:#7fb069}
-.res .delta.neg{color:#c44}
-.turn-info{text-align:right;font-size:12px;color:#a88860}
-.turn-info b{color:var(--gold);font-size:14px;display:block}
-
-#main{flex:1;display:flex;overflow:hidden;position:relative}
-
-#mapWrap{flex:1;position:relative;overflow:hidden;background:#0a0504}
-#map{position:absolute;cursor:grab;image-rendering:pixelated}
-#map:active{cursor:grabbing}
-#mapControls{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
-.map-btn{width:38px;height:38px;background:rgba(42,24,16,.9);border:1px solid var(--gold-dark);
-  border-radius:6px;color:var(--gold);font-size:18px;font-weight:900;backdrop-filter:blur(6px)}
-.map-btn:active{background:var(--gold-dark);color:#1a0f08}
-
-#sidebar{width:320px;background:linear-gradient(180deg,#2a1810,#1a0f08);
-  border-left:2px solid var(--gold-dark);display:flex;flex-direction:column;overflow:hidden}
-.side-tabs{display:flex;border-bottom:1px solid var(--gold-dark)}
-.side-tab{flex:1;padding:10px 4px;font-size:11px;letter-spacing:1px;color:#a88860;
-  border-right:1px solid rgba(139,114,32,.3);transition:all .2s}
-.side-tab:last-child{border-right:none}
-.side-tab.active{background:rgba(212,175,55,.15);color:var(--gold)}
-.side-content{flex:1;overflow-y:auto;padding:12px}
-.side-content::-webkit-scrollbar{width:6px}
-.side-content::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:3px}
-
-.card{background:rgba(212,175,55,.05);border:1px solid var(--gold-dark);border-radius:8px;
-  padding:10px;margin-bottom:8px}
-.card h4{color:var(--gold);font-size:13px;margin-bottom:6px;letter-spacing:1px}
-.card .row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:#c9b78a}
-.card .row b{color:var(--parchment)}
-
-.action-btn{background:linear-gradient(180deg,rgba(212,175,55,.2),rgba(139,114,32,.2));
-  border:1px solid var(--gold-dark);border-radius:6px;padding:8px 12px;color:var(--parchment);
-  font-size:12px;width:100%;margin-top:6px;text-align:left;transition:all .15s}
-.action-btn:hover{background:rgba(212,175,55,.3);border-color:var(--gold)}
-.action-btn:active{transform:scale(.98)}
-.action-btn:disabled{opacity:.4;cursor:not-allowed}
-.action-btn b{color:var(--gold);display:block;margin-bottom:2px}
-
-#endTurnBtn{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
-  background:linear-gradient(180deg,#d4af37,#8b7220);color:#1a0f08;
-  padding:12px 30px;border-radius:8px;font-size:14px;font-weight:900;letter-spacing:2px;
-  box-shadow:0 6px 20px rgba(212,175,55,.4);z-index:6}
-#endTurnBtn:active{transform:translateX(-50%) scale(.96)}
-
-.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
-  display:none;justify-content:center;align-items:center;padding:20px}
-.modal.show{display:flex}
-.modal-box{background:linear-gradient(180deg,#2a1810,#1a0f08);border:2px solid var(--gold);
-  border-radius:12px;padding:24px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;
-  box-shadow:0 20px 60px rgba(0,0,0,.8)}
-.modal-box h2{color:var(--gold);font-size:20px;margin-bottom:14px;letter-spacing:2px;text-align:center}
-.close-x{float:right;color:#a88860;font-size:22px;cursor:pointer;line-height:1}
-.close-x:hover{color:var(--gold)}
-
-.build-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.build-item{background:rgba(212,175,55,.05);border:1px solid var(--gold-dark);border-radius:6px;
-  padding:8px;cursor:pointer;transition:all .15s;text-align:center}
-.build-item:hover{background:rgba(212,175,55,.2);border-color:var(--gold)}
-.build-item.disabled{opacity:.4;cursor:not-allowed}
-.build-item .ico{font-size:24px;display:block;margin-bottom:4px}
-.build-item .name{font-size:11px;color:var(--parchment);font-weight:700}
-.build-item .cost{font-size:10px;color:#a88860;margin-top:2px}
-
-#notif{position:fixed;top:80px;right:20px;z-index:60;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:linear-gradient(180deg,#2a1810,#1a0f08);border:1px solid var(--gold);
-  border-radius:8px;padding:10px 16px;color:var(--parchment);font-size:12px;max-width:300px;
-  box-shadow:0 6px 20px rgba(0,0,0,.6);animation:slideIn .3s}
-.toast.war{border-color:var(--blood)}
-.toast.good{border-color:#7fb069}
-@keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
-
-.log-entry{font-size:11px;padding:6px 0;border-bottom:1px solid rgba(139,114,32,.2);color:#c9b78a}
-.log-entry b{color:var(--gold)}
-.log-entry.war{color:#c44}
-.log-entry.good{color:#7fb069}
-
-.country-row{display:flex;align-items:center;gap:10px;padding:8px;background:rgba(212,175,55,.05);
-  border:1px solid var(--gold-dark);border-radius:6px;margin-bottom:6px}
-.country-flag{width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;
-  font-size:18px;font-weight:900;color:#1a0f08}
-.country-info{flex:1;font-size:12px}
-.country-info b{color:var(--gold);display:block;font-size:13px}
-.diplo-btns{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
-.diplo-btn{padding:4px 8px;background:rgba(212,175,55,.1);border:1px solid var(--gold-dark);
-  border-radius:4px;font-size:10px;color:var(--parchment)}
-.diplo-btn:hover{background:rgba(212,175,55,.3)}
-.diplo-btn.war{border-color:var(--blood);color:#ff8080}
-
-@media (max-width:768px){
-  #sidebar{position:absolute;right:0;top:0;bottom:0;width:85%;max-width:340px;
-    transform:translateX(100%);transition:transform .3s;z-index:20}
-  #sidebar.open{transform:translateX(0)}
-  #toggleSide{display:block!important}
-  .res{padding:3px 6px;font-size:11px}
-  .res .ico{font-size:14px}
-}
-#toggleSide{display:none;position:absolute;top:10px;right:10px;z-index:25;
-  background:rgba(42,24,16,.9);border:1px solid var(--gold-dark);border-radius:6px;
-  padding:8px 12px;color:var(--gold);font-size:12px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Зона: Выживание</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        
+        .screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Верхняя панель */
+        .top-bar {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 2px solid #4a4a4a;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8em;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        /* Карта мира */
+        #map-screen {
+            background: linear-gradient(135deg, #2d3436 0%, #1a1a1a 100%);
+        }
+        
+        .map-container {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            overflow-y: auto;
+        }
+        
+        .location {
+            background: rgba(74, 74, 74, 0.6);
+            border: 2px solid #5a5a5a;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .location:active {
+            transform: scale(0.95);
+            background: rgba(100, 100, 100, 0.8);
+        }
+        
+        .location-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .location-name {
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .location-level {
+            font-size: 0.7em;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        /* Экран локации */
+        #location-screen {
+            background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
+        }
+        
+        .location-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #4a4a4a;
+        }
+        
+        .location-title {
+            font-size: 1.5em;
+            color: #ff6b6b;
+        }
+        
+        .objects-container {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            overflow-y: auto;
+        }
+        
+        .object {
+            background: rgba(74, 74, 74, 0.6);
+            border: 2px solid #5a5a5a;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .object:active {
+            transform: scale(0.9);
+            background: rgba(100, 100, 100, 0.8);
+        }
+        
+        .object-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .object-name {
+            font-size: 0.9em;
+        }
+        
+        /* Нижняя навигация */
+        .bottom-nav {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            border-top: 2px solid #4a4a4a;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        
+        .nav-btn:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Инвентарь */
+        #inventory-screen {
+            background: linear-gradient(135deg, #2d3436 0%, #1a1a1a 100%);
+        }
+        
+        .inventory-grid {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            overflow-y: auto;
+        }
+        
+        .inventory-slot {
+            aspect-ratio: 1;
+            background: rgba(74, 74, 74, 0.6);
+            border: 2px solid #5a5a5a;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            position: relative;
+        }
+        
+        .item-count {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.5em;
+        }
+        
+        /* Прокачка */
+        #upgrade-screen {
+            background: linear-gradient(135deg, #2d3436 0%, #1a1a1a 100%);
+        }
+        
+        .upgrade-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .upgrade-item {
+            background: rgba(74, 74, 74, 0.6);
+            border: 2px solid #5a5a5a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .upgrade-name {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .upgrade-level {
+            color: #ff6b6b;
+        }
+        
+        .upgrade-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4a4a4a;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .upgrade-btn:active {
+            background: #5a5a5a;
+        }
+        
+        .upgrade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .notification.show {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .notification-title {
+            font-size: 1.3em;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        .notification-text {
+            margin-bottom: 15px;
+        }
+        
+        .notification-btn {
+            padding: 10px 30px;
+            background: #4a4a4a;
+            border: none;
+            border-radius: 5px;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+        
+        /* Кнопка назад */
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #5a5a5a;
+            border-radius: 5px;
+            padding: 8px 15px;
+            color: #e0e0e0;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
 </head>
 <body>
-
-<div id="menu">
-  <h1>ВЛАСТЕЛИН<br>ЭПОХ</h1>
-  <div class="sub">★ СРЕДНЕВЕКОВАЯ СТРАТЕГИЯ ★</div>
-  <div class="menu-form">
-    <h3>⚔ СОЗДАЙ СВОЁ КОРОЛЕВСТВО ⚔</h3>
-    <div class="form-row">
-      <label>НАЗВАНИЕ СТРАНЫ</label>
-      <input id="countryName" value="Вестерланд" maxlength="20">
+    <!-- Экран карты -->
+    <div id="map-screen" class="screen active">
+        <div class="top-bar">
+            <div class="stat">
+                <div>❤️ HP</div>
+                <div class="stat-value" id="hp">100</div>
+            </div>
+            <div class="stat">
+                <div>⚡ Энергия</div>
+                <div class="stat-value" id="energy">100</div>
+            </div>
+            <div class="stat">
+                <div>💰 Очки</div>
+                <div class="stat-value" id="points">0</div>
+            </div>
+        </div>
+        
+        <div class="map-container" id="map-container"></div>
+        
+        <div class="bottom-nav">
+            <button class="nav-btn" onclick="showScreen('inventory-screen')">🎒</button>
+            <button class="nav-btn" onclick="showScreen('upgrade-screen')">⬆️</button>
+        </div>
     </div>
-    <div class="form-row">
-      <label>ИМЯ ПРАВИТЕЛЯ</label>
-      <input id="rulerName" value="Король Артур" maxlength="20">
+    
+    <!-- Экран локации -->
+    <div id="location-screen" class="screen">
+        <button class="back-btn" onclick="showScreen('map-screen')">← Назад</button>
+        
+        <div class="location-header">
+            <div class="location-title" id="location-title">Локация</div>
+        </div>
+        
+        <div class="objects-container" id="objects-container"></div>
     </div>
-    <div class="form-row">
-      <label>ФОРМА ПРАВЛЕНИЯ</label>
-      <select id="govType">
-        <option value="kingdom">👑 Королевство (стабильность +)</option>
-        <option value="republic">🏛 Республика (торговля +)</option>
-        <option value="theocracy">✝ Теократия (счастье +)</option>
-        <option value="despotism">⚔ Деспотия (армия +)</option>
-      </select>
+    
+    <!-- Экран инвентаря -->
+    <div id="inventory-screen" class="screen">
+        <button class="back-btn" onclick="showScreen('map-screen')">← Назад</button>
+        
+        <div class="top-bar">
+            <div class="stat">
+                <div>🎒 Инвентарь</div>
+            </div>
+        </div>
+        
+        <div class="inventory-grid" id="inventory-grid"></div>
     </div>
-    <button class="start-btn" id="startBtn">НАЧАТЬ ПРАВЛЕНИЕ</button>
-  </div>
-</div>
-
-<div id="game">
-  <div id="topbar">
-    <div class="res-group">
-      <div class="res"><span class="ico">💰</span><span class="val" id="rGold">0</span><span class="delta" id="dGold"></span></div>
-      <div class="res"><span class="ico">🌾</span><span class="val" id="rFood">0</span><span class="delta" id="dFood"></span></div>
-      <div class="res"><span class="ico">🪵</span><span class="val" id="rWood">0</span><span class="delta" id="dWood"></span></div>
-      <div class="res"><span class="ico">🪨</span><span class="val" id="rStone">0</span><span class="delta" id="dStone"></span></div>
-      <div class="res"><span class="ico">⚒</span><span class="val" id="rIron">0</span><span class="delta" id="dIron"></span></div>
-      <div class="res"><span class="ico">👥</span><span class="val" id="rPop">0</span><span class="delta" id="dPop"></span></div>
+    
+    <!-- Экран прокачки -->
+    <div id="upgrade-screen" class="screen">
+        <button class="back-btn" onclick="showScreen('map-screen')">← Назад</button>
+        
+        <div class="top-bar">
+            <div class="stat">
+                <div>💰 Очки</div>
+                <div class="stat-value" id="upgrade-points">0</div>
+            </div>
+        </div>
+        
+        <div class="upgrade-container" id="upgrade-container"></div>
     </div>
-    <div class="turn-info">
-      <b id="turnNum">ХОД 1</b>
-      <span id="dateText">Весна, 1066 г.</span>
-    </div>
-  </div>
-
-  <div id="main">
-    <div id="mapWrap">
-      <canvas id="map"></canvas>
-      <div id="mapControls">
-        <button class="map-btn" onclick="zoomMap(1.2)">+</button>
-        <button class="map-btn" onclick="zoomMap(0.8)">−</button>
-        <button class="map-btn" onclick="centerMap()">⌖</button>
-      </div>
-      <button id="endTurnBtn" onclick="endTurn()">⏭ СЛЕДУЮЩИЙ ХОД</button>
-      <button id="toggleSide" onclick="toggleSidebar()">☰ МЕНЮ</button>
+    
+    <!-- Уведомление -->
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notification-title">Уведомление</div>
+        <div class="notification-text" id="notification-text">Текст</div>
+        <button class="notification-btn" onclick="closeNotification()">OK</button>
     </div>
 
-    <div id="sidebar">
-      <div class="side-tabs">
-        <button class="side-tab active" data-tab="info" onclick="switchTab('info')">📜 ИНФО</button>
-        <button class="side-tab" data-tab="build" onclick="switchTab('build')">🏗 СТРОИТЬ</button>
-        <button class="side-tab" data-tab="army" onclick="switchTab('army')">⚔ АРМИЯ</button>
-        <button class="side-tab" data-tab="diplo" onclick="switchTab('diplo')">🕊 МИР</button>
-        <button class="side-tab" data-tab="log" onclick="switchTab('log')">📖 ЖУРНАЛ</button>
-      </div>
-      <div class="side-content" id="sideContent"></div>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="recruitModal">
-  <div class="modal-box">
-    <span class="close-x" onclick="closeModal('recruitModal')">×</span>
-    <h2 id="recruitTitle">НАБОР ВОЙСКА</h2>
-    <div id="recruitList" class="build-list"></div>
-  </div>
-</div>
-
-<div class="modal" id="battleModal">
-  <div class="modal-box">
-    <h2>⚔ БИТВА ⚔</h2>
-    <div id="battleContent"></div>
-    <button class="start-btn" style="margin-top:16px" onclick="closeModal('battleModal')">ПРОДОЛЖИТЬ</button>
-  </div>
-</div>
-
-<div class="modal" id="eventModal">
-  <div class="modal-box">
-    <h2 id="eventTitle">СОБЫТИЕ</h2>
-    <div id="eventContent" style="font-size:13px;line-height:1.6;color:#c9b78a"></div>
-    <button class="start-btn" style="margin-top:16px" onclick="closeModal('eventModal')">ПОНЯТНО</button>
-  </div>
-</div>
-
-<div class="modal" id="gameOverModal">
-  <div class="modal-box" style="text-align:center">
-    <h2 id="goTitle">КОНЕЦ ПРАВЛЕНИЯ</h2>
-    <div id="goContent" style="font-size:13px;line-height:1.6;color:#c9b78a;margin:16px 0;white-space:pre-line"></div>
-    <button class="start-btn" onclick="location.reload()">НАЧАТЬ ЗАНОВО</button>
-  </div>
-</div>
-
-<div id="notif"></div>
-
-<script>
-'use strict';
-// ============================================================
-//  ВЛАСТЕЛИН ЭПОХ — средневековая пошаговая стратегия
-// ============================================================
-
-const MAP_W = 24, MAP_H = 16;
-const TILE = 40;
-const SEASONS = ['Весна','Лето','Осень','Зима'];
-
-const BIOMES = {
-  water:{color:'#1a3a5c',name:'Море',passable:false,icon:'🌊'},
-  plains:{color:'#6b8e3d',name:'Равнина',passable:true,icon:'🌾',food:3,gold:1},
-  forest:{color:'#2d5016',name:'Лес',passable:true,icon:'🌲',wood:3,food:1},
-  hills:{color:'#8b7355',name:'Холмы',passable:true,icon:'⛰',stone:2,iron:1},
-  mountain:{color:'#5a5a5a',name:'Горы',passable:false,icon:'🏔',stone:3,iron:3},
-  desert:{color:'#c9a66b',name:'Пустыня',passable:true,icon:'🏜',gold:2},
-  snow:{color:'#b8c5d1',name:'Снега',passable:true,icon:'❄'}
-};
-
-const BUILDINGS = {
-  farm:{name:'Ферма',icon:'🌾',cost:{gold:50,wood:30},effect:{food:4},desc:'+4 еды/ход'},
-  lumber:{name:'Лесопилка',icon:'🪓',cost:{gold:60,wood:20},effect:{wood:4},desc:'+4 дерева/ход'},
-  mine:{name:'Шахта',icon:'⛏',cost:{gold:80,wood:40,stone:20},effect:{stone:3,iron:2},desc:'+3 камня, +2 железа'},
-  market:{name:'Рынок',icon:'🏪',cost:{gold:100,wood:50},effect:{gold:6},desc:'+6 золота/ход'},
-  barracks:{name:'Казарма',icon:'⚔',cost:{gold:120,wood:60,stone:30},effect:{military:1},desc:'Позволяет нанимать войска'},
-  castle:{name:'Замок',icon:'🏰',cost:{gold:300,wood:100,stone:150},effect:{defense:5,happiness:5},desc:'Мощная защита, +счастье'},
-  university:{name:'Университет',icon:'📚',cost:{gold:250,wood:80,stone:80},effect:{tech:1,happiness:3},desc:'Изучение технологий'},
-  port:{name:'Порт',icon:'⚓',cost:{gold:150,wood:80},effect:{gold:4,trade:1},desc:'+4 золота, торговля',needCoast:true},
-  temple:{name:'Храм',icon:'⛪',cost:{gold:100,stone:60},effect:{happiness:6},desc:'+6 счастья'}
-};
-
-const UNITS = {
-  militia:{name:'Ополчение',icon:'🗡',cost:{gold:20,iron:5},atk:3,def:2,hp:10},
-  archer:{name:'Лучники',icon:'🏹',cost:{gold:40,wood:20,iron:10},atk:5,def:2,hp:8},
-  knight:{name:'Рыцари',icon:'🐎',cost:{gold:100,iron:40},atk:8,def:6,hp:20},
-  siege:{name:'Катапульты',icon:'🎯',cost:{gold:150,wood:80,iron:30},atk:12,def:1,hp:15,siegeBonus:5}
-};
-
-const GOV_BONUSES = {
-  kingdom:{gold:1,happiness:2},
-  republic:{gold:3,trade:1},
-  theocracy:{happiness:5},
-  despotism:{military:2}
-};
-
-let G = null;
-let selected = null;
-let mapOffset = {x:0, y:0};
-let mapScale = 1;
-let dragging = false, dragStart = null;
-let currentTab = 'info';
-const canvas = document.getElementById('map');
-const ctx = canvas ? canvas.getContext('2d') : null;
-
-function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
-function choice(arr){return arr[Math.floor(Math.random()*arr.length)]}
-function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
-
-function notify(text,type){
-  const n = document.getElementById('notif');
-  const t = document.createElement('div');
-  t.className = 'toast ' + (type||'');
-  t.textContent = text;
-  n.appendChild(t);
-  setTimeout(()=>t.remove(),4000);
-}
-
-function log(text,type){
-  if(!G) return;
-  G.log.unshift({text,type:type||'',turn:G.turn});
-  if(G.log.length>50) G.log.pop();
-  if(currentTab==='log') renderSidebar();
-}
-
-const NAME_PARTS_1 = ['Вест','Нор','Аст','Мид','Ост','Зен','Кел','Тор','Бра','Фен','Лин','Рос'];
-const NAME_PARTS_2 = ['ланд','гард','марк','хейм','бург','тон','форд','вик','мир','дор'];
-function generateProvinceName(){
-  return choice(NAME_PARTS_1) + choice(NAME_PARTS_2);
-}
-
-function generateWorld(){
-  const map = [];
-  const noise = [];
-  for(let y=0;y<MAP_H;y++){
-    noise[y]=[];
-    for(let x=0;x<MAP_W;x++){
-      noise[y][x] = Math.random();
-    }
-  }
-  for(let k=0;k<2;k++){
-    const n2 = [];
-    for(let y=0;y<MAP_H;y++){
-      n2[y]=[];
-      for(let x=0;x<MAP_W;x++){
-        let s=0,c=0;
-        for(let dy=-1;dy<=1;dy++){
-          for(let dx=-1;dx<=1;dx++){
-            const nx=x+dx, ny=y+dy;
-            if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H){s+=noise[ny][nx];c++;}
-          }
+    <script>
+        // Игровые данные
+        let gameData = {
+            hp: 100,
+            maxHp: 100,
+            energy: 100,
+            maxEnergy: 100,
+            points: 0,
+            damage: 10,
+            currentLocation: null,
+            inventory: [],
+            upgrades: {
+                health: 1,
+                damage: 1,
+                energy: 1
+            }
+        };
+        
+        // Локации
+        const locations = [
+            { id: 1, name: 'Рынок', icon: '🏪', level: 1, objects: ['📦', '🗑️', '🚗'] },
+            { id: 2, name: 'Школа', icon: '🏫', level: 2, objects: ['📚', '🎒', '🧟'] },
+            { id: 3, name: 'Больница', icon: '🏥', level: 3, objects: ['💊', '🩹', '🧟'] },
+            { id: 4, name: 'Военная база', icon: '🏛️', level: 4, objects: ['🔫', '📦', '🧟'] },
+            { id: 5, name: 'Метро', icon: '🚇', level: 5, objects: ['🔦', '📦', '🧟'] },
+            { id: 6, name: 'Завод', icon: '🏭', level: 6, objects: ['⚙️', '🔧', '🧟'] }
+        ];
+        
+        // Предметы
+        const items = {
+            '📦': { name: 'Ящик', loot: ['Консервы', 'Бинт'] },
+            '🗑️': { name: 'Мусор', loot: ['Еда', 'Вода'] },
+            '🚗': { name: 'Машина', loot: ['Бензин', 'Детали'] },
+            '📚': { name: 'Книги', loot: ['Знания'] },
+            '🎒': { name: 'Рюкзак', loot: ['Еда', 'Вода'] },
+            '💊': { name: 'Аптечка', loot: ['Медикаменты'] },
+            '🩹': { name: 'Бинты', loot: ['Бинт'] },
+            '🔫': { name: 'Оружие', loot: ['Патроны'] },
+            '🔦': { name: 'Фонарик', loot: ['Батарейки'] },
+            '⚙️': { name: 'Шестерня', loot: ['Детали'] },
+            '🔧': { name: 'Инструмент', loot: ['Детали'] },
+            '🧟': { name: 'Зомби', loot: ['Очки'], isEnemy: true, hp: 30 }
+        };
+        
+        // Загрузка сохранения
+        function loadGame() {
+            const saved = localStorage.getItem('zoneSurvival');
+            if (saved) {
+                gameData = JSON.parse(saved);
+            }
+            updateUI();
         }
-        n2[y][x]=s/c;
-      }
-    }
-    for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++)noise[y][x]=n2[y][x];
-  }
-  
-  for(let y=0;y<MAP_H;y++){
-    map[y]=[];
-    for(let x=0;x<MAP_W;x++){
-      const h = noise[y][x];
-      let biome;
-      if(h<0.28) biome='water';
-      else if(h<0.35) biome='desert';
-      else if(h<0.55) biome='plains';
-      else if(h<0.7) biome='forest';
-      else if(h<0.82) biome='hills';
-      else biome='mountain';
-      
-      if(y<2||y>MAP_H-3) if(Math.random()<0.5) biome='snow';
-      
-      map[y][x] = {
-        biome, owner:null, building:null, army:null,
-        x, y, name: generateProvinceName()
-      };
-    }
-  }
-  return map;
-}
-
-function createCountries(){
-  const countries = [];
-  const colors = ['#c44','#48c','#4a4','#c84','#84c','#cc4','#4cc'];
-  const names = ['Вестерланд','Нордгард','Астмарк','Зенхайм','Брактон','Фенланд','Мидтон'];
-  const traits = ['balanced','aggressive','trader','defensive','expansionist','diplomatic','raider'];
-  const rulerNames = ['Альберт','Ричард','Генрих','Карл','Людвиг','Сигурд','Борис'];
-  
-  const starts = [];
-  for(let i=0;i<7;i++){
-    let best = null, bestDist = 0;
-    for(let a=0;a<200;a++){
-      const x = rand(2,MAP_W-3), y = rand(2,MAP_H-3);
-      if(G.map[y][x].biome==='water'||G.map[y][x].biome==='mountain') continue;
-      let minDist = Infinity;
-      for(const s of starts){
-        const d = Math.hypot(s.x-x, s.y-y);
-        if(d<minDist) minDist = d;
-      }
-      if(starts.length===0) minDist = 100;
-      if(minDist > bestDist){ bestDist = minDist; best = {x,y}; }
-    }
-    if(best) starts.push(best);
-  }
-  
-  for(let i=0;i<7;i++){
-    const s = starts[i];
-    const country = {
-      id: i,
-      name: i===0 ? G.playerCountryName : names[i],
-      ruler: i===0 ? G.playerRulerName : choice(rulerNames),
-      color: colors[i],
-      trait: traits[i],
-      isPlayer: i===0,
-      gold: 200, food: 100, wood: 100, stone: 50, iron: 30,
-      happiness: 70, stability: 80,
-      tech: 0,
-      atWar: new Set(),
-      allies: new Set(),
-      dead: false,
-      capitalX: s.x, capitalY: s.y
-    };
-    countries.push(country);
-    
-    const toClaim = [{x:s.x,y:s.y}];
-    for(let dy=-1;dy<=1;dy++){
-      for(let dx=-1;dx<=1;dx++){
-        if(dx===0&&dy===0) continue;
-        const nx=s.x+dx, ny=s.y+dy;
-        if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H){
-          if(G.map[ny][nx].biome!=='water' && G.map[ny][nx].biome!=='mountain' && Math.random()<0.7){
-            toClaim.push({x:nx,y:ny});
-          }
+        
+        // Сохранение
+        function saveGame() {
+            localStorage.setItem('zoneSurvival', JSON.stringify(gameData));
         }
-      }
-    }
-    toClaim.forEach(p=>{
-      G.map[p.y][p.x].owner = i;
-    });
-  }
-  return countries;
-}
-
-function startGame(){
-  try {
-    G = {
-      playerCountryName: document.getElementById('countryName').value || 'Вестерланд',
-      playerRulerName: document.getElementById('rulerName').value || 'Король Артур',
-      govType: document.getElementById('govType').value,
-      turn: 1,
-      year: 1066,
-      season: 0,
-      map: generateWorld(),
-      countries: null,
-      log: [],
-      selectedArmy: null
-    };
-    G.countries = createCountries();
-    
-    const bonus = GOV_BONUSES[G.govType];
-    const p = G.countries[0];
-    if(bonus && bonus.gold) p.gold += bonus.gold*10;
-    
-    log('Ваше правление началось! Да хранит вас Господь.','good');
-    log('Форма правления: ' + {kingdom:'Королевство',republic:'Республика',theocracy:'Теократия',despotism:'Деспотия'}[G.govType]);
-    
-    document.getElementById('menu').style.display = 'none';
-    document.getElementById('game').classList.add('active');
-    
-    initMap();
-    centerMap();
-    renderTopbar();
-    renderSidebar();
-    renderMap();
-  } catch(err){
-    console.error(err);
-    alert('Ошибка запуска: ' + err.message);
-  }
-}
-
-function initMap(){
-  canvas.width = MAP_W * TILE;
-  canvas.height = MAP_H * TILE;
-  
-  canvas.addEventListener('mousedown', onMapMouseDown);
-  canvas.addEventListener('mousemove', onMapMove);
-  canvas.addEventListener('mouseup', onMapUp);
-  canvas.addEventListener('click', onMapClick);
-  canvas.addEventListener('wheel', onMapWheel, {passive:false});
-  
-  canvas.addEventListener('touchstart', onMapTouchStart, {passive:false});
-  canvas.addEventListener('touchmove', onMapTouchMove, {passive:false});
-  canvas.addEventListener('touchend', onMapTouchEnd);
-}
-
-function renderMap(){
-  if(!ctx || !G) return;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  
-  for(let y=0;y<MAP_H;y++){
-    for(let x=0;x<MAP_W;x++){
-      const t = G.map[y][x];
-      const b = BIOMES[t.biome];
-      const px = x*TILE, py = y*TILE;
-      
-      ctx.fillStyle = b.color;
-      ctx.fillRect(px,py,TILE,TILE);
-      
-      if(t.owner !== null){
-        const c = G.countries[t.owner];
-        if(c && !c.dead){
-          ctx.fillStyle = c.color;
-          ctx.globalAlpha = 0.35;
-          ctx.fillRect(px,py,TILE,TILE);
-          ctx.globalAlpha = 1;
+        
+        // Обновление интерфейса
+        function updateUI() {
+            document.getElementById('hp').textContent = gameData.hp;
+            document.getElementById('energy').textContent = gameData.energy;
+            document.getElementById('points').textContent = gameData.points;
+            document.getElementById('upgrade-points').textContent = gameData.points;
         }
-      }
-      
-      ctx.font = '20px serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      if(t.building){
-        ctx.fillText(BUILDINGS[t.building].icon, px+TILE/2, py+TILE/2);
-      } else {
-        ctx.globalAlpha = 0.4;
-        ctx.fillText(b.icon, px+TILE/2, py+TILE/2);
-        ctx.globalAlpha = 1;
-      }
-      
-      if(t.army && t.army.length > 0 && t.army[0].units.length > 0){
-        ctx.fillStyle = G.countries[t.army[0].owner].color;
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(px+TILE-8, py+8, 7, 0, Math.PI*2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 9px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const total = t.army[0].units.reduce((s,u)=>s+u.count,0);
-        ctx.fillText(total, px+TILE-8, py+8);
-      }
-      
-      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(px,py,TILE,TILE);
-    }
-  }
-  
-  if(selected){
-    const px = selected.x*TILE, py = selected.y*TILE;
-    ctx.strokeStyle = '#ffd700';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(px+1,py+1,TILE-2,TILE-2);
-  }
-  
-  if(G.selectedArmy){
-    const a = G.selectedArmy;
-    const px = a.x*TILE, py = a.y*TILE;
-    ctx.strokeStyle = '#ff0';
-    ctx.lineWidth = 3;
-    ctx.setLineDash([5,5]);
-    ctx.strokeRect(px+2,py+2,TILE-4,TILE-4);
-    ctx.setLineDash([]);
-  }
-  
-  updateMapTransform();
-}
-
-function updateMapTransform(){
-  canvas.style.transform = 'translate('+mapOffset.x+'px,'+mapOffset.y+'px) scale('+mapScale+')';
-  canvas.style.transformOrigin = '0 0';
-}
-
-function zoomMap(factor){
-  mapScale = clamp(mapScale*factor, 0.5, 2.5);
-  updateMapTransform();
-}
-function centerMap(){
-  const wrap = document.getElementById('mapWrap');
-  const p = G.countries[0];
-  const tx = p.capitalX*TILE + TILE/2;
-  const ty = p.capitalY*TILE + TILE/2;
-  mapScale = 1.2;
-  mapOffset.x = wrap.clientWidth/2 - tx*mapScale;
-  mapOffset.y = wrap.clientHeight/2 - ty*mapScale;
-  updateMapTransform();
-}
-
-function screenToTile(clientX, clientY){
-  const rect = canvas.getBoundingClientRect();
-  const x = (clientX - rect.left) / mapScale;
-  const y = (clientY - rect.top) / mapScale;
-  return {x: Math.floor(x/TILE), y: Math.floor(y/TILE)};
-}
-
-function onMapMouseDown(e){
-  dragging = true;
-  dragStart = {x:e.clientX - mapOffset.x, y:e.clientY - mapOffset.y};
-}
-function onMapMove(e){
-  if(dragging){
-    mapOffset.x = e.clientX - dragStart.x;
-    mapOffset.y = e.clientY - dragStart.y;
-    updateMapTransform();
-  }
-}
-function onMapUp(){dragging=false}
-function onMapWheel(e){
-  e.preventDefault();
-  zoomMap(e.deltaY<0?1.15:0.87);
-}
-
-let touchStart = null, lastTouchDist = 0;
-function onMapTouchStart(e){
-  e.preventDefault();
-  if(e.touches.length===1){
-    dragging = true;
-    dragStart = {x:e.touches[0].clientX - mapOffset.x, y:e.touches[0].clientY - mapOffset.y};
-    touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY, time:Date.now()};
-  } else if(e.touches.length===2){
-    dragging = false;
-    lastTouchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
-  }
-}
-function onMapTouchMove(e){
-  e.preventDefault();
-  if(e.touches.length===1 && dragging){
-    mapOffset.x = e.touches[0].clientX - dragStart.x;
-    mapOffset.y = e.touches[0].clientY - dragStart.y;
-    updateMapTransform();
-  } else if(e.touches.length===2){
-    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
-    if(lastTouchDist>0) zoomMap(d/lastTouchDist);
-    lastTouchDist = d;
-  }
-}
-function onMapTouchEnd(e){
-  if(touchStart && e.changedTouches.length===1){
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touchStart.x;
-    const dy = t.clientY - touchStart.y;
-    const dt = Date.now() - touchStart.time;
-    if(Math.abs(dx)<10 && Math.abs(dy)<10 && dt<300){
-      const tile = screenToTile(t.clientX, t.clientY);
-      handleTileClick(tile.x, tile.y);
-    }
-  }
-  dragging = false;
-  touchStart = null;
-}
-
-function onMapClick(e){
-  const tile = screenToTile(e.clientX, e.clientY);
-  handleTileClick(tile.x, tile.y);
-}
-
-function handleTileClick(x, y){
-  if(x<0||x>=MAP_W||y<0||y>=MAP_H) return;
-  
-  if(G.selectedArmy){
-    const a = G.selectedArmy;
-    const dx = Math.abs(a.x-x), dy = Math.abs(a.y-y);
-    if(dx<=1 && dy<=1 && (dx+dy>0)){
-      moveArmy(a, x, y);
-      G.selectedArmy = null;
-      renderMap();
-      renderSidebar();
-      return;
-    }
-    G.selectedArmy = null;
-  }
-  
-  selected = {x, y};
-  renderMap();
-  renderSidebar();
-}
-
-function renderTopbar(){
-  const p = G.countries[0];
-  const deltas = calcDeltas(0);
-  
-  document.getElementById('rGold').textContent = Math.floor(p.gold);
-  document.getElementById('rFood').textContent = Math.floor(p.food);
-  document.getElementById('rWood').textContent = Math.floor(p.wood);
-  document.getElementById('rStone').textContent = Math.floor(p.stone);
-  document.getElementById('rIron').textContent = Math.floor(p.iron);
-  document.getElementById('rPop').textContent = getCountryPopulation(0);
-  
-  setDelta('dGold', deltas.gold);
-  setDelta('dFood', deltas.food);
-  setDelta('dWood', deltas.wood);
-  setDelta('dStone', deltas.stone);
-  setDelta('dIron', deltas.iron);
-  setDelta('dPop', deltas.pop);
-  
-  document.getElementById('turnNum').textContent = 'ХОД ' + G.turn;
-  document.getElementById('dateText').textContent = SEASONS[G.season] + ', ' + G.year + ' г.';
-}
-
-function setDelta(id, val){
-  const el = document.getElementById(id);
-  if(val>0){el.textContent='+'+val;el.className='delta pos';}
-  else if(val<0){el.textContent=''+val;el.className='delta neg';}
-  else {el.textContent='';el.className='delta';}
-}
-
-function getCountryPopulation(cid){
-  let pop = 0;
-  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
-    if(G.map[y][x].owner===cid) pop += 100;
-  }
-  return pop;
-}
-
-function calcDeltas(cid){
-  const c = G.countries[cid];
-  let gold=0,food=0,wood=0,stone=0,iron=0,pop=0;
-  
-  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
-    const t = G.map[y][x];
-    if(t.owner!==cid) continue;
-    const b = BIOMES[t.biome];
-    if(b.food) food += b.food;
-    if(b.wood) wood += b.wood;
-    if(b.stone) stone += b.stone;
-    if(b.iron) iron += b.iron;
-    if(b.gold) gold += b.gold;
-    if(t.building){
-      const e = BUILDINGS[t.building].effect;
-      if(e.gold) gold += e.gold;
-      if(e.food) food += e.food;
-      if(e.wood) wood += e.wood;
-      if(e.stone) stone += e.stone;
-      if(e.iron) iron += e.iron;
-    }
-    pop += 100;
-  }
-  
-  const tax = Math.floor(pop * 0.05);
-  gold += tax;
-  
-  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
-    const t = G.map[y][x];
-    if(t.army && t.army[0] && t.army[0].owner===cid){
-      food -= t.army[0].units.reduce((s,u)=>s+u.count,0);
-    }
-  }
-  
-  const bonus = GOV_BONUSES[cid===0 ? G.govType : 'kingdom'];
-  if(bonus && bonus.gold) gold += bonus.gold;
-  
-  return {gold,food,wood,stone,iron,pop:Math.floor(pop*0.02)};
-}
-
-function switchTab(tab){
-  currentTab = tab;
-  document.querySelectorAll('.side-tab').forEach(t=>{
-    t.classList.toggle('active', t.dataset.tab===tab);
-  });
-  renderSidebar();
-}
-
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-}
-
-function renderSidebar(){
-  const el = document.getElementById('sideContent');
-  if(currentTab==='info') renderInfoTab(el);
-  else if(currentTab==='build') renderBuildTab(el);
-  else if(currentTab==='army') renderArmyTab(el);
-  else if(currentTab==='diplo') renderDiploTab(el);
-  else if(currentTab==='log') renderLogTab(el);
-}
-
-function renderInfoTab(el){
-  if(!selected){
-    el.innerHTML = '<div class="card"><h4>📜 ВЫБЕРИТЕ ПРОВИНЦИЮ</h4><p style="font-size:12px;color:#a88860">Кликните на карту, чтобы увидеть информацию.</p></div>' + renderCountryOverview();
-    return;
-  }
-  const t = G.map[selected.y][selected.x];
-  const b = BIOMES[t.biome];
-  const owner = t.owner!==null ? G.countries[t.owner] : null;
-  
-  let html = '<div class="card"><h4>'+b.icon+' '+t.name+'</h4>';
-  html += '<div class="row"><span>Биом:</span><b>'+b.name+'</b></div>';
-  html += '<div class="row"><span>Владелец:</span><b style="color:'+(owner?owner.color:'#888')+'">'+(owner?owner.name:'Ничья')+'</b></div>';
-  
-  if(t.building){
-    html += '<div class="row"><span>Здание:</span><b>'+BUILDINGS[t.building].icon+' '+BUILDINGS[t.building].name+'</b></div>';
-  }
-  if(t.army && t.army.length>0 && t.army[0].units.length>0){
-    const total = t.army[0].units.reduce((s,u)=>s+u.count,0);
-    html += '<div class="row"><span>Армия:</span><b>'+total+' воинов</b></div>';
-    t.army[0].units.forEach(u=>{
-      html += '<div class="row"><span>'+UNITS[u.type].icon+' '+UNITS[u.type].name+'</span><b>'+u.count+'</b></div>';
-    });
-  }
-  html += '</div>';
-  
-  if(t.owner === 0){
-    html += '<button class="action-btn" onclick="openBuildModal('+selected.x+','+selected.y+')"><b>🏗 Построить здание</b>Улучшить провинцию</button>';
-    if(t.building === 'barracks' || hasNearbyBuilding(selected.x, selected.y, 'barracks')){
-      html += '<button class="action-btn" onclick="openRecruitModal('+selected.x+','+selected.y+')"><b>⚔ Нанять войска</b>Пополнить армию</button>';
-    }
-    if(t.army && t.army.length>0 && t.army[0].units.length>0){
-      html += '<button class="action-btn" onclick="selectArmy('+selected.x+','+selected.y+')"><b>🚩 Выбрать армию</b>Для перемещения</button>';
-    }
-  } else if(t.owner !== null && t.owner !== 0){
-    const enemy = G.countries[t.owner];
-    if(G.countries[0].atWar.has(t.owner)){
-      html += '<div class="card" style="border-color:#c44"><h4 style="color:#c44">⚔ ЗОНА ВОЙНЫ</h4><p style="font-size:12px">Территория '+enemy.name+'. Атакуйте!</p></div>';
-    } else {
-      html += '<div class="card"><h4>🕊 Территория '+enemy.name+'</h4><p style="font-size:12px;color:#a88860">Мир. Объявите войну через вкладку "Мир".</p></div>';
-    }
-  } else {
-    if(t.biome !== 'water' && t.biome !== 'mountain'){
-      html += '<button class="action-btn" onclick="colonize('+selected.x+','+selected.y+')"><b>🚩 Колонизировать</b>Стоимость: 50 золота</button>';
-    }
-  }
-  
-  el.innerHTML = html;
-}
-
-function renderCountryOverview(){
-  const p = G.countries[0];
-  const provinces = countProvinces(0);
-  const govNames = {kingdom:'Королевство',republic:'Республика',theocracy:'Теократия',despotism:'Деспотия'};
-  return '<div class="card"><h4>👑 '+p.name+'</h4>'+
-    '<div class="row"><span>Правитель:</span><b>'+p.ruler+'</b></div>'+
-    '<div class="row"><span>Правление:</span><b>'+govNames[G.govType]+'</b></div>'+
-    '<div class="row"><span>Провинций:</span><b>'+provinces+'</b></div>'+
-    '<div class="row"><span>Счастье:</span><b>'+Math.floor(p.happiness)+'%</b></div>'+
-    '<div class="row"><span>Стабильность:</span><b>'+Math.floor(p.stability)+'%</b></div>'+
-    '<div class="row"><span>Технологии:</span><b>Ур. '+p.tech+'</b></div>'+
-    '</div>';
-}
-
-function countProvinces(cid){
-  let c=0;
-  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++)if(G.map[y][x].owner===cid)c++;
-  return c;
-}
-
-function hasNearbyBuilding(x, y, type){
-  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-    const nx=x+dx, ny=y+dy;
-    if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H){
-      if(G.map[ny][nx].owner===0 && G.map[ny][nx].building===type) return true;
-    }
-  }
-  return false;
-}
-
-function renderBuildTab(el){
-  if(!selected || G.map[selected.y][selected.x].owner!==0){
-    el.innerHTML = '<div class="card"><h4>🏗 СТРОИТЕЛЬСТВО</h4><p style="font-size:12px;color:#a88860">Выберите свою провинцию.</p></div>';
-    return;
-  }
-  const t = G.map[selected.y][selected.x];
-  if(t.building){
-    el.innerHTML = '<div class="card"><h4>⚠ ЗАНЯТО</h4><p style="font-size:12px">Построено: '+BUILDINGS[t.building].icon+' '+BUILDINGS[t.building].name+'</p></div>';
-    return;
-  }
-  
-  const isCoastal = isCoast(selected.x, selected.y);
-  let html = '<div class="card"><h4>🏗 ПОСТРОЙКИ</h4><p style="font-size:11px;color:#a88860;margin-bottom:8px">'+t.name+'</p></div><div class="build-list">';
-  
-  for(const key in BUILDINGS){
-    const b = BUILDINGS[key];
-    if(b.needCoast && !isCoastal) continue;
-    const canAfford = canPay(b.cost);
-    html += '<div class="build-item '+(canAfford?'':'disabled')+'" data-build="'+key+'">';
-    html += '<span class="ico">'+b.icon+'</span>';
-    html += '<div class="name">'+b.name+'</div>';
-    html += '<div class="cost">'+formatCost(b.cost)+'</div>';
-    html += '</div>';
-  }
-  html += '</div>';
-  el.innerHTML = html;
-  
-  el.querySelectorAll('.build-item:not(.disabled)').forEach(item=>{
-    item.addEventListener('click', ()=>build(item.dataset.build));
-  });
-}
-
-function isCoast(x, y){
-  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-    const nx=x+dx, ny=y+dy;
-    if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H){
-      if(G.map[ny][nx].biome==='water') return true;
-    }
-  }
-  return false;
-}
-
-function canPay(cost){
-  const p = G.countries[0];
-  for(const r in cost){
-    if((p[r]||0) < cost[r]) return false;
-  }
-  return true;
-}
-
-function formatCost(cost){
-  const icons = {gold:'💰',wood:'🪵',stone:'🪨',iron:'⚒',food:'🌾'};
-  return Object.entries(cost).map(([k,v])=>icons[k]+v).join(' ');
-}
-
-function renderArmyTab(el){
-  let totalArmy = 0;
-  const armies = [];
-  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
-    const t = G.map[y][x];
-    if(t.army && t.army[0] && t.army[0].owner===0 && t.army[0].units.length>0){
-      const count = t.army[0].units.reduce((s,u)=>s+u.count,0);
-      totalArmy += count;
-      armies.push({x,y,count,tile:t});
-    }
-  }
-  
-  let html = '<div class="card"><h4>⚔ ВАША АРМИЯ</h4><div class="row"><span>Всего воинов:</span><b>'+totalArmy+'</b></div></div>';
-  
-  if(armies.length===0){
-    html += '<div class="card"><p style="font-size:12px;color:#a88860">Нет армий. Наймите войска в провинции с казармой.</p></div>';
-  } else {
-    armies.forEach(a=>{
-      const t = a.tile;
-      html += '<div class="card" style="cursor:pointer" onclick="focusTile('+a.x+','+a.y+')">';
-      html += '<h4>🚩 Армия в '+t.name+'</h4>';
-      html += '<div class="row"><span>Воины:</span><b>'+a.count+'</b></div>';
-      t.army[0].units.forEach(u=>{
-        html += '<div class="row"><span>'+UNITS[u.type].icon+' '+UNITS[u.type].name+'</span><b>'+u.count+'</b></div>';
-      });
-      html += '</div>';
-    });
-  }
-  el.innerHTML = html;
-}
-
-function focusTile(x, y){
-  selected = {x,y};
-  const wrap = document.getElementById('mapWrap');
-  mapOffset.x = wrap.clientWidth/2 - x*TILE*mapScale - TILE*mapScale/2;
-  mapOffset.y = wrap.clientHeight/2 - y*TILE*mapScale - TILE*mapScale/2;
-  updateMapTransform();
-  renderMap();
-  renderSidebar();
-}
-
-function renderDiploTab(el){
-  let html = '<div class="card"><h4>🕊 ОТНОШЕНИЯ</h4></div>';
-  G.countries.forEach(c=>{
-    if(c.isPlayer || c.dead) return;
-    const atWar = G.countries[0].atWar.has(c.id);
-    const allied = G.countries[0].allies.has(c.id);
-    const provinces = countProvinces(c.id);
-    const rel = atWar ? '⚔ ВОЙНА' : allied ? '🤝 СОЮЗ' : '🕊 МИР';
-    const relColor = atWar ? '#c44' : allied ? '#7fb069' : '#a88860';
-    
-    html += '<div class="country-row">';
-    html += '<div class="country-flag" style="background:'+c.color+'">'+c.name[0]+'</div>';
-    html += '<div class="country-info"><b>'+c.name+'</b>';
-    html += '<div style="color:'+relColor+';font-size:11px">'+rel+'</div>';
-    html += '<div style="font-size:10px;color:#a88860">'+c.ruler+' • '+provinces+' пров.</div>';
-    html += '</div></div>';
-    html += '<div class="diplo-btns">';
-    if(atWar){
-      html += '<button class="diplo-btn" onclick="proposePeace('+c.id+')">🕊 Предложить мир</button>';
-    } else {
-      html += '<button class="diplo-btn war" onclick="declareWar('+c.id+')">⚔ Объявить войну</button>';
-    }
-    if(!allied && !atWar){
-      html += '<button class="diplo-btn" onclick="proposeAlliance('+c.id+')">🤝 Союз</button>';
-    }
-    html += '</div>';
-  });
-  el.innerHTML = html;
-}
-
-function renderLogTab(el){
-  if(G.log.length===0){
-    el.innerHTML = '<div class="card"><p style="font-size:12px;color:#a88860">Журнал пуст.</p></div>';
-    return;
-  }
-  el.innerHTML = G.log.map(e=>'<div class="log-entry '+e.type+'"><b>Ход '+e.turn+':</b> '+e.text+'</div>').join('');
-}
-
-function build(type){
-  if(!selected) return;
-  const t = G.map[selected.y][selected.x];
-  if(t.owner!==0 || t.building) return;
-  const b = BUILDINGS[type];
-  if(!canPay(b.cost)) return;
-  pay(b.cost);
-  t.building = type;
-  log('Построено: '+b.icon+' '+b.name+' в '+t.name,'good');
-  notify(b.icon+' '+b.name+' построено!','good');
-  renderTopbar();
-  renderMap();
-  renderSidebar();
-}
-
-function pay(cost){
-  const p = G.countries[0];
-  for(const r in cost) p[r] -= cost[r];
-}
-
-function openBuildModal(x, y){
-  selected = {x,y};
-  switchTab('build');
-  renderSidebar();
-}
-
-function openRecruitModal(x, y){
-  selected = {x,y};
-  const t = G.map[y][x];
-  document.getElementById('recruitTitle').textContent = 'НАБОР В ' + t.name.toUpperCase();
-  const list = document.getElementById('recruitList');
-  let html = '';
-  for(const key in UNITS){
-    const u = UNITS[key];
-    const canAfford = canPay(u.cost);
-    html += '<div class="build-item '+(canAfford?'':'disabled')+'" data-unit="'+key+'">';
-    html += '<span class="ico">'+u.icon+'</span>';
-    html += '<div class="name">'+u.name+'</div>';
-    html += '<div class="cost">'+formatCost(u.cost)+'</div>';
-    html += '<div class="cost">⚔'+u.atk+' 🛡'+u.def+' ❤'+u.hp+'</div>';
-    html += '</div>';
-  }
-  list.innerHTML = html;
-  list.querySelectorAll('.build-item:not(.disabled)').forEach(item=>{
-    item.addEventListener('click', ()=>recruit(item.dataset.unit));
-  });
-  document.getElementById('recruitModal').classList.add('show');
-}
-
-function recruit(type){
-  if(!selected) return;
-  const t = G.map[selected.y][selected.x];
-  const u = UNITS[type];
-  if(!canPay(u.cost)) return;
-  pay(u.cost);
-  if(!t.army) t.army = [{owner:0, units:[]}];
-  if(t.army[0].owner !== 0) t.army = [{owner:0, units:[]}];
-  const existing = t.army[0].units.find(x=>x.type===type);
-  if(existing) existing.count++;
-  else t.army[0].units.push({type, count:1});
-  log('Наняты: '+u.icon+' '+u.name+' в '+t.name,'good');
-  notify(u.icon+' '+u.name+' нанят!','good');
-  closeModal('recruitModal');
-  renderTopbar();
-  renderMap();
-  renderSidebar();
-}
-
-function selectArmy(x, y){
-  const t = G.map[y][x];
-  if(!t.army || t.army[0].owner!==0) return;
-  G.selectedArmy = {x, y, units:t.army[0].units};
-  notify('🚩 Армия выбрана. Кликните на соседнюю клетку.');
-  renderMap();
-}
-
-function moveArmy(army, tx, ty){
-  const from = G.map[army.y][army.x];
-  const to = G.map[ty][tx];
-  const b = BIOMES[to.biome];
-  if(!b.passable){ notify('⚠ Нельзя пройти!'); return; }
-  
-  if(to.owner !== null && to.owner !== 0){
-    if(!G.countries[0].atWar.has(to.owner)){
-      notify('⚠ Нет войны с этой страной!');
-      return;
-    }
-    if(to.army && to.army.length>0 && to.army[0].owner !== 0 && to.army[0].units.length>0){
-      resolveBattle(army, tx, ty);
-      return;
-    } else {
-      captureProvince(army, tx, ty);
-      return;
-    }
-  }
-  
-  if(to.army && to.army[0] && to.army[0].owner === 0){
-    to.army[0].units.forEach(u=>{
-      const ex = from.army[0].units.find(x=>x.type===u.type);
-      if(ex) ex.count += u.count;
-      else from.army[0].units.push({type:u.type, count:u.count});
-    });
-    from.army = null;
-  } else {
-    to.army = from.army;
-    from.army = null;
-  }
-  log('Армия перемещена в '+to.name);
-}
-
-function captureProvince(army, tx, ty){
-  const from = G.map[army.y][army.x];
-  const to = G.map[ty][tx];
-  const prevOwner = to.owner;
-  to.owner = 0;
-  to.army = [{owner:0, units:from.army[0].units}];
-  from.army = null;
-  log('🚩 Захвачена провинция '+to.name+'!','good');
-  notify('🚩 Захвачена '+to.name+'!','good');
-  checkCountryDeath(prevOwner);
-}
-
-function resolveBattle(attacker, tx, ty){
-  const defTile = G.map[ty][tx];
-  const atkUnits = attacker.units;
-  const defUnits = defTile.army[0].units;
-  
-  let atkPower = 0, defPower = 0;
-  atkUnits.forEach(u=>{
-    const info = UNITS[u.type];
-    atkPower += (info.atk * 2 + info.def) * u.count;
-  });
-  defUnits.forEach(u=>{
-    const info = UNITS[u.type];
-    defPower += (info.def * 2 + info.atk) * u.count;
-  });
-  
-  if(defTile.building === 'castle') defPower *= 1.5;
-  
-  atkPower *= 0.8 + Math.random()*0.4;
-  defPower *= 0.8 + Math.random()*0.4;
-  
-  const atkWon = atkPower > defPower;
-  const ratio = atkWon ? defPower/atkPower : atkPower/defPower;
-  
-  let html = '<div style="text-align:center;font-size:14px;line-height:1.8">';
-  html += '<div style="color:#7fb069"><b>АТАКУЮЩИЙ (Вы)</b><br>Сила: '+Math.floor(atkPower)+'</div>';
-  html += '<div style="font-size:24px;margin:10px 0">⚔</div>';
-  html += '<div style="color:#c44"><b>ЗАЩИТНИК ('+G.countries[defTile.owner].name+')</b><br>Сила: '+Math.floor(defPower)+'</div>';
-  html += '<div style="margin-top:16px;font-size:16px;color:var(--gold)">';
-  html += atkWon ? '🏆 ВАША ПОБЕДА!' : '💀 ПОРАЖЕНИЕ!';
-  html += '</div></div>';
-  
-  if(atkWon){
-    const losses = Math.ceil(ratio * 0.6);
-    applyLosses(attacker.units, losses);
-    if(attacker.units.length === 0){
-      G.map[attacker.y][attacker.x].army = null;
-    } else {
-      captureProvince({x:attacker.x, y:attacker.y, units:attacker.units}, tx, ty);
-    }
-  } else {
-    const losses = Math.ceil(ratio * 0.4);
-    applyLosses(defUnits, losses);
-    G.map[attacker.y][attacker.x].army = null;
-  }
-  
-  document.getElementById('battleContent').innerHTML = html;
-  document.getElementById('battleModal').classList.add('show');
-  
-  log('⚔ Битва за '+defTile.name+': '+(atkWon?'победа':'поражение'), atkWon?'good':'war');
-  renderMap();
-  renderTopbar();
-}
-
-function applyLosses(units, lossPercent){
-  units.forEach(u=>{
-    const lost = Math.max(1, Math.floor(u.count * lossPercent));
-    u.count = Math.max(0, u.count - lost);
-  });
-  for(let i=units.length-1;i>=0;i--) if(units[i].count<=0) units.splice(i,1);
-}
-
-function colonize(x, y){
-  const t = G.map[y][x];
-  if(G.countries[0].gold < 50){ notify('⚠ Нужно 50 золота!'); return; }
-  G.countries[0].gold -= 50;
-  t.owner = 0;
-  log('🚩 Колонизирована '+t.name,'good');
-  notify('🚩 '+t.name+' — ваша!','good');
-  renderTopbar();
-  renderMap();
-  renderSidebar();
-}
-
-function declareWar(cid){
-  const c = G.countries[cid];
-  if(G.countries[0].atWar.has(cid)) return;
-  G.countries[0].atWar.add(cid);
-  c.atWar.add(0);
-  log('⚔ ОБЪЯВЛЕНА ВОЙНА: '+c.name+'!','war');
-  notify('⚔ Война с '+c.name+'!','war');
-  renderSidebar();
-}
-
-function proposePeace(cid){
-  const c = G.countries[cid];
-  const myPower = getCountryMilitaryPower(0);
-  const theirPower = getCountryMilitaryPower(cid);
-  const chance = theirPower > myPower ? 0.7 : 0.3;
-  if(Math.random() < chance){
-    G.countries[0].atWar.delete(cid);
-    c.atWar.delete(0);
-    log('🕊 Мир с '+c.name,'good');
-    notify('🕊 '+c.name+' согласились на мир!','good');
-  } else {
-    log('❌ '+c.name+' отвергли мир');
-    notify('❌ '+c.name+' отвергли мир!');
-  }
-  renderSidebar();
-}
-
-function proposeAlliance(cid){
-  const c = G.countries[cid];
-  const chance = 0.25 + (G.countries[0].happiness/200);
-  if(Math.random() < chance){
-    G.countries[0].allies.add(cid);
-    c.allies.add(0);
-    log('🤝 Союз с '+c.name+'!','good');
-    notify('🤝 '+c.name+' — ваши союзники!','good');
-  } else {
-    log('❌ '+c.name+' отвергли союз');
-    notify('❌ '+c.name+' отвергли союз!');
-  }
-  renderSidebar();
-}
-
-function getCountryMilitaryPower(cid){
-  let power = 0;
-  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
-    const t = G.map[y][x];
-    if(t.owner===cid && t.army && t.army[0] && t.army[0].owner===cid){
-      t.army[0].units.forEach(u=>{
-        power += (UNITS[u.type].atk + UNITS[u.type].def) * u.count;
-      });
-    }
-  }
-  return power;
-}
-
-function checkCountryDeath(cid){
-  if(cid===0) return;
-  if(countProvinces(cid) === 0){
-    G.countries[cid].dead = true;
-    log('💀 '+G.countries[cid].name+' уничтожена!','good');
-    notify('💀 '+G.countries[cid].name+' пала!','good');
-  }
-}
-
-function closeModal(id){
-  document.getElementById(id).classList.remove('show');
-}
-
-function endTurn(){
-  G.countries.forEach((c, cid)=>{
-    if(c.dead) return;
-    const d = calcDeltas(cid);
-    c.gold += d.gold;
-    c.food += d.food;
-    c.wood += d.wood;
-    c.stone += d.stone;
-    c.iron += d.iron;
-    
-    if(c.food < 0){
-      c.happiness -= 5;
-      c.food = 0;
-      if(cid===0){ log('⚠ Голод! Народ недоволен.','war'); notify('⚠ Голод!','war'); }
-    }
-    
-    if(c.food > 50) c.happiness = Math.min(100, c.happiness + 1);
-    if(c.happiness < 30) c.stability -= 3;
-    else c.stability = Math.min(100, c.stability + 1);
-  });
-  
-  aiTurn();
-  
-  if(Math.random() < 0.3) triggerRandomEvent();
-  
-  if(G.countries[0].stability < 20 && Math.random() < 0.3){
-    triggerEvent('🔥 БУНТ!', 'Народ восстал! Вы потеряли провинции и 100 золота.');
-    let lost = 0;
-    for(let y=0;y<MAP_H&&lost<2;y++)for(let x=0;x<MAP_W&&lost<2;x++){
-      if(G.map[y][x].owner===0 && Math.random()<0.3){
-        G.map[y][x].owner = null;
-        lost++;
-      }
-    }
-    G.countries[0].gold = Math.max(0, G.countries[0].gold - 100);
-    G.countries[0].stability = 50;
-  }
-  
-  if(countProvinces(0) === 0){
-    gameOver(false);
-    return;
-  }
-  const aliveEnemies = G.countries.filter(c=>!c.isPlayer && !c.dead);
-  if(aliveEnemies.length === 0){
-    gameOver(true);
-    return;
-  }
-  
-  G.turn++;
-  G.season = (G.season + 1) % 4;
-  if(G.season === 0) G.year++;
-  
-  renderTopbar();
-  renderMap();
-  renderSidebar();
-  notify('📜 Ход ' + G.turn + '. ' + SEASONS[G.season] + ', ' + G.year + ' г.');
-}
-
-function aiTurn(){
-  G.countries.forEach((c, cid)=>{
-    if(c.isPlayer || c.dead) return;
-    
-    const myProvinces = [];
-    for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
-      if(G.map[y][x].owner===cid) myProvinces.push({x,y,tile:G.map[y][x]});
-    }
-    
-    if(Math.random() < 0.4){
-      const empty = myProvinces.filter(p=>!p.tile.building);
-      if(empty.length > 0){
-        const p = choice(empty);
-        const buildable = Object.keys(BUILDINGS).filter(k=>{
-          const b = BUILDINGS[k];
-          if(b.needCoast && !isCoast(p.x,p.y)) return false;
-          for(const r in b.cost) if((c[r]||0) < b.cost[r]) return false;
-          return true;
-        });
-        if(buildable.length > 0){
-          const key = choice(buildable);
-          const b = BUILDINGS[key];
-          for(const r in b.cost) c[r] -= b.cost[r];
-          p.tile.building = key;
+        
+        // Переключение экранов
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'map-screen') {
+                renderMap();
+            } else if (screenId === 'inventory-screen') {
+                renderInventory();
+            } else if (screenId === 'upgrade-screen') {
+                renderUpgrades();
+            }
+            
+            updateUI();
+            saveGame();
         }
-      }
-    }
-    
-    const hasBarracks = myProvinces.some(p=>p.tile.building==='barracks');
-    if(hasBarracks && Math.random() < 0.5){
-      const barr = choice(myProvinces.filter(p=>p.tile.building==='barracks'));
-      const unitType = choice(['militia','militia','archer','knight']);
-      const u = UNITS[unitType];
-      let canAfford = true;
-      for(const r in u.cost) if((c[r]||0) < u.cost[r]) canAfford = false;
-      if(canAfford){
-        for(const r in u.cost) c[r] -= u.cost[r];
-        if(!barr.tile.army) barr.tile.army = [{owner:cid, units:[]}];
-        if(barr.tile.army[0].owner !== cid) barr.tile.army = [{owner:cid, units:[]}];
-        const ex = barr.tile.army[0].units.find(x=>x.type===unitType);
-        if(ex) ex.count++;
-        else barr.tile.army[0].units.push({type:unitType, count:1});
-      }
-    }
-    
-    const aggrFactor = c.trait==='aggressive'?0.3:c.trait==='raider'?0.4:c.trait==='expansionist'?0.25:0.1;
-    
-    myProvinces.forEach(p=>{
-      if(!p.tile.army || p.tile.army[0].owner!==cid) return;
-      if(Math.random() > 0.5) return;
-      
-      const dirs = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]];
-      const targets = [];
-      dirs.forEach(([dx,dy])=>{
-        const nx=p.x+dx, ny=p.y+dy;
-        if(nx<0||nx>=MAP_W||ny<0||ny>=MAP_H) return;
-        const t = G.map[ny][nx];
-        if(!BIOMES[t.biome].passable) return;
-        targets.push({x:nx,y:ny,tile:t});
-      });
-      
-      if(targets.length === 0) return;
-      
-      let target;
-      const enemies = targets.filter(t=>t.tile.owner!==null && t.tile.owner!==cid && c.atWar.has(t.tile.owner));
-      const neutral = targets.filter(t=>t.tile.owner===null);
-      
-      if(enemies.length>0 && Math.random()<aggrFactor+0.3){
-        target = choice(enemies);
-        if(target.tile.army && target.tile.army[0] && target.tile.army[0].owner!==cid && target.tile.army[0].units.length>0){
-          aiBattle(p.x, p.y, target.x, target.y, cid);
-        } else {
-          const prev = target.tile.owner;
-          target.tile.owner = cid;
-          target.tile.army = p.tile.army;
-          p.tile.army = null;
-          checkCountryDeath(prev);
-        }
-      } else if(neutral.length>0){
-        target = choice(neutral);
-        target.tile.owner = cid;
-        target.tile.army = p.tile.army;
-        p.tile.army = null;
-      } else {
-        const own = targets.filter(t=>t.tile.owner===cid && (!t.tile.army || t.tile.army[0].owner===cid));
-        if(own.length>0){
-          target = choice(own);
-          if(target.tile.army){
-            target.tile.army[0].units.forEach(u=>{
-              const ex = p.tile.army[0].units.find(x=>x.type===u.type);
-              if(ex) ex.count += u.count;
-              else p.tile.army[0].units.push({type:u.type, count:u.count});
+        
+        // Отрисовка карты
+        function renderMap() {
+            const container = document.getElementById('map-container');
+            container.innerHTML = '';
+            
+            locations.forEach(loc => {
+                const div = document.createElement('div');
+                div.className = 'location';
+                div.innerHTML = `
+                    <div class="location-icon">${loc.icon}</div>
+                    <div class="location-name">${loc.name}</div>
+                    <div class="location-level">Ур. ${loc.level}</div>
+                `;
+                div.onclick = () => enterLocation(loc);
+                container.appendChild(div);
             });
-            p.tile.army = null;
-          } else {
-            target.tile.army = p.tile.army;
-            p.tile.army = null;
-          }
         }
-      }
-    });
-    
-    if(c.atWar.has(0)){
-      const myPow = getCountryMilitaryPower(cid);
-      const playerPow = getCountryMilitaryPower(0);
-      if(myPow < playerPow * 0.5 && Math.random() < 0.2){
-        c.atWar.delete(0);
-        G.countries[0].atWar.delete(cid);
-        log('🕊 '+c.name+' просит мира','good');
-        notify('🕊 '+c.name+' предложили мир!','good');
-      }
-    }
-  });
-}
-
-function aiBattle(ax, ay, tx, ty, attackerCid){
-  const from = G.map[ay][ax];
-  const to = G.map[ty][tx];
-  
-  let atkPow = 0, defPow = 0;
-  from.army[0].units.forEach(u=>{
-    atkPow += (UNITS[u.type].atk*2 + UNITS[u.type].def) * u.count;
-  });
-  to.army[0].units.forEach(u=>{
-    defPow += (UNITS[u.type].def*2 + UNITS[u.type].atk) * u.count;
-  });
-  if(to.building==='castle') defPow *= 1.5;
-  atkPow *= 0.8 + Math.random()*0.4;
-  defPow *= 0.8 + Math.random()*0.4;
-  
-  if(atkPow > defPow){
-    const ratio = defPow/atkPow;
-    applyLosses(from.army[0].units, ratio*0.6);
-    if(from.army[0].units.length===0){ from.army = null; return; }
-    const prev = to.owner;
-    to.owner = attackerCid;
-    to.army = from.army;
-    from.army = null;
-    checkCountryDeath(prev);
-  } else {
-    const ratio = atkPow/defPow;
-    applyLosses(to.army[0].units, ratio*0.4);
-    from.army = null;
-  }
-}
-
-function triggerRandomEvent(){
-  const events = [
-    {title:'🌾 БОГАТЫЙ УРОЖАЙ', text:'Обильный урожай. +100 еды.', effect:()=>{G.countries[0].food+=100;}, type:'good'},
-    {title:'🏜 ЗАСУХА', text:'Засуха. -50 еды.', effect:()=>{G.countries[0].food=Math.max(0,G.countries[0].food-50);}, type:'war'},
-    {title:'💰 ТОРГОВЫЙ КАРАВАН', text:'Купцы принесли богатства. +80 золота.', effect:()=>{G.countries[0].gold+=80;}, type:'good'},
-    {title:'🦠 ЭПИДЕМИЯ', text:'Чума. -50 золота, -5 счастья.', effect:()=>{G.countries[0].gold=Math.max(0,G.countries[0].gold-50);G.countries[0].happiness-=5;}, type:'war'},
-    {title:'⛏ ЗОЛОТАЯ ЖИЛА', text:'Найдена жила! +150 золота.', effect:()=>{G.countries[0].gold+=150;}, type:'good'},
-    {title:'📚 МУДРЕЦ', text:'Мудрец поделился знаниями. +1 технология.', effect:()=>{G.countries[0].tech++;}, type:'good'},
-    {title:'🔥 ПОЖАР', text:'Пожар. -40 дерева.', effect:()=>{G.countries[0].wood=Math.max(0,G.countries[0].wood-40);}, type:'war'}
-  ];
-  const e = choice(events);
-  e.effect();
-  log(e.title+': '+e.text, e.type);
-  triggerEvent(e.title, e.text);
-}
-
-function triggerEvent(title, text){
-  document.getElementById('eventTitle').textContent = title;
-  document.getElementById('eventContent').textContent = text;
-  document.getElementById('eventModal').classList.add('show');
-}
-
-function gameOver(won){
-  const title = won ? '🏆 ВЕЛИКАЯ ПОБЕДА!' : '💀 ПАДЕНИЕ КОРОЛЕВСТВА';
-  const content = won 
-    ? 'Вы покорили весь мир!\n\n'+G.playerRulerName+' из '+G.playerCountryName+' войдёт в легенды.\n\nХодов: '+G.turn+'\nЛет: '+(G.year - 1066)
-    : 'Ваше королевство пало.\n\n'+G.playerRulerName+' потерял все земли.\n\nХодов: '+G.turn;
-  document.getElementById('goTitle').textContent = title;
-  document.getElementById('goContent').textContent = content;
-  document.getElementById('gameOverModal').classList.add('show');
-}
-
-// ===== ИНИЦИАЛИЗАЦИЯ =====
-document.getElementById('startBtn').addEventListener('click', startGame);
-
-window.addEventListener('resize', ()=>{
-  if(G) renderMap();
-});
-
-console.log('✓ ВЛАСТЕЛИН ЭПОХ загружен');
-</script>
+        
+        // Вход в локацию
+        function enterLocation(location) {
+            if (gameData.energy < 5) {
+                showNotification('⚠️ Внимание', 'Недостаточно энергии!');
+                return;
+            }
+            
+            gameData.energy -= 5;
+            gameData.currentLocation = location;
+            
+            document.getElementById('location-title').textContent = location.name;
+            renderLocationObjects();
+            showScreen('location-screen');
+        }
+        
+        // Отрисовка объектов локации
+        function renderLocationObjects() {
+            const container = document.getElementById('objects-container');
+            container.innerHTML = '';
+            
+            gameData.currentLocation.objects.forEach(objIcon => {
+                const obj = items[objIcon];
+                const div = document.createElement('div');
+                div.className = 'object';
+                div.innerHTML = `
+                    <div class="object-icon">${objIcon}</div>
+                    <div class="object-name">${obj.name}</div>
+                `;
+                div.onclick = () => interactWithObject(objIcon);
+                container.appendChild(div);
+            });
+        }
+        
+        // Взаимодействие с объектом
+        function interactWithObject(objIcon) {
+            const obj = items[objIcon];
+            
+            if (obj.isEnemy) {
+                // Бой с врагом
+                const enemyHp = obj.hp;
+                const damage = gameData.damage;
+                
+                if (damage >= enemyHp) {
+                    // Победа
+                    const loot = obj.loot[0];
+                    gameData.points += 10;
+                    showNotification('⚔️ Победа!', `Ты убил ${obj.name}!\n+10 очков`);
+                } else {
+                    // Поражение
+                    gameData.hp -= 20;
+                    showNotification('💀 Поражение', `${obj.name} атаковал тебя!\n-20 HP`);
+                }
+            } else {
+                // Сбор лута
+                const loot = obj.loot[Math.floor(Math.random() * obj.loot.length)];
+                addToInventory(loot);
+                gameData.points += 5;
+                showNotification('✅ Найдено!', `Ты получил: ${loot}\n+5 очков`);
+            }
+            
+            updateUI();
+            saveGame();
+        }
+        
+        // Добавление в инвентарь
+        function addToInventory(itemName) {
+            const existing = gameData.inventory.find(i => i.name === itemName);
+            if (existing) {
+                existing.count++;
+            } else {
+                gameData.inventory.push({ name: itemName, count: 1 });
+            }
+        }
+        
+        // Отрисовка инвентаря
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
+            
+            gameData.inventory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'inventory-slot';
+                div.innerHTML = `
+                    <div>${getItemIcon(item.name)}</div>
+                    <div class="item-count">${item.count}</div>
+                `;
+                grid.appendChild(div);
+            });
+            
+            // Пустые слоты
+            for (let i = gameData.inventory.length; i < 20; i++) {
+                const div = document.createElement('div');
+                div.className = 'inventory-slot';
+                grid.appendChild(div);
+            }
+        }
+        
+        // Получение иконки предмета
+        function getItemIcon(itemName) {
+            const icons = {
+                'Консервы': '🥫',
+                'Бинт': '🩹',
+                'Еда': '🍖',
+                'Вода': '💧',
+                'Бензин': '⛽',
+                'Детали': '⚙️',
+                'Знания': '📖',
+                'Медикаменты': '💊',
+                'Патроны': '🔫',
+                'Батарейки': '🔋'
+            };
+            return icons[itemName] || '📦';
+        }
+        
+        // Отрисовка улучшений
+        function renderUpgrades() {
+            const container = document.getElementById('upgrade-container');
+            container.innerHTML = '';
+            
+            const upgrades = [
+                { id: 'health', name: '❤️ Здоровье', level: gameData.upgrades.health, cost: 50, effect: '+20 HP' },
+                { id: 'damage', name: '⚔️ Урон', level: gameData.upgrades.damage, cost: 75, effect: '+5 урона' },
+                { id: 'energy', name: '⚡ Энергия', level: gameData.upgrades.energy, cost: 100, effect: '+10 энергии' }
+            ];
+            
+            upgrades.forEach(upg => {
+                const div = document.createElement('div');
+                div.className = 'upgrade-item';
+                div.innerHTML = `
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">${upg.name}</div>
+                        <div class="upgrade-level">Ур. ${upg.level}</div>
+                    </div>
+                    <div style="margin-bottom: 10px; color: #888;">${upg.effect}</div>
+                    <button class="upgrade-btn" onclick="buyUpgrade('${upg.id}', ${upg.cost})">
+                        Улучшить (${upg.cost} очков)
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // Покупка улучшения
+        function buyUpgrade(upgradeId, cost) {
+            if (gameData.points < cost) {
+                showNotification('⚠️ Внимание', 'Недостаточно очков!');
+                return;
+            }
+            
+            gameData.points -= cost;
+            gameData.upgrades[upgradeId]++;
+            
+            // Применение эффекта
+            if (upgradeId === 'health') {
+                gameData.maxHp += 20;
+                gameData.hp = gameData.maxHp;
+            } else if (upgradeId === 'damage') {
+                gameData.damage += 5;
+            } else if (upgradeId === 'energy') {
+                gameData.maxEnergy += 10;
+                gameData.energy = gameData.maxEnergy;
+            }
+            
+            showNotification('✅ Улучшено!', 'Характеристика повышена!');
+            updateUI();
+            renderUpgrades();
+            saveGame();
+        }
+        
+        // Уведомление
+        function showNotification(title, text) {
+            document.getElementById('notification-title').textContent = title;
+            document.getElementById('notification-text').textContent = text;
+            document.getElementById('notification').classList.add('show');
+        }
+        
+        function closeNotification() {
+            document.getElementById('notification').classList.remove('show');
+        }
+        
+        // Восстановление энергии (1 единица в минуту)
+        setInterval(() => {
+            if (gameData.energy < gameData.maxEnergy) {
+                gameData.energy++;
+                updateUI();
+                saveGame();
+            }
+        }, 60000);
+        
+        // Инициализация
+        loadGame();
+        renderMap();
+    </script>
 </body>
 </html>
