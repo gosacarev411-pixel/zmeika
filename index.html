@@ -3,1352 +3,1622 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>NEON CITY — 3D Open World</title>
+<title>ВЛАСТЕЛИН ЭПОХ — Средневековая стратегия</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,sans-serif;color:#fff;touch-action:none}
-canvas{display:block}
-#game{position:fixed;inset:0}
-
-/* HUD */
-#hud{position:fixed;top:0;left:0;right:0;padding:14px;display:flex;justify-content:space-between;align-items:flex-start;z-index:10;pointer-events:none}
-.hud-left,.hud-right{display:flex;flex-direction:column;gap:8px}
-.stat{background:rgba(0,0,0,.65);border:1px solid rgba(0,229,255,.3);border-radius:10px;padding:8px 12px;backdrop-filter:blur(8px);min-width:120px}
-.stat .label{font-size:9px;letter-spacing:2px;color:#7deaff;opacity:.8}
-.stat .value{font-size:18px;font-weight:900;margin-top:2px;font-variant-numeric:tabular-nums}
-.bar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:4px;overflow:hidden}
-.bar-fill{height:100%;transition:width .3s}
-.bar-fill.hp{background:linear-gradient(90deg,#ff2e6b,#ff6b9d)}
-.bar-fill.armor{background:linear-gradient(90deg,#00e5ff,#7deaff)}
-
-/* Wanted */
-#wanted{background:rgba(0,0,0,.65);border:1px solid rgba(255,46,147,.4);border-radius:10px;padding:8px 12px;backdrop-filter:blur(8px)}
-#wanted .stars{font-size:20px;letter-spacing:2px;margin-top:4px}
-#wanted .stars span{opacity:.25}
-#wanted .stars span.active{opacity:1;color:#ff2e93;text-shadow:0 0 10px #ff2e93}
-
-/* Minimap */
-#minimap{position:fixed;bottom:20px;left:20px;width:160px;height:160px;background:rgba(0,0,0,.7);border:2px solid rgba(0,229,255,.4);border-radius:50%;overflow:hidden;z-index:10}
-#minimap canvas{width:100%;height:100%}
-
-/* Crosshair */
-#crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;z-index:5;pointer-events:none;display:none}
-#crosshair::before,#crosshair::after{content:'';position:absolute;background:#00e5ff;box-shadow:0 0 6px #00e5ff}
-#crosshair::before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
-#crosshair::after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%)}
-
-/* Weapon */
-#weapon{position:fixed;bottom:20px;right:20px;background:rgba(0,0,0,.65);border:1px solid rgba(255,215,0,.4);border-radius:12px;padding:12px 18px;z-index:10;text-align:right;backdrop-filter:blur(8px)}
-#weapon .name{font-size:14px;font-weight:800;color:#ffd700}
-#weapon .ammo{font-size:24px;font-weight:900;color:#fff;margin-top:2px}
-
-/* Money */
-#money{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);border:1px solid rgba(255,215,0,.4);border-radius:10px;padding:8px 20px;z-index:10;font-size:22px;font-weight:900;color:#ffd700;backdrop-filter:blur(8px)}
-
-/* Messages */
-#msg{position:fixed;bottom:200px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);border:1px solid #00e5ff;border-radius:10px;padding:10px 20px;z-index:15;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;text-align:center}
-#msg.show{opacity:1}
-
-/* Menu */
-.overlay{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px;text-align:center;background:radial-gradient(circle,rgba(60,10,100,.7),rgba(7,3,18,.95));backdrop-filter:blur(10px)}
-[hidden]{display:none!important}
-.tag{font-size:10px;letter-spacing:5px;color:#00e5ff;margin-bottom:14px}
-h1{font-size:clamp(42px,12vw,80px);font-weight:900;letter-spacing:3px;line-height:1;background:linear-gradient(90deg,#00e5ff,#a855f7,#ff2e93);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 30px rgba(0,229,255,.4))}
-.subtitle{font-size:13px;color:#a79bc9;margin-top:14px;letter-spacing:1px;max-width:400px}
-.controls-grid{margin:24px 0;background:rgba(255,255,255,.04);border:1px solid rgba(168,85,247,.3);border-radius:18px;padding:16px 20px;max-width:380px;width:100%;text-align:left}
-.controls-grid div{display:flex;justify-content:space-between;font-size:12px;color:#cfc6e8;padding:5px 0;gap:12px}
-.controls-grid b{color:#00e5ff;font-weight:700}
-.play-btn{background:linear-gradient(135deg,#00e5ff,#a855f7);color:#070312;border:none;padding:16px 60px;border-radius:50px;font-size:18px;font-weight:900;letter-spacing:2px;cursor:pointer;box-shadow:0 10px 40px rgba(0,229,255,.4);margin-top:10px}
-.play-btn:active{transform:scale(.94)}
-
-/* Mobile controls */
-#mobile{position:fixed;bottom:0;left:0;right:0;padding:20px;display:none;justify-content:space-between;align-items:flex-end;z-index:12;pointer-events:none}
-.joy{width:120px;height:120px;background:rgba(0,229,255,.1);border:2px solid rgba(0,229,255,.4);border-radius:50%;position:relative;pointer-events:auto}
-.joy .stick{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;background:rgba(0,229,255,.4);border-radius:50%}
-.mobile-btns{display:flex;gap:10px;pointer-events:auto}
-.mbtn{width:56px;height:56px;border-radius:50%;border:2px solid;background:rgba(0,0,0,.5);color:#fff;font-size:20px;font-weight:800;backdrop-filter:blur(8px)}
-.mbtn.shoot{border-color:#ff2e93;color:#ff2e93}
-.mbtn.jump{border-color:#00e5ff;color:#00e5ff}
-.mbtn.action{border-color:#ffd700;color:#ffd700;font-size:12px}
-.mbtn.run{border-color:#a855f7;color:#a855f7;font-size:12px}
-
-#loading{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:50;background:#070312;color:#00e5ff;font-size:14px;letter-spacing:3px;gap:20px}
-.loader{width:200px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
-.loader::after{content:'';display:block;width:40%;height:100%;background:linear-gradient(90deg,#00e5ff,#ff2e93);animation:load 1.5s infinite}
-@keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
-
-@media (max-width:900px){
-  #mobile{display:flex}
-  #minimap{width:110px;height:110px;bottom:160px}
-  #weapon{bottom:160px;right:10px}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a0f08;font-family:Georgia,'Times New Roman',serif;color:#e8d9b0}
+:root{
+  --parchment:#d4b896;--parchment-dark:#a88860;--ink:#2a1810;
+  --gold:#d4af37;--gold-dark:#8b7220;--blood:#8b0000;
+  --forest:#2d5016;--stone:#5a5a5a;--water:#1a3a5c;
 }
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ===== ЭКРАН МЕНЮ ===== */
+#menu{position:fixed;inset:0;z-index:100;background:
+  radial-gradient(circle at 50% 30%,rgba(212,175,55,.15),transparent 60%),
+  linear-gradient(180deg,#1a0f08 0%,#0a0504 100%);
+  display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;text-align:center}
+#menu h1{font-size:clamp(40px,10vw,80px);font-weight:900;letter-spacing:4px;
+  background:linear-gradient(180deg,#f4d77a,#d4af37,#8b7220);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 4px 20px rgba(212,175,55,.4));margin-bottom:10px}
+#menu .sub{font-size:14px;color:#a88860;letter-spacing:3px;margin-bottom:30px;font-style:italic}
+.menu-form{background:rgba(42,24,16,.7);border:2px solid var(--gold-dark);border-radius:12px;
+  padding:24px;max-width:420px;width:100%;backdrop-filter:blur(10px)}
+.menu-form h3{color:var(--gold);margin-bottom:14px;font-size:18px;letter-spacing:2px}
+.form-row{margin-bottom:14px;text-align:left}
+.form-row label{display:block;font-size:12px;color:#a88860;margin-bottom:4px;letter-spacing:1px}
+.form-row input,.form-row select{width:100%;padding:10px;background:rgba(0,0,0,.4);
+  border:1px solid var(--gold-dark);border-radius:6px;color:var(--parchment);font-size:14px;font-family:inherit}
+.form-row input:focus,.form-row select:focus{outline:none;border-color:var(--gold)}
+.start-btn{background:linear-gradient(180deg,#d4af37,#8b7220);color:#1a0f08;
+  padding:14px 40px;border-radius:8px;font-size:16px;font-weight:900;letter-spacing:3px;
+  margin-top:10px;box-shadow:0 6px 20px rgba(212,175,55,.3);transition:transform .15s}
+.start-btn:active{transform:scale(.96)}
+
+/* ===== ОСНОВНОЙ ИНТЕРФЕЙС ===== */
+#game{position:fixed;inset:0;display:none;flex-direction:column}
+#game.active{display:flex}
+
+/* Верхняя панель */
+#topbar{background:linear-gradient(180deg,#2a1810,#1a0f08);border-bottom:2px solid var(--gold-dark);
+  padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;z-index:10}
+.res-group{display:flex;gap:6px;flex-wrap:wrap}
+.res{background:rgba(212,175,55,.08);border:1px solid var(--gold-dark);border-radius:6px;
+  padding:4px 10px;display:flex;align-items:center;gap:6px;font-size:12px}
+.res .ico{font-size:16px}
+.res .val{color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums}
+.res .delta{font-size:10px;opacity:.7}
+.res .delta.pos{color:#7fb069}
+.res .delta.neg{color:#c44}
+.turn-info{text-align:right;font-size:12px;color:#a88860}
+.turn-info b{color:var(--gold);font-size:14px;display:block}
+
+/* Основная область */
+#main{flex:1;display:flex;overflow:hidden;position:relative}
+
+/* Карта */
+#mapWrap{flex:1;position:relative;overflow:hidden;background:#0a0504}
+#map{position:absolute;cursor:grab;image-rendering:pixelated}
+#map:active{cursor:grabbing}
+#mapControls{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.map-btn{width:38px;height:38px;background:rgba(42,24,16,.9);border:1px solid var(--gold-dark);
+  border-radius:6px;color:var(--gold);font-size:18px;font-weight:900;backdrop-filter:blur(6px)}
+.map-btn:active{background:var(--gold-dark);color:#1a0f08}
+
+/* Боковая панель */
+#sidebar{width:320px;background:linear-gradient(180deg,#2a1810,#1a0f08);
+  border-left:2px solid var(--gold-dark);display:flex;flex-direction:column;overflow:hidden}
+.side-tabs{display:flex;border-bottom:1px solid var(--gold-dark)}
+.side-tab{flex:1;padding:10px 4px;font-size:11px;letter-spacing:1px;color:#a88860;
+  border-right:1px solid rgba(139,114,32,.3);transition:all .2s}
+.side-tab:last-child{border-right:none}
+.side-tab.active{background:rgba(212,175,55,.15);color:var(--gold)}
+.side-content{flex:1;overflow-y:auto;padding:12px}
+.side-content::-webkit-scrollbar{width:6px}
+.side-content::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:3px}
+
+/* Карточки в сайдбаре */
+.card{background:rgba(212,175,55,.05);border:1px solid var(--gold-dark);border-radius:8px;
+  padding:10px;margin-bottom:8px}
+.card h4{color:var(--gold);font-size:13px;margin-bottom:6px;letter-spacing:1px}
+.card .row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:#c9b78a}
+.card .row b{color:var(--parchment)}
+
+/* Кнопки действий */
+.action-btn{background:linear-gradient(180deg,rgba(212,175,55,.2),rgba(139,114,32,.2));
+  border:1px solid var(--gold-dark);border-radius:6px;padding:8px 12px;color:var(--parchment);
+  font-size:12px;width:100%;margin-top:6px;text-align:left;transition:all .15s}
+.action-btn:hover{background:rgba(212,175,55,.3);border-color:var(--gold)}
+.action-btn:disabled{opacity:.4;cursor:not-allowed}
+.action-btn b{color:var(--gold);display:block;margin-bottom:2px}
+
+/* Конец хода */
+#endTurnBtn{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(180deg,#d4af37,#8b7220);color:#1a0f08;
+  padding:12px 30px;border-radius:8px;font-size:14px;font-weight:900;letter-spacing:2px;
+  box-shadow:0 6px 20px rgba(212,175,55,.4);z-index:6}
+#endTurnBtn:active{transform:translateX(-50%) scale(.96)}
+
+/* ===== МОДАЛКИ ===== */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
+  display:none;justify-content:center;align-items:center;padding:20px}
+.modal.show{display:flex}
+.modal-box{background:linear-gradient(180deg,#2a1810,#1a0f08);border:2px solid var(--gold);
+  border-radius:12px;padding:24px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.8)}
+.modal-box h2{color:var(--gold);font-size:20px;margin-bottom:14px;letter-spacing:2px;text-align:center}
+.modal-box h3{color:var(--gold);font-size:14px;margin:12px 0 8px;letter-spacing:1px}
+.close-x{float:right;color:#a88860;font-size:22px;cursor:pointer;line-height:1}
+.close-x:hover{color:var(--gold)}
+
+/* Список зданий/юнитов */
+.build-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.build-item{background:rgba(212,175,55,.05);border:1px solid var(--gold-dark);border-radius:6px;
+  padding:8px;cursor:pointer;transition:all .15s;text-align:center}
+.build-item:hover{background:rgba(212,175,55,.2);border-color:var(--gold)}
+.build-item.disabled{opacity:.4;cursor:not-allowed}
+.build-item .ico{font-size:24px;display:block;margin-bottom:4px}
+.build-item .name{font-size:11px;color:var(--parchment);font-weight:700}
+.build-item .cost{font-size:10px;color:#a88860;margin-top:2px}
+
+/* Уведомления */
+#notif{position:fixed;top:80px;right:20px;z-index:60;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:linear-gradient(180deg,#2a1810,#1a0f08);border:1px solid var(--gold);
+  border-radius:8px;padding:10px 16px;color:var(--parchment);font-size:12px;max-width:300px;
+  box-shadow:0 6px 20px rgba(0,0,0,.6);animation:slideIn .3s}
+.toast.war{border-color:var(--blood)}
+.toast.good{border-color:#7fb069}
+@keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Журнал */
+.log-entry{font-size:11px;padding:6px 0;border-bottom:1px solid rgba(139,114,32,.2);color:#c9b78a}
+.log-entry b{color:var(--gold)}
+.log-entry.war{color:#c44}
+.log-entry.good{color:#7fb069}
+
+/* Дипломатия */
+.country-row{display:flex;align-items:center;gap:10px;padding:8px;background:rgba(212,175,55,.05);
+  border:1px solid var(--gold-dark);border-radius:6px;margin-bottom:6px}
+.country-flag{width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;color:#1a0f08}
+.country-info{flex:1;font-size:12px}
+.country-info b{color:var(--gold);display:block;font-size:13px}
+.diplo-btns{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.diplo-btn{padding:4px 8px;background:rgba(212,175,55,.1);border:1px solid var(--gold-dark);
+  border-radius:4px;font-size:10px;color:var(--parchment)}
+.diplo-btn:hover{background:rgba(212,175,55,.3)}
+.diplo-btn.war{border-color:var(--blood);color:#ff8080}
+
+/* Мобильная адаптация */
+@media (max-width:768px){
+  #sidebar{position:absolute;right:0;top:0;bottom:0;width:85%;max-width:340px;
+    transform:translateX(100%);transition:transform .3s;z-index:20}
+  #sidebar.open{transform:translateX(0)}
+  #toggleSide{display:block!important}
+  .res{padding:3px 6px;font-size:11px}
+  .res .ico{font-size:14px}
+}
+#toggleSide{display:none;position:absolute;top:10px;right:10px;z-index:25;
+  background:rgba(42,24,16,.9);border:1px solid var(--gold-dark);border-radius:6px;
+  padding:8px 12px;color:var(--gold);font-size:12px}
 </style>
 </head>
 <body>
 
-<div id="game"></div>
-<div id="loading">
-  <div>ЗАГРУЗКА ГОРОДА...</div>
-  <div class="loader"></div>
+<!-- ===== МЕНЮ ===== -->
+<div id="menu">
+  <h1>ВЛАСТЕЛИН<br>ЭПОХ</h1>
+  <div class="sub">★ СРЕДНЕВЕКОВАЯ СТРАТЕГИЯ ★</div>
+  <div class="menu-form">
+    <h3>⚔ СОЗДАЙ СВОЁ КОРОЛЕВСТВО ⚔</h3>
+    <div class="form-row">
+      <label>НАЗВАНИЕ СТРАНЫ</label>
+      <input id="countryName" value="Вестерланд" maxlength="20">
+    </div>
+    <div class="form-row">
+      <label>ИМЯ ПРАВИТЕЛЯ</label>
+      <input id="rulerName" value="Король Артур" maxlength="20">
+    </div>
+    <div class="form-row">
+      <label>ФОРМА ПРАВЛЕНИЯ</label>
+      <select id="govType">
+        <option value="kingdom">👑 Королевство (стабильность +)</option>
+        <option value="republic">🏛 Республика (торговля +)</option>
+        <option value="theocracy">✝ Теократия (счастье +)</option>
+        <option value="despotism">⚔ Деспотия (армия +)</option>
+      </select>
+    </div>
+    <button class="start-btn" onclick="startGame()">НАЧАТЬ ПРАВЛЕНИЕ</button>
+  </div>
 </div>
 
-<!-- HUD -->
-<div id="hud" hidden>
-  <div class="hud-left">
-    <div class="stat">
-      <div class="label">ЗДОРОВЬЕ</div>
-      <div class="bar"><div class="bar-fill hp" id="hpBar" style="width:100%"></div></div>
+<!-- ===== ИГРА ===== -->
+<div id="game">
+  <div id="topbar">
+    <div class="res-group">
+      <div class="res"><span class="ico">💰</span><span class="val" id="rGold">0</span><span class="delta" id="dGold"></span></div>
+      <div class="res"><span class="ico">🌾</span><span class="val" id="rFood">0</span><span class="delta" id="dFood"></span></div>
+      <div class="res"><span class="ico">🪵</span><span class="val" id="rWood">0</span><span class="delta" id="dWood"></span></div>
+      <div class="res"><span class="ico">🪨</span><span class="val" id="rStone">0</span><span class="delta" id="dStone"></span></div>
+      <div class="res"><span class="ico">⚒</span><span class="val" id="rIron">0</span><span class="delta" id="dIron"></span></div>
+      <div class="res"><span class="ico">👥</span><span class="val" id="rPop">0</span><span class="delta" id="dPop"></span></div>
     </div>
-    <div class="stat">
-      <div class="label">БРОНЯ</div>
-      <div class="bar"><div class="bar-fill armor" id="armorBar" style="width:0%"></div></div>
+    <div class="turn-info">
+      <b id="turnNum">ХОД 1</b>
+      <span id="dateText">Весна, 1066 г.</span>
     </div>
-    <div id="wanted">
-      <div class="label">РОЗЫСК</div>
-      <div class="stars" id="stars">
-        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+  </div>
+
+  <div id="main">
+    <div id="mapWrap">
+      <canvas id="map"></canvas>
+      <div id="mapControls">
+        <button class="map-btn" onclick="zoomMap(1.2)">+</button>
+        <button class="map-btn" onclick="zoomMap(0.8)">−</button>
+        <button class="map-btn" onclick="centerMap()">⌖</button>
       </div>
+      <button id="endTurnBtn" onclick="endTurn()">⏭ СЛЕДУЮЩИЙ ХОД</button>
+      <button id="toggleSide" onclick="toggleSidebar()">☰ МЕНЮ</button>
+    </div>
+
+    <div id="sidebar">
+      <div class="side-tabs">
+        <button class="side-tab active" data-tab="info" onclick="switchTab('info')">📜 ИНФО</button>
+        <button class="side-tab" data-tab="build" onclick="switchTab('build')">🏗 СТРОИТЬ</button>
+        <button class="side-tab" data-tab="army" onclick="switchTab('army')">⚔ АРМИЯ</button>
+        <button class="side-tab" data-tab="diplo" onclick="switchTab('diplo')">🕊 МИР</button>
+        <button class="side-tab" data-tab="log" onclick="switchTab('log')">📖 ЖУРНАЛ</button>
+      </div>
+      <div class="side-content" id="sideContent"></div>
     </div>
   </div>
-  <div class="hud-right">
-    <div class="stat" style="text-align:right">
-      <div class="label">СКОРОСТЬ</div>
-      <div class="value" id="speedVal">0 км/ч</div>
-    </div>
+</div>
+
+<!-- Модалки -->
+<div class="modal" id="buildModal">
+  <div class="modal-box">
+    <span class="close-x" onclick="closeModal('buildModal')">×</span>
+    <h2 id="buildTitle">СТРОИТЕЛЬСТВО</h2>
+    <div id="buildList" class="build-list"></div>
   </div>
 </div>
 
-<div id="money" hidden>$0</div>
-<div id="weapon" hidden>
-  <div class="name" id="weaponName">КУЛАКИ</div>
-  <div class="ammo" id="ammoVal">∞</div>
-</div>
-<div id="crosshair"></div>
-<div id="msg"></div>
-
-<div id="minimap" hidden><canvas id="minimapCanvas" width="160" height="160"></canvas></div>
-
-<!-- Mobile controls -->
-<div id="mobile">
-  <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
-  <div class="mobile-btns">
-    <button class="mbtn run" id="mbRun">БЕГ</button>
-    <button class="mbtn action" id="mbAction">E</button>
-    <button class="mbtn jump" id="mbJump">⤴</button>
-    <button class="mbtn shoot" id="mbShoot">●</button>
+<div class="modal" id="recruitModal">
+  <div class="modal-box">
+    <span class="close-x" onclick="closeModal('recruitModal')">×</span>
+    <h2 id="recruitTitle">НАБОР ВОЙСКА</h2>
+    <div id="recruitList" class="build-list"></div>
   </div>
 </div>
 
-<!-- Menu -->
-<div class="overlay" id="menu">
-  <div class="tag">★ 3D OPEN WORLD ★</div>
-  <h1>NEON<br>CITY</h1>
-  <div class="subtitle">Добро пожаловать в неоновый мегаполис. Исследуй, стреляй, угоняй машины, избегай полиции.</div>
-  <div class="controls-grid">
-    <div><span>Движение</span><b>WASD</b></div>
-    <div><span>Камера</span><b>МЫШЬ</b></div>
-    <div><span>Стрельба</span><b>ЛКМ</b></div>
-    <div><span>Прыжок</span><b>ПРОБЕЛ</b></div>
-    <div><span>Бег</span><b>SHIFT</b></div>
-    <div><span>Сесть в машину</span><b>E</b></div>
-    <div><span>Сменить оружие</span><b>Q</b></div>
-    <div><span>Телефон</span><b>Свайпы / джойстик</b></div>
+<div class="modal" id="battleModal">
+  <div class="modal-box">
+    <h2>⚔ БИТВА ⚔</h2>
+    <div id="battleContent"></div>
+    <button class="start-btn" style="margin-top:16px;width:100%" onclick="closeModal('battleModal')">ПРОДОЛЖИТЬ</button>
   </div>
-  <button class="play-btn" onclick="startGame()">ВОЙТИ В ГОРОД</button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<div class="modal" id="eventModal">
+  <div class="modal-box">
+    <h2 id="eventTitle">СОБЫТИЕ</h2>
+    <div id="eventContent" style="font-size:13px;line-height:1.6;color:#c9b78a"></div>
+    <button class="start-btn" style="margin-top:16px;width:100%" onclick="closeModal('eventModal')">ПОНЯТНО</button>
+  </div>
+</div>
+
+<div class="modal" id="gameOverModal">
+  <div class="modal-box" style="text-align:center">
+    <h2 id="goTitle">КОНЕЦ ПРАВЛЕНИЯ</h2>
+    <div id="goContent" style="font-size:13px;line-height:1.6;color:#c9b78a;margin:16px 0"></div>
+    <button class="start-btn" onclick="location.reload()">НАЧАТЬ ЗАНОВО</button>
+  </div>
+</div>
+
+<div id="notif"></div>
+
 <script>
 // ============================================================
-//  NEON CITY — 3D Open World
+//  ВЛАСТЕЛИН ЭПОХ — средневековая пошаговая стратегия
 // ============================================================
-let scene, camera, renderer, clock;
-let player, playerBody;
-let vehicles = [], npcs = [], enemies = [], cops = [], bullets = [];
-let buildings = [], colliders = [];
-let keys = {}, mouse = {x:0,y:0,dx:0,dy:0,locked:false};
-let camYaw = 0, camPitch = 0.3;
-let camDist = 6;
 
-// Player state
-const P = {
-  pos: new THREE.Vector3(0, 1, 0),
-  vel: new THREE.Vector3(),
-  yaw: 0,
-  hp: 100, maxHp: 100,
-  armor: 0,
-  money: 0,
-  wanted: 0,
-  inVehicle: null,
-  onGround: true,
-  weapons: [
-    {name:'КУЛАКИ', ammo:Infinity, max:Infinity, dmg:15, rate:0.4, range:2.5, auto:false, type:'melee'},
-    {name:'ПИСТОЛЕТ', ammo:60, max:120, dmg:25, rate:0.2, range:80, auto:false, type:'gun'},
-    {name:'АВТОМАТ', ammo:180, max:300, dmg:18, rate:0.08, range:100, auto:true, type:'gun'}
-  ],
-  curWeapon: 0,
-  lastShot: 0,
-  shooting: false
+// ===== КОНСТАНТЫ =====
+const MAP_W = 24, MAP_H = 16;
+const TILE = 40;
+const SEASONS = ['Весна','Лето','Осень','Зима'];
+
+const BIOMES = {
+  water:{color:'#1a3a5c',name:'Море',passable:false,icon:'🌊'},
+  plains:{color:'#6b8e3d',name:'Равнина',passable:true,icon:'🌾',food:3,gold:1},
+  forest:{color:'#2d5016',name:'Лес',passable:true,icon:'🌲',wood:3,food:1},
+  hills:{color:'#8b7355',name:'Холмы',passable:true,icon:'⛰',stone:2,iron:1},
+  mountain:{color:'#5a5a5a',name:'Горы',passable:false,icon:'🏔',stone:3,iron:3},
+  desert:{color:'#c9a66b',name:'Пустыня',passable:true,icon:'🏜',gold:2},
+  snow:{color:'#b8c5d1',name:'Снега',passable:true,icon:'❄'}
 };
 
-const WORLD_SIZE = 200;
-const BLOCK = 30;
-const ROAD_W = 8;
-const SIDEWALK_W = 2;
+const BUILDINGS = {
+  farm:{name:'Ферма',icon:'🌾',cost:{gold:50,wood:30},effect:{food:4},desc:'+4 еды/ход'},
+  lumber:{name:'Лесопилка',icon:'🪓',cost:{gold:60,wood:20},effect:{wood:4},desc:'+4 дерева/ход'},
+  mine:{name:'Шахта',icon:'⛏',cost:{gold:80,wood:40,stone:20},effect:{stone:3,iron:2},desc:'+3 камня, +2 железа'},
+  market:{name:'Рынок',icon:'🏪',cost:{gold:100,wood:50},effect:{gold:6},desc:'+6 золота/ход'},
+  barracks:{name:'Казарма',icon:'⚔',cost:{gold:120,wood:60,stone:30},effect:{military:1},desc:'Позволяет нанимать войска'},
+  castle:{name:'Замок',icon:'🏰',cost:{gold:300,wood:100,stone:150},effect:{defense:5,happiness:5},desc:'Мощная защита, +счастье'},
+  university:{name:'Университет',icon:'📚',cost:{gold:250,wood:80,stone:80},effect:{tech:1,happiness:3},desc:'Изучение технологий'},
+  port:{name:'Порт',icon:'⚓',cost:{gold:150,wood:80},effect:{gold:4,trade:1},desc:'+4 золота, торговля',needCoast:true},
+  temple:{name:'Храм',icon:'⛪',cost:{gold:100,stone:60},effect:{happiness:6},desc:'+6 счастья'}
+};
 
-let state = 'menu';
-let audioCtx = null;
+const UNITS = {
+  militia:{name:'Ополчение',icon:'🗡',cost:{gold:20,iron:5},atk:3,def:2,hp:10,needBarracks:false},
+  archer:{name:'Лучники',icon:'🏹',cost:{gold:40,wood:20,iron:10},atk:5,def:2,hp:8,needBarracks:true},
+  knight:{name:'Рыцари',icon:'🐎',cost:{gold:100,iron:40},atk:8,def:6,hp:20,needBarracks:true},
+  siege:{name:'Катапульты',icon:'🎯',cost:{gold:150,wood:80,iron:30},atk:12,def:1,hp:15,needBarracks:true,siegeBonus:5}
+};
 
-// ============ INIT ============
-function init(){
-  if(typeof THREE === 'undefined'){
-    document.getElementById('loading').innerHTML = '⚠️ Не удалось загрузить 3D-движок';
-    return;
-  }
-  clock = new THREE.Clock();
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0518);
-  scene.fog = new THREE.Fog(0x0a0518, 40, 180);
+const GOV_BONUSES = {
+  kingdom:{gold:1,happiness:2,desc:'Стабильная власть'},
+  republic:{gold:3,trade:1,desc:'Торговые преимущества'},
+  theocracy:{happiness:5,desc:'Божья благодать'},
+  despotism:{military:2,desc:'Сильная армия'}
+};
 
-  camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 300);
+// ===== СОСТОЯНИЕ ИГРЫ =====
+let G = null; // game state
+let selected = null; // {x,y}
+let mapOffset = {x:0, y:0};
+let mapScale = 1;
+let dragging = false, dragStart = null;
+let currentTab = 'info';
 
-  renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  document.getElementById('game').appendChild(renderer.domElement);
+// ===== УТИЛИТЫ =====
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function choice(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
 
-  // Lights
-  scene.add(new THREE.AmbientLight(0x6677aa, 0.5));
-  const moon = new THREE.DirectionalLight(0x8899ff, 0.6);
-  moon.position.set(50, 80, 30);
-  moon.castShadow = true;
-  moon.shadow.mapSize.set(1024,1024);
-  moon.shadow.camera.left = -80; moon.shadow.camera.right = 80;
-  moon.shadow.camera.top = 80; moon.shadow.camera.bottom = -80;
-  scene.add(moon);
-
-  // Neon lights
-  const p1 = new THREE.PointLight(0xff2e93, 1.5, 80);
-  p1.position.set(-30, 15, -30); scene.add(p1);
-  const p2 = new THREE.PointLight(0x00e5ff, 1.5, 80);
-  p2.position.set(30, 15, 30); scene.add(p2);
-
-  buildCity();
-  buildPlayer();
-  spawnVehicles();
-  spawnNPCs();
-  spawnEnemies();
-  bindControls();
-
-  document.getElementById('loading').style.display = 'none';
-  animate();
+function notify(text,type=''){
+  const n = document.getElementById('notif');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = text;
+  n.appendChild(t);
+  setTimeout(()=>t.remove(),4000);
 }
 
-// ============ CITY ============
-function buildCity(){
-  // Ground
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(WORLD_SIZE*2, WORLD_SIZE*2),
-    new THREE.MeshStandardMaterial({color:0x0a0618, roughness:0.9})
-  );
-  ground.rotation.x = -Math.PI/2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+function log(text,type=''){
+  if(!G) return;
+  G.log.unshift({text,type,turn:G.turn});
+  if(G.log.length>50) G.log.pop();
+  if(currentTab==='log') renderSidebar();
+}
 
-  // Grid of roads
-  const gridN = 6;
-  const half = (gridN * BLOCK) / 2;
-  
-  // Roads
-  for(let i=0;i<=gridN;i++){
-    const z = -half + i*BLOCK;
-    // Horizontal
-    const rh = new THREE.Mesh(
-      new THREE.PlaneGeometry(WORLD_SIZE*1.5, ROAD_W),
-      new THREE.MeshStandardMaterial({color:0x1a1525, roughness:0.8})
-    );
-    rh.rotation.x = -Math.PI/2;
-    rh.position.set(0, 0.01, z);
-    rh.receiveShadow = true;
-    scene.add(rh);
-    // Vertical
-    const rv = new THREE.Mesh(
-      new THREE.PlaneGeometry(ROAD_W, WORLD_SIZE*1.5),
-      new THREE.MeshStandardMaterial({color:0x1a1525, roughness:0.8})
-    );
-    rv.rotation.x = -Math.PI/2;
-    rv.position.set(z, 0.01, 0);
-    rv.receiveShadow = true;
-    scene.add(rv);
-
-    // Road lines
-    for(let k=-WORLD_SIZE;k<WORLD_SIZE;k+=4){
-      const line = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.2, 1.5),
-        new THREE.MeshBasicMaterial({color:0xffd700})
-      );
-      line.rotation.x = -Math.PI/2;
-      line.position.set(k, 0.02, z);
-      scene.add(line);
+// ===== ГЕНЕРАЦИЯ МИРА =====
+function generateWorld(){
+  const map = [];
+  // Шумная генерация
+  const noise = [];
+  for(let y=0;y<MAP_H;y++){
+    noise[y]=[];
+    for(let x=0;x<MAP_W;x++){
+      noise[y][x] = Math.random();
     }
   }
-
-  // Buildings in blocks
-  for(let gx=0;gx<gridN;gx++){
-    for(let gz=0;gz<gridN;gz++){
-      const cx = -half + gx*BLOCK + BLOCK/2;
-      const cz = -half + gz*BLOCK + BLOCK/2;
-      const blockSize = BLOCK - ROAD_W - SIDEWALK_W*2;
-      
-      // Sidewalk
-      const sw = new THREE.Mesh(
-        new THREE.BoxGeometry(blockSize + SIDEWALK_W*2, 0.15, blockSize + SIDEWALK_W*2),
-        new THREE.MeshStandardMaterial({color:0x2a2035, roughness:0.9})
-      );
-      sw.position.set(cx, 0.075, cz);
-      sw.receiveShadow = true;
-      scene.add(sw);
-
-      // 1-4 buildings per block
-      const numB = 1 + Math.floor(Math.random()*3);
-      for(let b=0;b<numB;b++){
-        const w = 5 + Math.random()*8;
-        const d = 5 + Math.random()*8;
-        const h = 6 + Math.random()*25;
-        const ox = (Math.random()-0.5) * (blockSize - w);
-        const oz = (Math.random()-0.5) * (blockSize - d);
-        
-        const colors = [0x1a1030, 0x201540, 0x15102a, 0x251845, 0x18102e];
-        const color = colors[Math.floor(Math.random()*colors.length)];
-        const edgeColor = Math.random()<0.5 ? 0x00e5ff : 0xff2e93;
-        
-        const bld = new THREE.Mesh(
-          new THREE.BoxGeometry(w, h, d),
-          new THREE.MeshStandardMaterial({color, roughness:0.7, metalness:0.3, emissive:edgeColor, emissiveIntensity:0.05})
-        );
-        bld.position.set(cx+ox, h/2, cz+oz);
-        bld.castShadow = true;
-        bld.receiveShadow = true;
-        
-        // Edge glow
-        const edges = new THREE.LineSegments(
-          new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)),
-          new THREE.LineBasicMaterial({color:edgeColor, transparent:true, opacity:0.6})
-        );
-        bld.add(edges);
-        
-        // Windows
-        const winMat = new THREE.MeshBasicMaterial({color:edgeColor, transparent:true, opacity:0.7});
-        const floors = Math.floor(h/3);
-        for(let f=0;f<floors;f++){
-          for(let s=0;s<4;s++){
-            if(Math.random()<0.3) continue;
-            const win = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.2), winMat);
-            const side = s%2===0 ? 1 : -1;
-            if(s<2){
-              win.position.set((Math.random()-0.5)*(w-1.5), -h/2 + f*3 + 2, side*(d/2+0.01));
-            } else {
-              win.position.set(side*(w/2+0.01), -h/2 + f*3 + 2, (Math.random()-0.5)*(d-1.5));
-              win.rotation.y = Math.PI/2;
-            }
-            bld.add(win);
+  // Сглаживание
+  for(let k=0;k<2;k++){
+    const n2 = [];
+    for(let y=0;y<MAP_H;y++){
+      n2[y]=[];
+      for(let x=0;x<MAP_W;x++){
+        let s=0,c=0;
+        for(let dy=-1;dy<=1;dy++){
+          for(let dx=-1;dx<=1;dx++){
+            const nx=x+dx, ny=y+dy;
+            if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H){s+=noise[ny][nx];c++;}
           }
         }
-        
-        scene.add(bld);
-        buildings.push(bld);
-        colliders.push({
-          min: new THREE.Vector3(cx+ox-w/2, 0, cz+oz-d/2),
-          max: new THREE.Vector3(cx+ox+w/2, h, cz+oz+d/2)
-        });
+        n2[y][x]=s/c;
       }
     }
+    for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++)noise[y][x]=n2[y][x];
   }
-
-  // Street lights
-  for(let i=-WORLD_SIZE;i<WORLD_SIZE;i+=15){
-    for(let j=0;j<=gridN;j++){
-      const z = -half + j*BLOCK;
-      if(Math.random()<0.5) continue;
-      const pole = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.1, 0.1, 5),
-        new THREE.MeshStandardMaterial({color:0x333})
-      );
-      pole.position.set(i, 2.5, z + ROAD_W/2 + 1);
-      scene.add(pole);
-      const light = new THREE.PointLight(0xffaa55, 0.8, 15);
-      light.position.set(i, 5, z + ROAD_W/2 + 1);
-      scene.add(light);
+  
+  // Биомы по высоте
+  for(let y=0;y<MAP_H;y++){
+    map[y]=[];
+    for(let x=0;x<MAP_W;x++){
+      const h = noise[y][x];
+      let biome;
+      if(h<0.28) biome='water';
+      else if(h<0.35) biome='desert';
+      else if(h<0.55) biome='plains';
+      else if(h<0.7) biome='forest';
+      else if(h<0.82) biome='hills';
+      else biome='mountain';
+      
+      // Снег на краях
+      if(y<2||y>MAP_H-3) if(Math.random()<0.5) biome='snow';
+      
+      map[y][x] = {
+        biome, owner:null, building:null, army:null,
+        x, y, name: generateProvinceName()
+      };
     }
   }
+  return map;
 }
 
-// ============ PLAYER ============
-function buildPlayer(){
-  player = new THREE.Group();
-  // Body
-  const body = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.4, 1, 4, 8),
-    new THREE.MeshStandardMaterial({color:0x2a1845, emissive:0x4a2875, emissiveIntensity:0.3})
-  );
-  body.position.y = 0.9;
-  body.castShadow = true;
-  player.add(body);
-  playerBody = body;
-  // Head
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.3, 12, 12),
-    new THREE.MeshStandardMaterial({color:0xffd4a3})
-  );
-  head.position.y = 1.85;
-  head.castShadow = true;
-  player.add(head);
-  // Arms
-  const armGeo = new THREE.CapsuleGeometry(0.12, 0.7, 4, 8);
-  const armMat = new THREE.MeshStandardMaterial({color:0x2a1845});
-  const armL = new THREE.Mesh(armGeo, armMat);
-  armL.position.set(-0.5, 1.2, 0);
-  player.add(armL);
-  const armR = new THREE.Mesh(armGeo, armMat);
-  armR.position.set(0.5, 1.2, 0);
-  player.add(armR);
-  player.armR = armR;
-  // Legs
-  const legGeo = new THREE.CapsuleGeometry(0.15, 0.7, 4, 8);
-  const legMat = new THREE.MeshStandardMaterial({color:0x1a1030});
-  const legL = new THREE.Mesh(legGeo, legMat);
-  legL.position.set(-0.2, 0.4, 0);
-  player.add(legL);
-  const legR = new THREE.Mesh(legGeo, legMat);
-  legR.position.set(0.2, 0.4, 0);
-  player.add(legR);
-  player.legL = legL; player.legR = legR;
-
-  player.position.copy(P.pos);
-  scene.add(player);
+const NAME_PARTS_1 = ['Вест','Нор','Аст','Мид','Ост','Зен','Кел','Тор','Бра','Фен','Лин','Рос'];
+const NAME_PARTS_2 = ['ланд','гард','марк','хейм','бург','тон','форд','вик','мир','дор'];
+function generateProvinceName(){
+  return choice(NAME_PARTS_1) + choice(NAME_PARTS_2).toLowerCase();
 }
 
-// ============ VEHICLES ============
-function createVehicle(x, z, color=0xff2e6b, type='sedan'){
-  const v = new THREE.Group();
-  const bodyGeo = type==='sedan' ? new THREE.BoxGeometry(2, 0.8, 4.2) : new THREE.BoxGeometry(2.2, 1, 5);
-  const bodyMat = new THREE.MeshStandardMaterial({color, metalness:0.7, roughness:0.3, emissive:color, emissiveIntensity:0.15});
-  const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 0.7;
-  body.castShadow = true;
-  v.add(body);
+// ===== СОЗДАНИЕ СТРАН =====
+function createCountries(){
+  const countries = [];
+  const colors = ['#c44','#48c','#4a4','#c84','#84c','#cc4','#4cc'];
+  const names = ['Вестерланд','Нордгард','Астмарк','Зенхайм','Брактон','Фенланд','Мидтон'];
+  const traits = ['balanced','aggressive','trader','defensive','expansionist','diplomatic','raider'];
   
-  const roofGeo = type==='sedan' ? new THREE.BoxGeometry(1.7, 0.7, 2.2) : new THREE.BoxGeometry(1.9, 0.8, 2.6);
-  const roof = new THREE.Mesh(roofGeo, new THREE.MeshStandardMaterial({color:0x111, metalness:0.5, roughness:0.3}));
-  roof.position.set(0, 1.4, -0.2);
-  roof.castShadow = true;
-  v.add(roof);
-  
-  // Windows
-  const winMat = new THREE.MeshStandardMaterial({color:0x00e5ff, emissive:0x00e5ff, emissiveIntensity:0.4, transparent:true, opacity:0.7});
-  const winF = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.6), winMat);
-  winF.position.set(0, 1.3, 0.9);
-  winF.rotation.x = -0.3;
-  v.add(winF);
-  
-  // Wheels
-  const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12);
-  const wheelMat = new THREE.MeshStandardMaterial({color:0x111, roughness:0.8});
-  [[-1, 1.4], [1, 1.4], [-1, -1.4], [1, -1.4]].forEach(([x,z])=>{
-    const w = new THREE.Mesh(wheelGeo, wheelMat);
-    w.rotation.z = Math.PI/2;
-    w.position.set(x, 0.4, z);
-    v.add(w);
-  });
-  
-  // Headlights
-  const hlMat = new THREE.MeshBasicMaterial({color:0xffffcc});
-  [[-0.6, 2.1], [0.6, 2.1]].forEach(([x,z])=>{
-    const hl = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), hlMat);
-    hl.position.set(x, 0.7, z);
-    v.add(hl);
-  });
-  
-  v.position.set(x, 0, z);
-  v.userData = {
-    type: 'vehicle',
-    speed: 0,
-    maxSpeed: type==='sedan' ? 35 : 45,
-    accel: type==='sedan' ? 15 : 20,
-    steer: 0,
-    hp: 100,
-    color
-  };
-  scene.add(v);
-  vehicles.push(v);
-  return v;
-}
-function spawnVehicles(){
-  const colors = [0xff2e6b, 0x00e5ff, 0xa855f7, 0xffd700, 0x10b981, 0xff6b00];
-  const half = (6 * BLOCK) / 2;
-  for(let i=0;i<15;i++){
-    const onRoad = Math.random() < 0.5;
-    let x, z;
-    if(onRoad){
-      const roadIdx = Math.floor(Math.random()*7);
-      const roadPos = -half + roadIdx*BLOCK;
-      if(Math.random()<0.5){
-        x = (Math.random()-0.5) * WORLD_SIZE;
-        z = roadPos + (Math.random()<0.5?-2:2);
-      } else {
-        x = roadPos + (Math.random()<0.5?-2:2);
-        z = (Math.random()-0.5) * WORLD_SIZE;
+  // Найти стартовые позиции (далеко друг от друга, на суше)
+  const starts = [];
+  const attempts = 200;
+  for(let i=0;i<7;i++){
+    let best = null, bestDist = 0;
+    for(let a=0;a<attempts;a++){
+      const x = rand(2,MAP_W-3), y = rand(2,MAP_H-3);
+      if(G.map[y][x].biome==='water'||G.map[y][x].biome==='mountain') continue;
+      let minDist = Infinity;
+      for(const s of starts){
+        const d = Math.hypot(s.x-x, s.y-y);
+        if(d<minDist) minDist = d;
       }
-    } else {
-      x = (Math.random()-0.5) * WORLD_SIZE * 0.8;
-      z = (Math.random()-0.5) * WORLD_SIZE * 0.8;
+      if(starts.length===0) minDist = 100;
+      if(minDist > bestDist){ bestDist = minDist; best = {x,y}; }
     }
-    const color = colors[Math.floor(Math.random()*colors.length)];
-    const v = createVehicle(x, z, color, Math.random()<0.7?'sedan':'suv');
-    v.rotation.y = Math.random()*Math.PI*2;
-  }
-}
-
-// ============ NPCs ============
-function createNPC(x, z, hostile=false, isCop=false){
-  const n = new THREE.Group();
-  const color = isCop ? 0x003366 : (hostile ? 0x660022 : [0x4a2875, 0x2a4a75, 0x75452a, 0x2a7555][Math.floor(Math.random()*4)]);
-  const body = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.35, 0.9, 4, 8),
-    new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:0.1})
-  );
-  body.position.y = 0.85;
-  body.castShadow = true;
-  n.add(body);
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.25, 10, 10),
-    new THREE.MeshStandardMaterial({color:0xffd4a3})
-  );
-  head.position.y = 1.7;
-  head.castShadow = true;
-  n.add(head);
-  
-  if(isCop){
-    const hat = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.28, 0.28, 0.15, 8),
-      new THREE.MeshStandardMaterial({color:0x001a33})
-    );
-    hat.position.y = 1.95;
-    n.add(hat);
+    if(best) starts.push(best);
   }
   
-  n.position.set(x, 0, z);
-  n.userData = {
-    type: hostile ? (isCop ? 'cop' : 'enemy') : 'npc',
-    hp: isCop ? 80 : (hostile ? 60 : 30),
-    maxHp: isCop ? 80 : (hostile ? 60 : 30),
-    state: 'wander',
-    target: new THREE.Vector3(x, 0, z),
-    speed: hostile ? 4 : 1.5,
-    lastShot: 0,
-    alertTime: 0
-  };
-  scene.add(n);
-  if(isCop) cops.push(n);
-  else if(hostile) enemies.push(n);
-  else npcs.push(n);
-  return n;
-}
-function spawnNPCs(){
-  for(let i=0;i<30;i++){
-    const x = (Math.random()-0.5) * WORLD_SIZE * 0.9;
-    const z = (Math.random()-0.5) * WORLD_SIZE * 0.9;
-    createNPC(x, z, false);
-  }
-}
-function spawnEnemies(){
-  for(let i=0;i<8;i++){
-    const x = (Math.random()-0.5) * WORLD_SIZE * 0.7;
-    const z = (Math.random()-0.5) * WORLD_SIZE * 0.7;
-    createNPC(x, z, true, false);
-  }
-}
-
-// ============ CONTROLS ============
-function bindControls(){
-  addEventListener('keydown', e=>{
-    keys[e.code] = true;
-    if(e.code==='KeyE') tryEnterExitVehicle();
-    if(e.code==='KeyQ') switchWeapon();
-    if(e.code==='Space') e.preventDefault();
-  });
-  addEventListener('keyup', e=>{ keys[e.code] = false; });
-  
-  const canvas = renderer.domElement;
-  canvas.addEventListener('click', ()=>{
-    if(state==='playing' && !mouse.locked){
-      canvas.requestPointerLock();
-    }
-  });
-  document.addEventListener('pointerlockchange', ()=>{
-    mouse.locked = document.pointerLockElement === canvas;
-    document.getElementById('crosshair').style.display = mouse.locked ? 'block' : 'none';
-  });
-  addEventListener('mousemove', e=>{
-    if(mouse.locked){
-      camYaw -= e.movementX * 0.003;
-      camPitch -= e.movementY * 0.003;
-      camPitch = Math.max(-0.5, Math.min(1.2, camPitch));
-    }
-  });
-  addEventListener('mousedown', e=>{
-    if(e.button===0 && state==='playing') P.shooting = true;
-  });
-  addEventListener('mouseup', e=>{
-    if(e.button===0) P.shooting = false;
-  });
-  addEventListener('wheel', e=>{
-    camDist = Math.max(3, Math.min(12, camDist + Math.sign(e.deltaY)*0.5));
-  });
-  addEventListener('resize', ()=>{
-    camera.aspect = innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-  });
-  
-  // Mobile
-  const joy = document.getElementById('joy');
-  const stick = document.getElementById('stick');
-  let joyActive = false, joyVec = {x:0,y:0};
-  joy.addEventListener('touchstart', e=>{
-    e.preventDefault(); joyActive = true;
-    updateJoy(e.touches[0]);
-  });
-  joy.addEventListener('touchmove', e=>{
-    e.preventDefault();
-    if(joyActive) updateJoy(e.touches[0]);
-  });
-  joy.addEventListener('touchend', e=>{
-    e.preventDefault(); joyActive = false;
-    joyVec = {x:0,y:0};
-    stick.style.transform = 'translate(-50%,-50%)';
-  });
-  function updateJoy(t){
-    const r = joy.getBoundingClientRect();
-    const cx = r.left + r.width/2, cy = r.top + r.height/2;
-    let dx = t.clientX - cx, dy = t.clientY - cy;
-    const max = r.width/2 - 25;
-    const d = Math.sqrt(dx*dx+dy*dy);
-    if(d > max){ dx = dx/d*max; dy = dy/d*max; }
-    stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-    joyVec = {x: dx/max, y: dy/max};
-  }
-  
-  const mbShoot = document.getElementById('mbShoot');
-  mbShoot.addEventListener('touchstart', e=>{e.preventDefault(); P.shooting = true;});
-  mbShoot.addEventListener('touchend', e=>{e.preventDefault(); P.shooting = false;});
-  document.getElementById('mbJump').addEventListener('touchstart', e=>{e.preventDefault(); keys.Space = true; setTimeout(()=>keys.Space=false, 100);});
-  document.getElementById('mbRun').addEventListener('touchstart', e=>{e.preventDefault(); keys.ShiftLeft = !keys.ShiftLeft;});
-  document.getElementById('mbAction').addEventListener('touchstart', e=>{e.preventDefault(); tryEnterExitVehicle();});
-  
-  // Mobile camera via right-side swipe
-  let lastTouch = null;
-  canvas.addEventListener('touchstart', e=>{
-    if(e.touches.length===1 && e.touches[0].clientX > innerWidth/2){
-      lastTouch = {x:e.touches[0].clientX, y:e.touches[0].clientY};
-    }
-  });
-  canvas.addEventListener('touchmove', e=>{
-    if(lastTouch && e.touches.length===1 && e.touches[0].clientX > innerWidth/2){
-      const dx = e.touches[0].clientX - lastTouch.x;
-      const dy = e.touches[0].clientY - lastTouch.y;
-      camYaw -= dx * 0.005;
-      camPitch -= dy * 0.005;
-      camPitch = Math.max(-0.5, Math.min(1.2, camPitch));
-      lastTouch = {x:e.touches[0].clientX, y:e.touches[0].clientY};
-    }
-  });
-  canvas.addEventListener('touchend', ()=>{ lastTouch = null; });
-  
-  // Apply mobile joystick to keys
-  setInterval(()=>{
-    if(state!=='playing') return;
-    keys._joyX = joyVec.x;
-    keys._joyY = joyVec.y;
-  }, 16);
-}
-
-function switchWeapon(){
-  P.curWeapon = (P.curWeapon + 1) % P.weapons.length;
-  updateWeaponHUD();
-  showMsg('Оружие: ' + P.weapons[P.curWeapon].name);
-}
-
-function tryEnterExitVehicle(){
-  if(state!=='playing') return;
-  if(P.inVehicle){
-    // Exit
-    const v = P.inVehicle;
-    P.inVehicle = null;
-    player.visible = true;
-    player.position.set(v.position.x + 2.5, 1, v.position.z);
-    P.pos.copy(player.position);
-    showMsg('Вы вышли из машины');
-    return;
-  }
-  // Find nearest vehicle
-  let nearest = null, nd = 5;
-  vehicles.forEach(v=>{
-    const d = player.position.distanceTo(v.position);
-    if(d < nd){ nd = d; nearest = v; }
-  });
-  if(nearest){
-    P.inVehicle = nearest;
-    player.visible = false;
-    showMsg('Вы сели в машину. WASD — управление');
-  }
-}
-
-// ============ SHOOTING ============
-function shoot(){
-  const w = P.weapons[P.curWeapon];
-  const now = performance.now()/1000;
-  if(now - P.lastShot < w.rate) return;
-  if(w.ammo <= 0){ showMsg('Нет патронов!'); return; }
-  P.lastShot = now;
-  if(w.ammo !== Infinity) w.ammo--;
-  updateWeaponHUD();
-  
-  playSound(w.type==='melee' ? 200 : 800, 0.1, 'square', 0.08);
-  
-  if(w.type === 'melee'){
-    // Melee hit
-    const targets = [...enemies, ...cops, ...npcs];
-    const fwd = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
-    targets.forEach(t=>{
-      const toT = t.position.clone().sub(player.position);
-      toT.y = 0;
-      const d = toT.length();
-      if(d < w.range){
-        toT.normalize();
-        if(fwd.dot(toT) > 0.5){
-          damageTarget(t, w.dmg);
+  for(let i=0;i<7;i++){
+    const s = starts[i];
+    const country = {
+      id: i,
+      name: i===0 ? G.playerCountryName : names[i],
+      ruler: i===0 ? G.playerRulerName : 'Правитель ' + choice(['Альберт','Ричард','Генрих','Карл','Людвиг','Сигурд','Борис']),
+      color: colors[i],
+      trait: traits[i],
+      isPlayer: i===0,
+      gold: 200, food: 100, wood: 100, stone: 50, iron: 30,
+      happiness: 70, stability: 80,
+      tech: 0,
+      atWar: new Set(),
+      allies: new Set(),
+      dead: false,
+      capitalX: s.x, capitalY: s.y
+    };
+    countries.push(country);
+    
+    // Захватить стартовую провинцию + соседние
+    const toClaim = [{x:s.x,y:s.y}];
+    for(let dy=-1;dy<=1;dy++){
+      for(let dx=-1;dx<=1;dx++){
+        if(dx===0&&dy===0) continue;
+        const nx=s.x+dx, ny=s.y+dy;
+        if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H){
+          if(G.map[ny][nx].biome!=='water' && G.map[ny][nx].biome!=='mountain' && Math.random()<0.7){
+            toClaim.push({x:nx,y:ny});
+          }
         }
       }
+    }
+    toClaim.forEach(p=>{
+      G.map[p.y][p.x].owner = i;
     });
-  } else {
-    // Gun - raycast
-    const origin = player.position.clone().add(new THREE.Vector3(0, 1.5, 0));
-    const dir = new THREE.Vector3(Math.sin(P.yaw)*Math.cos(camPitch), Math.sin(camPitch), Math.cos(P.yaw)*Math.cos(camPitch));
-    
-    // Muzzle flash
-    const flash = new THREE.PointLight(0xffaa00, 3, 5);
-    flash.position.copy(origin).add(dir.clone().multiplyScalar(1));
-    scene.add(flash);
-    setTimeout(()=>scene.remove(flash), 50);
-    
-    // Bullet tracer
-    const tracer = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.03, 0.03, 2),
-      new THREE.MeshBasicMaterial({color:0xffdd00})
-    );
-    tracer.position.copy(origin).add(dir.clone().multiplyScalar(2));
-    tracer.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
-    tracer.userData = {vel: dir.clone().multiplyScalar(150), life: 0.5};
-    scene.add(tracer);
-    bullets.push(tracer);
-    
-    // Raycast hit
-    const ray = new THREE.Raycaster(origin, dir, 0, w.range);
-    const targets = [...enemies, ...cops, ...npcs, ...vehicles];
-    const meshes = [];
-    targets.forEach(t=>t.traverse(c=>{if(c.isMesh){c.userData._parent = t; meshes.push(c);}}));
-    const hits = ray.intersectObjects(meshes, false);
-    if(hits.length > 0){
-      const target = hits[0].object.userData._parent;
-      if(target && target.userData && target.userData.type){
-        damageTarget(target, w.dmg);
-      }
-    }
   }
+  return countries;
 }
 
-function damageTarget(t, dmg){
-  if(!t.userData.hp) return;
-  t.userData.hp -= dmg;
-  // Flash
-  t.traverse(c=>{
-    if(c.isMesh && c.material && c.material.emissive){
-      const old = c.material.emissive.getHex();
-      c.material.emissive.setHex(0xff0000);
-      setTimeout(()=>c.material.emissive.setHex(old), 100);
-    }
-  });
+// ===== СТАРТ ИГРЫ =====
+function startGame(){
+  G = {
+    playerCountryName: document.getElementById('countryName').value || 'Вестерланд',
+    playerRulerName: document.getElementById('rulerName').value || 'Король Артур',
+    govType: document.getElementById('govType').value,
+    turn: 1,
+    year: 1066,
+    season: 0,
+    map: generateWorld(),
+    countries: null,
+    log: [],
+    selectedArmy: null
+  };
+  G.countries = createCountries();
   
-  if(t.userData.hp <= 0){
-    // Die
-    if(t.userData.type === 'enemy'){
-      P.money += 50;
-      updateMoneyHUD();
-      showMsg('+$50');
-    } else if(t.userData.type === 'npc'){
-      P.wanted = Math.min(5, P.wanted + 1);
-      updateWantedHUD();
-      showMsg('⚠️ РОЗЫСК ПОВЫШЕН');
-    } else if(t.userData.type === 'cop'){
-      P.wanted = Math.min(5, P.wanted + 2);
-      updateWantedHUD();
-    } else if(t.userData.type === 'vehicle'){
-      // Car explosion
-      const exp = new THREE.PointLight(0xff6600, 5, 20);
-      exp.position.copy(t.position);
-      scene.add(exp);
-      setTimeout(()=>scene.remove(exp), 300);
-    }
-    scene.remove(t);
-    const arr = t.userData.type==='cop' ? cops : (t.userData.type==='enemy' ? enemies : npcs);
-    const idx = arr.indexOf(t);
-    if(idx>=0) arr.splice(idx,1);
-    const vidx = vehicles.indexOf(t);
-    if(vidx>=0) vehicles.splice(vidx,1);
-  } else {
-    // Alert
-    if(t.userData.type === 'npc'){
-      t.userData.state = 'flee';
-      t.userData.alertTime = 5;
-    } else if(t.userData.type === 'enemy' || t.userData.type === 'cop'){
-      t.userData.state = 'attack';
+  // Применить бонусы правительства
+  const bonus = GOV_BONUSES[G.govType];
+  const p = G.countries[0];
+  if(bonus.gold) p.gold += bonus.gold*10;
+  
+  log('Ваше правление началось! Да хранит вас Господь.','good');
+  log('Форма правления: ' + {kingdom:'Королевство',republic:'Республика',theocracy:'Теократия',despotism:'Деспотия'}[G.govType]);
+  
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('game').classList.add('active');
+  
+  initMap();
+  centerMap();
+  renderTopbar();
+  renderSidebar();
+  renderMap();
+}
+
+// ===== КАРТА =====
+const canvas = document.getElementById('map');
+const ctx = canvas.getContext('2d');
+
+function initMap(){
+  canvas.width = MAP_W * TILE;
+  canvas.height = MAP_H * TILE;
+  
+  canvas.addEventListener('mousedown', onMapMouseDown);
+  canvas.addEventListener('mousemove', onMapMove);
+  canvas.addEventListener('mouseup', onMapUp);
+  canvas.addEventListener('click', onMapClick);
+  canvas.addEventListener('wheel', onMapWheel);
+  
+  canvas.addEventListener('touchstart', onMapTouchStart, {passive:false});
+  canvas.addEventListener('touchmove', onMapTouchMove, {passive:false});
+  canvas.addEventListener('touchend', onMapTouchEnd);
+}
+
+function renderMap(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  
+  for(let y=0;y<MAP_H;y++){
+    for(let x=0;x<MAP_W;x++){
+      const t = G.map[y][x];
+      const b = BIOMES[t.biome];
+      const px = x*TILE, py = y*TILE;
+      
+      // Биом
+      ctx.fillStyle = b.color;
+      ctx.fillRect(px,py,TILE,TILE);
+      
+      // Владелец (цветной оверлей)
+      if(t.owner !== null){
+        const c = G.countries[t.owner];
+        if(c && !c.dead){
+          ctx.fillStyle = c.color;
+          ctx.globalAlpha = 0.35;
+          ctx.fillRect(px,py,TILE,TILE);
+          ctx.globalAlpha = 1;
+        }
+      }
+      
+      // Здание
+      if(t.building){
+        ctx.font = '20px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(BUILDINGS[t.building].icon, px+TILE/2, py+TILE/2);
+      } else {
+        ctx.font = '14px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.globalAlpha = 0.4;
+        ctx.fillText(b.icon, px+TILE/2, py+TILE/2);
+        ctx.globalAlpha = 1;
+      }
+      
+      // Армия
+      if(t.army && t.army.length > 0){
+        ctx.fillStyle = G.countries[t.army[0].owner].color;
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(px+TILE-8, py+8, 7, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(t.army.reduce((s,u)=>s+u.count,0), px+TILE-8, py+8);
+      }
+      
+      // Границы
+      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px,py,TILE,TILE);
     }
   }
+  
+  // Выделение
+  if(selected){
+    const px = selected.x*TILE, py = selected.y*TILE;
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(px+1,py+1,TILE-2,TILE-2);
+  }
+  
+  // Выделенная армия — подсветить путь
+  if(G.selectedArmy){
+    const a = G.selectedArmy;
+    const px = a.x*TILE, py = a.y*TILE;
+    ctx.strokeStyle = '#ff0';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([5,5]);
+    ctx.strokeRect(px+2,py+2,TILE-4,TILE-4);
+    ctx.setLineDash([]);
+  }
+  
+  updateMapTransform();
 }
 
-// ============ SOUND ============
-function initAudio(){
-  try{ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
-}
-function playSound(freq, dur=0.1, type='sine', vol=0.1){
-  if(!audioCtx) return;
-  try{
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    g.gain.setValueAtTime(vol, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+dur);
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(); o.stop(audioCtx.currentTime+dur);
-  }catch(e){}
+function updateMapTransform(){
+  canvas.style.transform = `translate(${mapOffset.x}px,${mapOffset.y}px) scale(${mapScale})`;
+  canvas.style.transformOrigin = '0 0';
 }
 
-// ============ UPDATE ============
-function updatePlayer(dt){
-  if(P.inVehicle){
-    updateVehicleDrive(dt);
+function zoomMap(factor){
+  mapScale = clamp(mapScale*factor, 0.5, 2.5);
+  updateMapTransform();
+}
+function centerMap(){
+  const wrap = document.getElementById('mapWrap');
+  const p = G.countries[0];
+  const tx = p.capitalX*TILE + TILE/2;
+  const ty = p.capitalY*TILE + TILE/2;
+  mapScale = 1.2;
+  mapOffset.x = wrap.clientWidth/2 - tx*mapScale;
+  mapOffset.y = wrap.clientHeight/2 - ty*mapScale;
+  updateMapTransform();
+}
+
+function screenToTile(clientX, clientY){
+  const rect = canvas.getBoundingClientRect();
+  const x = (clientX - rect.left) / mapScale;
+  const y = (clientY - rect.top) / mapScale;
+  return {x: Math.floor(x/TILE), y: Math.floor(y/TILE)};
+}
+
+// Drag
+function onMapMouseDown(e){
+  dragging = true;
+  dragStart = {x:e.clientX - mapOffset.x, y:e.clientY - mapOffset.y};
+}
+function onMapMove(e){
+  if(dragging){
+    mapOffset.x = e.clientX - dragStart.x;
+    mapOffset.y = e.clientY - dragStart.y;
+    updateMapTransform();
+  }
+}
+function onMapUp(){dragging=false}
+function onMapWheel(e){
+  e.preventDefault();
+  zoomMap(e.deltaY<0?1.15:0.87);
+}
+
+// Touch
+let touchStart = null, lastTouchDist = 0;
+function onMapTouchStart(e){
+  e.preventDefault();
+  if(e.touches.length===1){
+    dragging = true;
+    dragStart = {x:e.touches[0].clientX - mapOffset.x, y:e.touches[0].clientY - mapOffset.y};
+    touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY, time:Date.now()};
+  } else if(e.touches.length===2){
+    dragging = false;
+    lastTouchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+  }
+}
+function onMapTouchMove(e){
+  e.preventDefault();
+  if(e.touches.length===1 && dragging){
+    mapOffset.x = e.touches[0].clientX - dragStart.x;
+    mapOffset.y = e.touches[0].clientY - dragStart.y;
+    updateMapTransform();
+  } else if(e.touches.length===2){
+    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    if(lastTouchDist>0){
+      zoomMap(d/lastTouchDist);
+    }
+    lastTouchDist = d;
+  }
+}
+function onMapTouchEnd(e){
+  if(touchStart && e.changedTouches.length===1){
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.x;
+    const dy = t.clientY - touchStart.y;
+    const dt = Date.now() - touchStart.time;
+    if(Math.abs(dx)<10 && Math.abs(dy)<10 && dt<300){
+      const tile = screenToTile(t.clientX, t.clientY);
+      handleTileClick(tile.x, tile.y);
+    }
+  }
+  dragging = false;
+  touchStart = null;
+}
+
+function onMapClick(e){
+  if(dragging) return;
+  const tile = screenToTile(e.clientX, e.clientY);
+  handleTileClick(tile.x, tile.y);
+}
+
+function handleTileClick(x, y){
+  if(x<0||x>=MAP_W||y<0||y>=MAP_H) return;
+  
+  // Если выбрана армия — попытаться двинуть
+  if(G.selectedArmy){
+    const a = G.selectedArmy;
+    const dx = Math.abs(a.x-x), dy = Math.abs(a.y-y);
+    if(dx<=1 && dy<=1 && (dx+dy>0)){
+      moveArmy(a, x, y);
+      G.selectedArmy = null;
+      renderMap();
+      renderSidebar();
+      return;
+    }
+    G.selectedArmy = null;
+  }
+  
+  selected = {x, y};
+  renderMap();
+  renderSidebar();
+}
+
+// ===== РЕНДЕР ВЕРХНЕЙ ПАНЕЛИ =====
+function renderTopbar(){
+  const p = G.countries[0];
+  const deltas = calcDeltas(0);
+  
+  document.getElementById('rGold').textContent = Math.floor(p.gold);
+  document.getElementById('rFood').textContent = Math.floor(p.food);
+  document.getElementById('rWood').textContent = Math.floor(p.wood);
+  document.getElementById('rStone').textContent = Math.floor(p.stone);
+  document.getElementById('rIron').textContent = Math.floor(p.iron);
+  document.getElementById('rPop').textContent = getCountryPopulation(0);
+  
+  setDelta('dGold', deltas.gold);
+  setDelta('dFood', deltas.food);
+  setDelta('dWood', deltas.wood);
+  setDelta('dStone', deltas.stone);
+  setDelta('dIron', deltas.iron);
+  setDelta('dPop', deltas.pop);
+  
+  document.getElementById('turnNum').textContent = 'ХОД ' + G.turn;
+  document.getElementById('dateText').textContent = SEASONS[G.season] + ', ' + G.year + ' г.';
+}
+
+function setDelta(id, val){
+  const el = document.getElementById(id);
+  if(val>0){el.textContent='+'+val;el.className='delta pos';}
+  else if(val<0){el.textContent=val;el.className='delta neg';}
+  else {el.textContent='';el.className='delta';}
+}
+
+function getCountryPopulation(cid){
+  let pop = 0;
+  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
+    if(G.map[y][x].owner===cid) pop += 100;
+  }
+  return pop;
+}
+
+function calcDeltas(cid){
+  const c = G.countries[cid];
+  let gold=0,food=0,wood=0,stone=0,iron=0,pop=0;
+  
+  // От построек
+  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
+    const t = G.map[y][x];
+    if(t.owner!==cid) continue;
+    const b = BIOMES[t.biome];
+    if(b.food) food += b.food;
+    if(b.wood) wood += b.wood;
+    if(b.stone) stone += b.stone;
+    if(b.iron) iron += b.iron;
+    if(b.gold) gold += b.gold;
+    if(t.building){
+      const e = BUILDINGS[t.building].effect;
+      if(e.gold) gold += e.gold;
+      if(e.food) food += e.food;
+      if(e.wood) wood += e.wood;
+      if(e.stone) stone += e.stone;
+      if(e.iron) iron += e.iron;
+    }
+    pop += 100;
+  }
+  
+  // Налоги (золото от населения)
+  const tax = Math.floor(pop * 0.05);
+  gold += tax;
+  
+  // Армия ест
+  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
+    const t = G.map[y][x];
+    if(t.army && t.army[0] && t.army[0].owner===cid){
+      food -= t.army.reduce((s,u)=>s+u.count,0);
+    }
+  }
+  
+  // Бонусы правительства
+  const bonus = GOV_BONUSES[c.govType||G.govType];
+  if(bonus && bonus.gold) gold += bonus.gold;
+  
+  return {gold,food,wood,stone,iron,pop:Math.floor(pop*0.02)};
+}
+
+// ===== САЙДБАР =====
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.side-tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.tab===tab);
+  });
+  renderSidebar();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function renderSidebar(){
+  const el = document.getElementById('sideContent');
+  if(currentTab==='info') renderInfoTab(el);
+  else if(currentTab==='build') renderBuildTab(el);
+  else if(currentTab==='army') renderArmyTab(el);
+  else if(currentTab==='diplo') renderDiploTab(el);
+  else if(currentTab==='log') renderLogTab(el);
+}
+
+function renderInfoTab(el){
+  if(!selected){
+    el.innerHTML = '<div class="card"><h4>📜 ВЫБЕРИТЕ ПРОВИНЦИЮ</h4><p style="font-size:12px;color:#a88860">Кликните на карту, чтобы увидеть информацию о провинции и доступные действия.</p></div>' + renderCountryOverview();
     return;
   }
+  const t = G.map[selected.y][selected.x];
+  const b = BIOMES[t.biome];
+  const owner = t.owner!==null ? G.countries[t.owner] : null;
   
-  // Input
-  let mx = 0, mz = 0;
-  if(keys.KeyW || keys.ArrowUp) mz = 1;
-  if(keys.KeyS || keys.ArrowDown) mz = -1;
-  if(keys.KeyA || keys.ArrowLeft) mx = -1;
-  if(keys.KeyD || keys.ArrowRight) mx = 1;
+  let html = `<div class="card">
+    <h4>${b.icon} ${t.name}</h4>
+    <div class="row"><span>Биом:</span><b>${b.name}</b></div>
+    <div class="row"><span>Владелец:</span><b style="color:${owner?owner.color:'#888'}">${owner?owner.name:'Ничья'}</b></div>`;
   
-  // Mobile joystick
-  if(keys._joyX !== undefined){
-    mx += keys._joyX;
-    mz -= keys._joyY;
+  if(t.building){
+    html += `<div class="row"><span>Здание:</span><b>${BUILDINGS[t.building].icon} ${BUILDINGS[t.building].name}</b></div>`;
   }
+  if(t.army && t.army.length>0){
+    const a = t.army[0];
+    const total = t.army.reduce((s,u)=>s+u.count,0);
+    html += `<div class="row"><span>Армия:</span><b>${total} воинов</b></div>`;
+    t.army.forEach(u=>{
+      html += `<div class="row"><span>${UNITS[u.type].icon} ${UNITS[u.type].name}</span><b>${u.count}</b></div>`;
+    });
+  }
+  html += `</div>`;
   
-  const moving = Math.abs(mx) + Math.abs(mz) > 0.1;
-  const running = keys.ShiftLeft;
-  const speed = running ? 8 : 4;
-  
-  if(moving){
-    const len = Math.sqrt(mx*mx + mz*mz);
-    mx /= len; mz /= len;
-    // Move relative to camera yaw
-    const sin = Math.sin(camYaw), cos = Math.cos(camYaw);
-    const wx = mx*cos - mz*sin;
-    const wz = mx*sin + mz*cos;
-    P.yaw = Math.atan2(wx, wz);
-    
-    const newX = P.pos.x + wx * speed * dt;
-    const newZ = P.pos.z + wz * speed * dt;
-    
-    // Collision check
-    if(!checkCollision(newX, P.pos.z, 0.5)) P.pos.x = newX;
-    if(!checkCollision(P.pos.x, newZ, 0.5)) P.pos.z = newZ;
-    
-    // Leg animation
-    const t = performance.now()*0.01 * (running?1.5:1);
-    player.legL.rotation.x = Math.sin(t)*0.6;
-    player.legR.rotation.x = -Math.sin(t)*0.6;
-    player.armR.rotation.x = -Math.sin(t)*0.4;
+  // Действия
+  if(t.owner === 0){
+    html += `<button class="action-btn" onclick="openBuildModal(${selected.x},${selected.y})"><b>🏗 Построить здание</b>Улучшить провинцию</button>`;
+    if(t.building === 'barracks' || hasNearbyBuilding(selected.x, selected.y, 'barracks')){
+      html += `<button class="action-btn" onclick="openRecruitModal(${selected.x},${selected.y})"><b>⚔ Нанять войска</b>Пополнить армию</button>`;
+    }
+    if(t.army && t.army.length>0){
+      html += `<button class="action-btn" onclick="selectArmy(${selected.x},${selected.y})"><b>🚩 Выбрать армию</b>Для перемещения</button>`;
+    }
+  } else if(t.owner !== null && t.owner !== 0){
+    const enemy = G.countries[t.owner];
+    if(G.countries[0].atWar.has(t.owner)){
+      if(t.army && t.army[0] && t.army[0].owner === 0){
+        html += `<div class="card" style="border-color:#c44"><h4 style="color:#c44">⚔ ЗОНА ВОЙНЫ</h4><p style="font-size:12px">Это территория ${enemy.name}. Ваши войска могут атаковать.</p></div>`;
+      } else {
+        html += `<div class="card" style="border-color:#c44"><h4 style="color:#c44">⚔ ВРАЖЕСКАЯ ТЕРРИТОРИЯ</h4><p style="font-size:12px">Подведите армию и атакуйте!</p></div>`;
+      }
+    } else {
+      html += `<div class="card"><h4>🕊 Территория ${enemy.name}</h4><p style="font-size:12px;color:#a88860">Мирные отношения. Объявите войну через вкладку "Мир".</p></div>`;
+    }
   } else {
-    player.legL.rotation.x *= 0.8;
-    player.legR.rotation.x *= 0.8;
-    player.armR.rotation.x *= 0.8;
-  }
-  
-  // Jump
-  if(keys.Space && P.onGround){
-    P.vel.y = 8;
-    P.onGround = false;
-    playSound(400, 0.1, 'sine', 0.06);
-  }
-  
-  // Gravity
-  if(!P.onGround){
-    P.vel.y -= 20*dt;
-    P.pos.y += P.vel.y*dt;
-    if(P.pos.y <= 1){
-      P.pos.y = 1;
-      P.vel.y = 0;
-      P.onGround = true;
+    if(t.biome !== 'water' && t.biome !== 'mountain'){
+      html += `<button class="action-btn" onclick="colonize(${selected.x},${selected.y})"><b>🚩 Колонизировать</b>Стоимость: 50 золота</button>`;
     }
   }
   
-  // Shooting
-  if(P.shooting){
-    const w = P.weapons[P.curWeapon];
-    if(w.auto || performance.now()/1000 - P.lastShot > w.rate){
-      shoot();
+  el.innerHTML = html;
+}
+
+function renderCountryOverview(){
+  const p = G.countries[0];
+  const provinces = countProvinces(0);
+  return `<div class="card">
+    <h4>👑 ${p.name}</h4>
+    <div class="row"><span>Правитель:</span><b>${p.ruler}</b></div>
+    <div class="row"><span>Правление:</span><b>${{kingdom:'Королевство',republic:'Республика',theocracy:'Теократия',despotism:'Деспотия'}[G.govType]}</b></div>
+    <div class="row"><span>Провинций:</span><b>${provinces}</b></div>
+    <div class="row"><span>Счастье:</span><b>${Math.floor(p.happiness)}%</b></div>
+    <div class="row"><span>Стабильность:</span><b>${Math.floor(p.stability)}%</b></div>
+    <div class="row"><span>Технологии:</span><b>Ур. ${p.tech}</b></div>
+  </div>`;
+}
+
+function countProvinces(cid){
+  let c=0;
+  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++)if(G.map[y][x].owner===cid)c++;
+  return c;
+}
+
+function hasNearbyBuilding(x, y, type){
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const nx=x+dx, ny=y+dy;
+    if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H){
+      if(G.map[ny][nx].owner===0 && G.map[ny][nx].building===type) return true;
     }
-  }
-  
-  player.position.copy(P.pos);
-  player.rotation.y = P.yaw;
-}
-
-function updateVehicleDrive(dt){
-  const v = P.inVehicle;
-  const d = v.userData;
-  
-  let accel = 0, steer = 0;
-  if(keys.KeyW || keys.ArrowUp) accel = 1;
-  if(keys.KeyS || keys.ArrowDown) accel = -1;
-  if(keys.KeyA || keys.ArrowLeft) steer = 1;
-  if(keys.KeyD || keys.ArrowRight) steer = -1;
-  if(keys._joyY !== undefined) accel = -keys._joyY;
-  if(keys._joyX !== undefined) steer = -keys._joyX;
-  
-  // Physics
-  if(accel > 0) d.speed = Math.min(d.maxSpeed, d.speed + d.accel*dt);
-  else if(accel < 0) d.speed = Math.max(-d.maxSpeed/2, d.speed - d.accel*dt);
-  else d.speed *= (1 - dt*1.5);
-  
-  if(Math.abs(d.speed) > 0.5){
-    v.rotation.y += steer * dt * 1.5 * Math.sign(d.speed);
-  }
-  
-  const newX = v.position.x + Math.sin(v.rotation.y) * d.speed * dt;
-  const newZ = v.position.z + Math.cos(v.rotation.y) * d.speed * dt;
-  
-  // Collision
-  if(!checkCollision(newX, newZ, 1.5)){
-    v.position.x = newX;
-    v.position.z = newZ;
-  } else {
-    d.speed *= -0.3;
-  }
-  
-  P.pos.copy(v.position);
-  P.yaw = v.rotation.y;
-  
-  document.getElementById('speedVal').textContent = Math.abs(Math.round(d.speed*3)) + ' км/ч';
-}
-
-function checkCollision(x, z, r){
-  for(const c of colliders){
-    if(x+r > c.min.x && x-r < c.max.x && z+r > c.min.z && z-r < c.max.z) return true;
   }
   return false;
 }
 
-function updateNPCs(dt){
-  const playerPos = player.position;
+function renderBuildTab(el){
+  if(!selected || G.map[selected.y][selected.x].owner!==0){
+    el.innerHTML = '<div class="card"><h4>🏗 СТРОИТЕЛЬСТВО</h4><p style="font-size:12px;color:#a88860">Выберите свою провинцию для строительства.</p></div>';
+    return;
+  }
+  const t = G.map[selected.y][selected.x];
+  if(t.building){
+    el.innerHTML = `<div class="card"><h4>⚠ ЗАНЯТО</h4><p style="font-size:12px">В этой провинции уже построено: ${BUILDINGS[t.building].icon} ${BUILDINGS[t.building].name}</p></div>`;
+    return;
+  }
   
-  // Regular NPCs
-  npcs.forEach(n=>{
-    const d = n.userData;
-    const dist = n.position.distanceTo(playerPos);
-    
-    if(d.state === 'wander'){
-      if(n.position.distanceTo(d.target) < 1){
-        d.target.set(
-          n.position.x + (Math.random()-0.5)*20,
-          0,
-          n.position.z + (Math.random()-0.5)*20
-        );
-      }
-      const dir = d.target.clone().sub(n.position).normalize();
-      const nx = n.position.x + dir.x * d.speed * dt;
-      const nz = n.position.z + dir.z * d.speed * dt;
-      if(!checkCollision(nx, nz, 0.5)){
-        n.position.x = nx; n.position.z = nz;
-      } else {
-        d.target.copy(n.position);
-      }
-      n.rotation.y = Math.atan2(dir.x, dir.z);
-      
-      // Flee if shooting nearby
-      if(dist < 15 && P.shooting && P.weapons[P.curWeapon].type === 'gun'){
-        d.state = 'flee';
-        d.alertTime = 5;
-      }
-    } else if(d.state === 'flee'){
-      const dir = n.position.clone().sub(playerPos).normalize();
-      const nx = n.position.x + dir.x * d.speed*2 * dt;
-      const nz = n.position.z + dir.z * d.speed*2 * dt;
-      if(!checkCollision(nx, nz, 0.5)){
-        n.position.x = nx; n.position.z = nz;
-      }
-      n.rotation.y = Math.atan2(dir.x, dir.z);
-      d.alertTime -= dt;
-      if(d.alertTime <= 0) d.state = 'wander';
+  const isCoastal = isCoast(selected.x, selected.y);
+  let html = `<div class="card"><h4>🏗 ДОСТУПНЫЕ ПОСТРОЙКИ</h4><p style="font-size:11px;color:#a88860;margin-bottom:8px">Провинция: ${t.name}</p></div><div class="build-list">`;
+  
+  for(const key in BUILDINGS){
+    const b = BUILDINGS[key];
+    if(b.needCoast && !isCoastal) continue;
+    const canAfford = canPay(b.cost);
+    html += `<div class="build-item ${canAfford?'':'disabled'}" onclick="${canAfford?`build('${key}')\`:''}">
+      <span class="ico">${b.icon}</span>
+      <div class="name">${b.name}</div>
+      <div class="cost">${formatCost(b.cost)}</div>
+    </div>`;
+  }
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function isCoast(x, y){
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const nx=x+dx, ny=y+dy;
+    if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H){
+      if(G.map[ny][nx].biome==='water') return true;
     }
+  }
+  return false;
+}
+
+function canPay(cost){
+  const p = G.countries[0];
+  for(const r in cost){
+    if((p[r]||0) < cost[r]) return false;
+  }
+  return true;
+}
+
+function formatCost(cost){
+  const icons = {gold:'💰',wood:'🪵',stone:'🪨',iron:'⚒',food:'🌾'};
+  return Object.entries(cost).map(([k,v])=>icons[k]+v).join(' ');
+}
+
+function renderArmyTab(el){
+  const p = G.countries[0];
+  let totalArmy = 0;
+  const armies = [];
+  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
+    const t = G.map[y][x];
+    if(t.army && t.army[0] && t.army[0].owner===0){
+      const count = t.army.reduce((s,u)=>s+u.count,0);
+      totalArmy += count;
+      armies.push({x,y,count,tile:t});
+    }
+  }
+  
+  let html = `<div class="card">
+    <h4>⚔ ВАША АРМИЯ</h4>
+    <div class="row"><span>Всего воинов:</span><b>${totalArmy}</b></div>
+  </div>`;
+  
+  if(armies.length===0){
+    html += `<div class="card"><p style="font-size:12px;color:#a88860">У вас нет армий. Наймите войска в провинции с казармой.</p></div>`;
+  } else {
+    armies.forEach(a=>{
+      const t = a.tile;
+      html += `<div class="card" style="cursor:pointer" onclick="focusTile(${a.x},${a.y})">
+        <h4>🚩 Армия в ${t.name}</h4>
+        <div class="row"><span>Воины:</span><b>${a.count}</b></div>
+        ${t.army.map(u=>`<div class="row"><span>${UNITS[u.type].icon} ${UNITS[u.type].name}</span><b>${u.count}</b></div>`).join('')}
+      </div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+function focusTile(x, y){
+  selected = {x,y};
+  const wrap = document.getElementById('mapWrap');
+  mapOffset.x = wrap.clientWidth/2 - x*TILE*mapScale - TILE*mapScale/2;
+  mapOffset.y = wrap.clientHeight/2 - y*TILE*mapScale - TILE*mapScale/2;
+  updateMapTransform();
+  renderMap();
+  renderSidebar();
+}
+
+function renderDiploTab(el){
+  let html = `<div class="card"><h4>🕊 ОТНОШЕНИЯ С ДРУГИМИ СТРАНАМИ</h4></div>`;
+  G.countries.forEach(c=>{
+    if(c.isPlayer || c.dead) return;
+    const atWar = G.countries[0].atWar.has(c.id);
+    const allied = G.countries[0].allies.has(c.id);
+    const provinces = countProvinces(c.id);
+    const rel = atWar ? '⚔ ВОЙНА' : allied ? '🤝 СОЮЗ' : '🕊 МИР';
+    const relColor = atWar ? '#c44' : allied ? '#7fb069' : '#a88860';
+    
+    html += `<div class="country-row">
+      <div class="country-flag" style="background:${c.color}">${c.name[0]}</div>
+      <div class="country-info">
+        <b>${c.name}</b>
+        <div style="color:${relColor};font-size:11px">${rel}</div>
+        <div style="font-size:10px;color:#a88860">${c.ruler} • ${provinces} пров.</div>
+      </div>
+    </div>
+    <div class="diplo-btns">
+      ${atWar ? `<button class="diplo-btn" onclick="proposePeace(${c.id})">🕊 Предложить мир</button>` : 
+        `<button class="diplo-btn war" onclick="declareWar(${c.id})">⚔ Объявить войну</button>`}
+      ${!allied && !atWar ? `<button class="diplo-btn" onclick="proposeAlliance(${c.id})">🤝 Союз</button>` : ''}
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderLogTab(el){
+  if(G.log.length===0){
+    el.innerHTML = '<div class="card"><p style="font-size:12px;color:#a88860">Журнал пуст.</p></div>';
+    return;
+  }
+  el.innerHTML = G.log.map(e=>`<div class="log-entry ${e.type}"><b>Ход ${e.turn}:</b> ${e.text}</div>`).join('');
+}
+
+// ===== ДЕЙСТВИЯ =====
+function build(type){
+  if(!selected) return;
+  const t = G.map[selected.y][selected.x];
+  if(t.owner!==0 || t.building) return;
+  const b = BUILDINGS[type];
+  if(!canPay(b.cost)) return;
+  pay(b.cost);
+  t.building = type;
+  log(`Построено: ${b.icon} ${b.name} в ${t.name}`,'good');
+  notify(`${b.icon} ${b.name} построено!`,'good');
+  renderTopbar();
+  renderMap();
+  renderSidebar();
+}
+
+function pay(cost){
+  const p = G.countries[0];
+  for(const r in cost) p[r] -= cost[r];
+}
+
+function openBuildModal(x, y){
+  selected = {x,y};
+  switchTab('build');
+  renderSidebar();
+}
+
+function openRecruitModal(x, y){
+  selected = {x,y};
+  const t = G.map[y][x];
+  document.getElementById('recruitTitle').textContent = 'НАБОР В ' + t.name.toUpperCase();
+  const list = document.getElementById('recruitList');
+  let html = '';
+  for(const key in UNITS){
+    const u = UNITS[key];
+    const canAfford = canPay(u.cost);
+    html += `<div class="build-item ${canAfford?'':'disabled'}" onclick="${canAfford?`recruit('${key}')\`:''}">
+      <span class="ico">${u.icon}</span>
+      <div class="name">${u.name}</div>
+      <div class="cost">${formatCost(u.cost)}</div>
+      <div class="cost">⚔${u.atk} 🛡${u.def} ❤${u.hp}</div>
+    </div>`;
+  }
+  list.innerHTML = html;
+  document.getElementById('recruitModal').classList.add('show');
+}
+
+function recruit(type){
+  if(!selected) return;
+  const t = G.map[selected.y][selected.x];
+  const u = UNITS[type];
+  if(!canPay(u.cost)) return;
+  pay(u.cost);
+  if(!t.army) t.army = [{owner:0, units:[]}];
+  if(t.army[0].owner !== 0) t.army = [{owner:0, units:[]}];
+  const existing = t.army[0].units.find(x=>x.type===type);
+  if(existing) existing.count++;
+  else t.army[0].units.push({type, count:1});
+  log(`Наняты: ${u.icon} ${u.name} в ${t.name}`,'good');
+  notify(`${u.icon} ${u.name} нанят!`,'good');
+  closeModal('recruitModal');
+  renderTopbar();
+  renderMap();
+  renderSidebar();
+}
+
+function selectArmy(x, y){
+  const t = G.map[y][x];
+  if(!t.army || t.army[0].owner!==0) return;
+  G.selectedArmy = {x, y, ...t.army[0]};
+  notify('🚩 Армия выбрана. Кликните на соседнюю клетку для перемещения.');
+  renderMap();
+}
+
+function moveArmy(army, tx, ty){
+  const from = G.map[army.y][army.x];
+  const to = G.map[ty][tx];
+  const b = BIOMES[to.biome];
+  if(!b.passable){ notify('⚠ Нельзя пройти!'); return; }
+  
+  // Атака?
+  if(to.owner !== null && to.owner !== 0){
+    if(!G.countries[0].atWar.has(to.owner)){
+      notify('⚠ Нет войны с этой страной!');
+      return;
+    }
+    if(to.army && to.army.length>0 && to.army[0].owner !== 0){
+      resolveBattle(army, tx, ty);
+      return;
+    } else {
+      // Захват без боя
+      captureProvince(army, tx, ty);
+      return;
+    }
+  }
+  
+  // Простое перемещение
+  if(to.army && to.army[0] && to.army[0].owner === 0){
+    // Объединить
+    to.army[0].units.forEach(u=>{
+      const ex = from.army[0].units.find(x=>x.type===u.type);
+      if(ex) ex.count += u.count;
+      else from.army[0].units.push({...u});
+    });
+    from.army = null;
+  } else {
+    to.army = from.army;
+    from.army = null;
+  }
+  log(`Армия перемещена в ${to.name}`);
+}
+
+function captureProvince(army, tx, ty){
+  const from = G.map[army.y][army.x];
+  const to = G.map[ty][tx];
+  const prevOwner = to.owner;
+  to.owner = 0;
+  to.army = from.army;
+  from.army = null;
+  log(`🚩 Захвачена провинция ${to.name}!`,'good');
+  notify(`🚩 Захвачена ${to.name}!`,'good');
+  
+  // Проверка на уничтожение страны
+  checkCountryDeath(prevOwner);
+}
+
+function resolveBattle(attacker, tx, ty){
+  const defTile = G.map[ty][tx];
+  const atkUnits = attacker.units;
+  const defUnits = defTile.army[0].units;
+  
+  let atkPower = 0, defPower = 0;
+  atkUnits.forEach(u=>{
+    const info = UNITS[u.type];
+    atkPower += (info.atk * 2 + info.def) * u.count;
+  });
+  defUnits.forEach(u=>{
+    const info = UNITS[u.type];
+    defPower += (info.def * 2 + info.atk) * u.count;
   });
   
-  // Enemies
-  enemies.forEach(n=>{
-    const d = n.userData;
-    const dist = n.position.distanceTo(playerPos);
+  // Бонус замка
+  if(defTile.building === 'castle') defPower *= 1.5;
+  
+  // Случайность
+  atkPower *= 0.8 + Math.random()*0.4;
+  defPower *= 0.8 + Math.random()*0.4;
+  
+  const atkWon = atkPower > defPower;
+  const ratio = atkWon ? defPower/atkPower : atkPower/defPower;
+  
+  let html = `<div style="text-align:center;font-size:14px;line-height:1.8">
+    <div style="color:#7fb069"><b>АТАКУЮЩИЙ (Вы)</b><br>Сила: ${Math.floor(atkPower)}</div>
+    <div style="font-size:24px;margin:10px 0">⚔</div>
+    <div style="color:#c44"><b>ЗАЩИТНИК (${G.countries[defTile.owner].name})</b><br>Сила: ${Math.floor(defPower)}</div>
+    <div style="margin-top:16px;font-size:16px;color:var(--gold)">
+      ${atkWon ? '🏆 ВАША ПОБЕДА!' : '💀 ПОРАЖЕНИЕ!'}
+    </div>`;
+  
+  if(atkWon){
+    // Потери атакующего
+    const losses = Math.ceil(ratio * 0.6);
+    applyLosses(attacker.units, losses);
+    captureProvince({x:attacker.x, y:attacker.y, units:attacker.units}, tx, ty);
+  } else {
+    // Потери защитника
+    const losses = Math.ceil(ratio * 0.4);
+    applyLosses(defUnits, losses);
+    // Атакующий уничтожен
+    G.map[attacker.y][attacker.x].army = null;
+  }
+  
+  html += `</div>`;
+  document.getElementById('battleContent').innerHTML = html;
+  document.getElementById('battleModal').classList.add('show');
+  
+  log(`⚔ Битва за ${defTile.name}: ${atkWon?'победа':'поражение'}`, atkWon?'good':'war');
+  renderMap();
+  renderTopbar();
+}
+
+function applyLosses(units, lossPercent){
+  units.forEach(u=>{
+    const lost = Math.max(1, Math.floor(u.count * lossPercent));
+    u.count = Math.max(0, u.count - lost);
+  });
+  // Удалить пустые
+  for(let i=units.length-1;i>=0;i--) if(units[i].count<=0) units.splice(i,1);
+}
+
+function colonize(x, y){
+  const t = G.map[y][x];
+  if(G.countries[0].gold < 50){ notify('⚠ Нужно 50 золота!'); return; }
+  G.countries[0].gold -= 50;
+  t.owner = 0;
+  log(`🚩 Колонизирована ${t.name}`,'good');
+  notify(`🚩 ${t.name} — ваша!`,'good');
+  renderTopbar();
+  renderMap();
+  renderSidebar();
+}
+
+function declareWar(cid){
+  const c = G.countries[cid];
+  if(G.countries[0].atWar.has(cid)) return;
+  G.countries[0].atWar.add(cid);
+  c.atWar.add(0);
+  log(`⚔ ОБЪЯВЛЕНА ВОЙНА: ${c.name}!`,'war');
+  notify(`⚔ Война с ${c.name}!`,'war');
+  renderSidebar();
+}
+
+function proposePeace(cid){
+  const c = G.countries[cid];
+  // Шанс мира зависит от соотношения сил
+  const myPower = getCountryMilitaryPower(0);
+  const theirPower = getCountryMilitaryPower(cid);
+  const chance = theirPower > myPower ? 0.7 : 0.3;
+  if(Math.random() < chance){
+    G.countries[0].atWar.delete(cid);
+    c.atWar.delete(0);
+    log(`🕊 Мир с ${c.name}`,'good');
+    notify(`🕊 ${c.name} согласились на мир!`,'good');
+  } else {
+    log(`❌ ${c.name} отвергли мир`);
+    notify(`❌ ${c.name} отвергли мир!`);
+  }
+  renderSidebar();
+}
+
+function proposeAlliance(cid){
+  const c = G.countries[cid];
+  const chance = 0.25 + (G.countries[0].happiness/200);
+  if(Math.random() < chance){
+    G.countries[0].allies.add(cid);
+    c.allies.add(0);
+    log(`🤝 Союз с ${c.name}!`,'good');
+    notify(`🤝 ${c.name} — ваши союзники!`,'good');
+  } else {
+    log(`❌ ${c.name} отвергли союз`);
+    notify(`❌ ${c.name} отвергли союз!`);
+  }
+  renderSidebar();
+}
+
+function getCountryMilitaryPower(cid){
+  let power = 0;
+  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
+    const t = G.map[y][x];
+    if(t.owner===cid && t.army && t.army[0] && t.army[0].owner===cid){
+      t.army[0].units.forEach(u=>{
+        power += (UNITS[u.type].atk + UNITS[u.type].def) * u.count;
+      });
+    }
+  }
+  return power;
+}
+
+function checkCountryDeath(cid){
+  if(cid===0) return;
+  if(countProvinces(cid) === 0){
+    G.countries[cid].dead = true;
+    log(`💀 ${G.countries[cid].name} уничтожена!`,'good');
+    notify(`💀 ${G.countries[cid].name} пала!`,'good');
+  }
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+}
+
+// ===== КОНЕЦ ХОДА =====
+function endTurn(){
+  // 1. Сбор ресурсов для всех стран
+  G.countries.forEach((c, cid)=>{
+    if(c.dead) return;
+    const d = calcDeltas(cid);
+    c.gold += d.gold;
+    c.food += d.food;
+    c.wood += d.wood;
+    c.stone += d.stone;
+    c.iron += d.iron;
     
-    if(dist < 40){
-      d.state = 'attack';
-      const dir = playerPos.clone().sub(n.position);
-      dir.y = 0;
-      const dLen = dir.length();
-      dir.normalize();
-      n.rotation.y = Math.atan2(dir.x, dir.z);
-      
-      if(dLen > 10){
-        const nx = n.position.x + dir.x * d.speed * dt;
-        const nz = n.position.z + dir.z * d.speed * dt;
-        if(!checkCollision(nx, nz, 0.5)){
-          n.position.x = nx; n.position.z = nz;
+    // Нехватка еды → несчастье
+    if(c.food < 0){
+      c.happiness -= 5;
+      c.food = 0;
+      if(cid===0){ log('⚠ Голод! Народ недоволен.','war'); notify('⚠ Голод!','war'); }
+    }
+    
+    // Счастье стабилизируется
+    if(c.food > 50) c.happiness = Math.min(100, c.happiness + 1);
+    
+    // Стабильность
+    if(c.happiness < 30) c.stability -= 3;
+    else c.stability = Math.min(100, c.stability + 1);
+  });
+  
+  // 2. ИИ ходы
+  aiTurn();
+  
+  // 3. События
+  if(Math.random() < 0.3) triggerRandomEvent();
+  
+  // 4. Проверка бунта
+  if(G.countries[0].stability < 20 && Math.random() < 0.3){
+    triggerEvent('🔥 БУНТ!', 'Народ восстал против вашего правления! Вы потеряли 2 провинции и 100 золота.', ()=>{
+      let lost = 0;
+      for(let y=0;y<MAP_H&&lost<2;y++)for(let x=0;x<MAP_W&&lost<2;x++){
+        if(G.map[y][x].owner===0 && Math.random()<0.3){
+          G.map[y][x].owner = null;
+          lost++;
         }
       }
-      
-      // Shoot
-      const now = performance.now()/1000;
-      if(dLen < 30 && now - d.lastShot > 1.2){
-        d.lastShot = now;
-        // Enemy bullet
-        const origin = n.position.clone().add(new THREE.Vector3(0, 1.5, 0));
-        const shootDir = playerPos.clone().add(new THREE.Vector3(0,1,0)).sub(origin).normalize();
-        // Add inaccuracy
-        shootDir.x += (Math.random()-0.5)*0.15;
-        shootDir.y += (Math.random()-0.5)*0.15;
-        shootDir.z += (Math.random()-0.5)*0.15;
-        shootDir.normalize();
-        
-        const tracer = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.03, 0.03, 1.5),
-          new THREE.MeshBasicMaterial({color:0xff3333})
-        );
-        tracer.position.copy(origin);
-        tracer.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), shootDir);
-        tracer.userData = {vel: shootDir.clone().multiplyScalar(80), life: 1.5, enemy: true};
-        scene.add(tracer);
-        bullets.push(tracer);
-        playSound(600, 0.08, 'square', 0.05);
-      }
-    } else {
-      // Wander
-      if(n.position.distanceTo(d.target) < 1){
-        d.target.set(n.position.x+(Math.random()-0.5)*15, 0, n.position.z+(Math.random()-0.5)*15);
-      }
-      const dir = d.target.clone().sub(n.position).normalize();
-      const nx = n.position.x + dir.x * d.speed*0.5 * dt;
-      const nz = n.position.z + dir.z * d.speed*0.5 * dt;
-      if(!checkCollision(nx, nz, 0.5)){
-        n.position.x = nx; n.position.z = nz;
-      }
-      n.rotation.y = Math.atan2(dir.x, dir.z);
-    }
-  });
-  
-  // Cops (spawn based on wanted level)
-  if(P.wanted > 0 && cops.length < P.wanted * 2){
-    if(Math.random() < 0.01){
-      const angle = Math.random()*Math.PI*2;
-      const dist = 40;
-      createNPC(
-        playerPos.x + Math.cos(angle)*dist,
-        playerPos.z + Math.sin(angle)*dist,
-        true, true
-      );
-    }
+      G.countries[0].gold = Math.max(0, G.countries[0].gold - 100);
+      G.countries[0].stability = 50;
+    });
   }
   
-  cops.forEach(n=>{
-    const d = n.userData;
-    const dist = n.position.distanceTo(playerPos);
-    const dir = playerPos.clone().sub(n.position);
-    dir.y = 0;
-    const dLen = dir.length();
-    dir.normalize();
-    n.rotation.y = Math.atan2(dir.x, dir.z);
+  // 5. Проверка победы/поражения
+  if(countProvinces(0) === 0){
+    gameOver(false);
+    return;
+  }
+  const aliveEnemies = G.countries.filter(c=>!c.isPlayer && !c.dead);
+  if(aliveEnemies.length === 0){
+    gameOver(true);
+    return;
+  }
+  
+  // 6. Время
+  G.turn++;
+  G.season = (G.season + 1) % 4;
+  if(G.season === 0) G.year++;
+  
+  renderTopbar();
+  renderMap();
+  renderSidebar();
+  notify('📜 Ход ' + G.turn + '. ' + SEASONS[G.season] + ', ' + G.year + ' г.');
+}
+
+// ===== ИИ =====
+function aiTurn(){
+  G.countries.forEach((c, cid)=>{
+    if(c.isPlayer || c.dead) return;
     
-    if(dLen > 8){
-      const nx = n.position.x + dir.x * d.speed*1.5 * dt;
-      const nz = n.position.z + dir.z * d.speed*1.5 * dt;
-      if(!checkCollision(nx, nz, 0.5)){
-        n.position.x = nx; n.position.z = nz;
+    // Постройка зданий
+    const myProvinces = [];
+    for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
+      if(G.map[y][x].owner===cid) myProvinces.push({x,y,tile:G.map[y][x]});
+    }
+    
+    // Построить случайное здание в случайной провинции
+    if(Math.random() < 0.4){
+      const empty = myProvinces.filter(p=>!p.tile.building);
+      if(empty.length > 0){
+        const p = choice(empty);
+        const buildable = Object.keys(BUILDINGS).filter(k=>{
+          const b = BUILDINGS[k];
+          if(b.needCoast && !isCoast(p.x,p.y)) return false;
+          for(const r in b.cost) if((c[r]||0) < b.cost[r]) return false;
+          return true;
+        });
+        if(buildable.length > 0){
+          const key = choice(buildable);
+          const b = BUILDINGS[key];
+          for(const r in b.cost) c[r] -= b.cost[r];
+          p.tile.building = key;
+        }
       }
     }
     
-    const now = performance.now()/1000;
-    if(dLen < 25 && now - d.lastShot > 0.8){
-      d.lastShot = now;
-      const origin = n.position.clone().add(new THREE.Vector3(0, 1.5, 0));
-      const shootDir = playerPos.clone().add(new THREE.Vector3(0,1,0)).sub(origin).normalize();
-      shootDir.x += (Math.random()-0.5)*0.1;
-      shootDir.y += (Math.random()-0.5)*0.1;
-      shootDir.z += (Math.random()-0.5)*0.1;
-      shootDir.normalize();
+    // Найм войск
+    const hasBarracks = myProvinces.some(p=>p.tile.building==='barracks');
+    if(hasBarracks && Math.random() < 0.5){
+      const barr = choice(myProvinces.filter(p=>p.tile.building==='barracks'));
+      const unitType = choice(['militia','militia','archer','knight']);
+      const u = UNITS[unitType];
+      let canAfford = true;
+      for(const r in u.cost) if((c[r]||0) < u.cost[r]) canAfford = false;
+      if(canAfford){
+        for(const r in u.cost) c[r] -= u.cost[r];
+        if(!barr.tile.army) barr.tile.army = [{owner:cid, units:[]}];
+        if(barr.tile.army[0].owner !== cid) barr.tile.army = [{owner:cid, units:[]}];
+        const ex = barr.tile.army[0].units.find(x=>x.type===unitType);
+        if(ex) ex.count++;
+        else barr.tile.army[0].units.push({type:unitType, count:1});
+      }
+    }
+    
+    // Агрессивность по трейту
+    const aggrFactor = c.trait==='aggressive'?0.3:c.trait==='raider'?0.4:c.trait==='expansionist'?0.25:0.1;
+    
+    // Движение и атака
+    myProvinces.forEach(p=>{
+      if(!p.tile.army || p.tile.army[0].owner!==cid) return;
+      if(Math.random() > 0.5) return;
       
-      const tracer = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.03, 0.03, 1.5),
-        new THREE.MeshBasicMaterial({color:0x3399ff})
-      );
-      tracer.position.copy(origin);
-      tracer.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), shootDir);
-      tracer.userData = {vel: shootDir.clone().multiplyScalar(100), life: 1.5, enemy: true};
-      scene.add(tracer);
-      bullets.push(tracer);
-      playSound(700, 0.08, 'square', 0.05);
+      // Найти соседнюю клетку
+      const dirs = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]];
+      const targets = [];
+      dirs.forEach(([dx,dy])=>{
+        const nx=p.x+dx, ny=p.y+dy;
+        if(nx<0||nx>=MAP_W||ny<0||ny>=MAP_H) return;
+        const t = G.map[ny][nx];
+        if(!BIOMES[t.biome].passable) return;
+        targets.push({x:nx,y:ny,tile:t});
+      });
+      
+      if(targets.length === 0) return;
+      
+      // Приоритет: вражеская территория < своя пустая < нейтральная
+      let target;
+      const enemies = targets.filter(t=>t.tile.owner!==null && t.tile.owner!==cid && c.atWar.has(t.tile.owner));
+      const neutral = targets.filter(t=>t.tile.owner===null);
+      
+      if(enemies.length>0 && Math.random()<aggrFactor+0.3){
+        target = choice(enemies);
+        if(target.tile.army && target.tile.army[0] && target.tile.army[0].owner!==cid){
+          // Битва
+          aiBattle(p.x, p.y, target.x, target.y, cid);
+        } else {
+          // Захват
+          const prev = target.tile.owner;
+          target.tile.owner = cid;
+          target.tile.army = p.tile.army;
+          p.tile.army = null;
+          checkCountryDeath(prev);
+        }
+      } else if(neutral.length>0){
+        target = choice(neutral);
+        target.tile.owner = cid;
+        target.tile.army = p.tile.army;
+        p.tile.army = null;
+      } else {
+        // Случайное движение по своей территории
+        const own = targets.filter(t=>t.tile.owner===cid && (!t.tile.army || t.tile.army[0].owner===cid));
+        if(own.length>0){
+          target = choice(own);
+          if(target.tile.army){
+            // Объединить
+            target.tile.army[0].units.forEach(u=>{
+              const ex = p.tile.army[0].units.find(x=>x.type===u.type);
+              if(ex) ex.count += u.count;
+              else p.tile.army[0].units.push({...u});
+            });
+            p.tile.army = null;
+          } else {
+            target.tile.army = p.tile.army;
+            p.tile.army = null;
+          }
+        }
+      }
+    });
+    
+    // ИИ дипломатия
+    if(Math.random() < 0.05){
+      const others = G.countries.filter(o=>!o.isPlayer && !o.dead && o.id!==cid);
+      if(others.length>0){
+        const other = choice(others);
+        if(!c.atWar.has(other.id) && Math.random()<0.3){
+          // Объявить войну
+          if(c.trait==='aggressive' || c.trait==='raider' || c.trait==='expansionist'){
+            c.atWar.add(other.id);
+            other.atWar.add(cid);
+            log(`⚔ ${c.name} объявила войну ${other.name}!`,'war');
+          }
+        }
+      }
+    }
+    
+    // ИИ предлагает мир игроку, если проигрывает
+    if(c.atWar.has(0)){
+      const myPow = getCountryMilitaryPower(cid);
+      const playerPow = getCountryMilitaryPower(0);
+      if(myPow < playerPow * 0.5 && Math.random() < 0.2){
+        c.atWar.delete(0);
+        G.countries[0].atWar.delete(cid);
+        log(`🕊 ${c.name} просит мира`,'good');
+        notify(`🕊 ${c.name} предложили мир!`,'good');
+      }
     }
   });
 }
 
-function updateBullets(dt){
-  for(let i=bullets.length-1;i>=0;i--){
-    const b = bullets[i];
-    const d = b.userData;
-    b.position.add(d.vel.clone().multiplyScalar(dt));
-    d.life -= dt;
-    
-    // Hit player
-    if(d.enemy){
-      if(b.position.distanceTo(player.position.clone().add(new THREE.Vector3(0,1,0))) < 1){
-        damagePlayer(10);
-        scene.remove(b);
-        bullets.splice(i,1);
-        continue;
-      }
-    }
-    
-    if(d.life <= 0){
-      scene.remove(b);
-      bullets.splice(i,1);
-    }
-  }
-}
-
-function damagePlayer(dmg){
-  if(P.armor > 0){
-    const absorbed = Math.min(P.armor, dmg*0.7);
-    P.armor -= absorbed;
-    dmg -= absorbed;
-  }
-  P.hp -= dmg;
-  if(P.hp <= 0){
-    P.hp = 0;
-    gameOver();
-  }
-  updateHUD();
-  // Red flash
-  const flash = document.createElement('div');
-  flash.style.cssText = 'position:fixed;inset:0;background:#ff0000;opacity:0.3;pointer-events:none;z-index:5;transition:opacity .3s';
-  document.body.appendChild(flash);
-  setTimeout(()=>{flash.style.opacity=0;setTimeout(()=>flash.remove(),300)},50);
-}
-
-function updateCamera(){
-  let target;
-  if(P.inVehicle){
-    target = P.inVehicle.position.clone().add(new THREE.Vector3(0, 2, 0));
+function aiBattle(ax, ay, tx, ty, attackerCid){
+  const from = G.map[ay][ax];
+  const to = G.map[ty][tx];
+  const defCid = to.army[0].owner;
+  
+  let atkPow = 0, defPow = 0;
+  from.army[0].units.forEach(u=>{
+    atkPow += (UNITS[u.type].atk*2 + UNITS[u.type].def) * u.count;
+  });
+  to.army[0].units.forEach(u=>{
+    defPow += (UNITS[u.type].def*2 + UNITS[u.type].atk) * u.count;
+  });
+  if(to.building==='castle') defPow *= 1.5;
+  atkPow *= 0.8 + Math.random()*0.4;
+  defPow *= 0.8 + Math.random()*0.4;
+  
+  if(atkPow > defPow){
+    const ratio = defPow/atkPow;
+    applyLosses(from.army[0].units, ratio*0.6);
+    if(from.army[0].units.length===0){ from.army = null; return; }
+    const prev = to.owner;
+    to.owner = attackerCid;
+    to.army = from.army;
+    from.army = null;
+    checkCountryDeath(prev);
   } else {
-    target = player.position.clone().add(new THREE.Vector3(0, 1.8, 0));
-  }
-  
-  const cx = target.x - Math.sin(camYaw)*Math.cos(camPitch)*camDist;
-  const cy = target.y + Math.sin(camPitch)*camDist;
-  const cz = target.z - Math.cos(camYaw)*Math.cos(camPitch)*camDist;
-  
-  camera.position.lerp(new THREE.Vector3(cx, cy, cz), 0.15);
-  camera.lookAt(target);
-}
-
-function updateMinimap(){
-  const canvas = document.getElementById('minimapCanvas');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,160,160);
-  
-  const scale = 0.5;
-  const cx = 80, cy = 80;
-  const px = P.pos.x, pz = P.pos.z;
-  
-  // Background
-  ctx.fillStyle = '#0a0518';
-  ctx.fillRect(0,0,160,160);
-  
-  // Roads
-  ctx.fillStyle = '#2a2035';
-  const half = (6*BLOCK)/2;
-  for(let i=0;i<=6;i++){
-    const z = -half + i*BLOCK;
-    const x1 = (0-px)*scale + cx - 80*scale;
-    const z1 = (z-pz)*scale + cy;
-    ctx.fillRect(0, z1-ROAD_W*scale/2, 160, ROAD_W*scale);
-    ctx.fillRect(z1-ROAD_W*scale/2, 0, ROAD_W*scale, 160);
-  }
-  
-  // Buildings
-  ctx.fillStyle = '#4a3875';
-  buildings.forEach(b=>{
-    const x = (b.position.x-px)*scale + cx;
-    const z = (b.position.z-pz)*scale + cy;
-    const w = b.geometry.parameters.width*scale;
-    const d = b.geometry.parameters.depth*scale;
-    ctx.fillRect(x-w/2, z-d/2, w, d);
-  });
-  
-  // Vehicles
-  ctx.fillStyle = '#ffd700';
-  vehicles.forEach(v=>{
-    const x = (v.position.x-px)*scale + cx;
-    const z = (v.position.z-pz)*scale + cy;
-    ctx.fillRect(x-2, z-2, 4, 4);
-  });
-  
-  // NPCs
-  ctx.fillStyle = '#00e5ff';
-  npcs.forEach(n=>{
-    const x = (n.position.x-px)*scale + cx;
-    const z = (n.position.z-pz)*scale + cy;
-    ctx.fillRect(x-1, z-1, 2, 2);
-  });
-  
-  // Enemies
-  ctx.fillStyle = '#ff2e6b';
-  enemies.forEach(n=>{
-    const x = (n.position.x-px)*scale + cx;
-    const z = (n.position.z-pz)*scale + cy;
-    ctx.fillRect(x-2, z-2, 4, 4);
-  });
-  
-  // Cops
-  ctx.fillStyle = '#3399ff';
-  cops.forEach(n=>{
-    const x = (n.position.x-px)*scale + cx;
-    const z = (n.position.z-pz)*scale + cy;
-    ctx.fillRect(x-2, z-2, 4, 4);
-  });
-  
-  // Player (arrow)
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(-P.yaw);
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.moveTo(0, -6);
-  ctx.lineTo(-4, 4);
-  ctx.lineTo(4, 4);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-}
-
-// ============ HUD ============
-function updateHUD(){
-  document.getElementById('hpBar').style.width = (P.hp/P.maxHp*100)+'%';
-  document.getElementById('armorBar').style.width = P.armor+'%';
-}
-function updateWantedHUD(){
-  const stars = document.getElementById('stars').children;
-  for(let i=0;i<5;i++){
-    stars[i].classList.toggle('active', i < P.wanted);
+    const ratio = atkPow/defPow;
+    applyLosses(to.army[0].units, ratio*0.4);
+    from.army = null;
   }
 }
-function updateMoneyHUD(){
-  document.getElementById('money').textContent = '$' + P.money;
-}
-function updateWeaponHUD(){
-  const w = P.weapons[P.curWeapon];
-  document.getElementById('weaponName').textContent = w.name;
-  document.getElementById('ammoVal').textContent = w.ammo === Infinity ? '∞' : w.ammo;
-}
-function showMsg(text){
-  const m = document.getElementById('msg');
-  m.textContent = text;
-  m.classList.add('show');
-  clearTimeout(m._t);
-  m._t = setTimeout(()=>m.classList.remove('show'), 2500);
+
+// ===== СОБЫТИЯ =====
+function triggerRandomEvent(){
+  const events = [
+    {title:'🌾 БОГАТЫЙ УРОЖАЙ', text:'Дождь и солнце дали обильный урожай. +100 еды.', effect:()=>{G.countries[0].food+=100;}, type:'good'},
+    {title:'🏜 ЗАСУХА', text:'Засуха погубила посевы. -50 еды.', effect:()=>{G.countries[0].food=Math.max(0,G.countries[0].food-50);}, type:'war'},
+    {title:'💰 ТОРГОВЫЙ КАРАВАН', text:'Купцы принесли богатства. +80 золота.', effect:()=>{G.countries[0].gold+=80;}, type:'good'},
+    {title:'🦠 ЭПИДЕМИЯ', text:'Чума унесла жизни. -50 золота на лечение, -5 счастья.', effect:()=>{G.countries[0].gold=Math.max(0,G.countries[0].gold-50);G.countries[0].happiness-=5;}, type:'war'},
+    {title:'⛏ ЗОЛОТАЯ ЖИЛА', text:'Найдена золотая жила! +150 золота.', effect:()=>{G.countries[0].gold+=150;}, type:'good'},
+    {title:'📚 МУДРЕЦ', text:'Странствующий мудрец поделился знаниями. +1 технология.', effect:()=>{G.countries[0].tech++;}, type:'good'},
+    {title:'🔥 ПОЖАР', text:'Пожар уничтожил запасы дерева. -40 дерева.', effect:()=>{G.countries[0].wood=Math.max(0,G.countries[0].wood-40);}, type:'war'},
+    {title:'⚒ НАЁМНИКИ', text:'Отряд наёмников предлагает службу. +50 железа за 30 золота?', 
+      effect:()=>{
+        if(G.countries[0].gold>=30){
+          G.countries[0].gold-=30;
+          G.countries[0].iron+=50;
+          return true;
+        }
+        return false;
+      }, type:'good'}
+  ];
+  const e = choice(events);
+  const ok = e.effect();
+  if(ok === false) return;
+  log(`${e.title}: ${e.text}`, e.type);
+  triggerEvent(e.title, e.text);
 }
 
-// ============ GAME STATE ============
-function startGame(){
-  initAudio();
-  state = 'playing';
-  document.getElementById('menu').hidden = true;
-  document.getElementById('hud').hidden = false;
-  document.getElementById('money').hidden = false;
-  document.getElementById('weapon').hidden = false;
-  document.getElementById('minimap').hidden = false;
-  updateHUD();
-  updateWantedHUD();
-  updateMoneyHUD();
-  updateWeaponHUD();
-  showMsg('Добро пожаловать в Neon City! Нажми ЛКМ для захвата мыши');
-}
-function gameOver(){
-  state = 'over';
-  document.exitPointerLock && document.exitPointerLock();
-  setTimeout(()=>{
-    alert('ВЫ ПОГИБЛИ\n\nДеньги: $' + P.money + '\nРозыск: ' + '★'.repeat(P.wanted));
-    // Reset
-    P.hp = P.maxHp;
-    P.armor = 0;
-    P.wanted = 0;
-    P.pos.set(0, 1, 0);
-    player.position.copy(P.pos);
-    if(P.inVehicle){
-      P.inVehicle = null;
-      player.visible = true;
-    }
-    cops.forEach(c=>scene.remove(c));
-    cops.length = 0;
-    state = 'playing';
-    updateHUD();
-    updateWantedHUD();
-  }, 100);
+function triggerEvent(title, text){
+  document.getElementById('eventTitle').textContent = title;
+  document.getElementById('eventContent').textContent = text;
+  document.getElementById('eventModal').classList.add('show');
 }
 
-// ============ ANIMATE ============
-function animate(){
-  requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
-  
-  if(state === 'playing'){
-    updatePlayer(dt);
-    updateNPCs(dt);
-    updateBullets(dt);
-    updateCamera();
-    updateMinimap();
-    
-    // Wanted decay
-    if(P.wanted > 0 && Math.random() < 0.001){
-      P.wanted = Math.max(0, P.wanted - 1);
-      updateWantedHUD();
-    }
-  } else if(state === 'menu'){
-    camera.position.set(Math.sin(performance.now()*0.0002)*30, 20, Math.cos(performance.now()*0.0002)*30);
-    camera.lookAt(0, 0, 0);
-  }
-  
-  renderer.render(scene, camera);
+// ===== GAME OVER =====
+function gameOver(won){
+  const title = won ? '🏆 ВЕЛИКАЯ ПОБЕДА!' : '💀 ПАДЕНИЕ КОРОЛЕВСТВА';
+  const content = won 
+    ? `Вы покорили весь известный мир!\n\n${G.playerRulerName} из ${G.playerCountryName} войдёт в легенды.\n\nХодов: ${G.turn}\nЛет правления: ${G.year - 1066}`
+    : `Ваше королевство пало.\n\n${G.playerRulerName} потерял все земли.\n\nХодов продлилось: ${G.turn}`;
+  document.getElementById('goTitle').textContent = title;
+  document.getElementById('goContent').textContent = content;
+  document.getElementById('gameOverModal').classList.add('show');
 }
 
-init();
+// ===== АВТОСОХРАНЕНИЕ (в память) =====
+// Можно добавить позже
+
+// ===== ИНИЦИАЛИЗАЦИЯ =====
+window.addEventListener('resize', ()=>{
+  if(G) renderMap();
+});
 </script>
 </body>
 </html>
