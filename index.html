@@ -1,939 +1,1234 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Neon Conquest</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
-html,body{width:100%;height:100%;overflow:hidden;background:#05050f}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#fff;touch-action:none}
-.app{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
-.top-bar{background:rgba(10,10,30,0.95);backdrop-filter:blur(10px);padding:10px 14px;border-bottom:1px solid rgba(78,205,196,0.3);flex-shrink:0}
-.top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.kingdom-info{display:flex;align-items:center;gap:10px}
-.kingdom-icon{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#4ecdc4,#44a3aa);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 15px rgba(78,205,196,0.5)}
-.kingdom-name{font-size:14px;font-weight:700}
-.time-counter{font-size:12px;color:#4ecdc4;font-family:monospace;font-weight:700}
-.resources{display:flex;gap:14px;font-size:13px;font-weight:700;flex-wrap:wrap}
-.resource{display:flex;align-items:center;gap:4px}
-.map-container{flex:1;position:relative;overflow:hidden;background:#05050f;min-height:0}
-#gameCanvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%}
-.mini-map{position:absolute;top:10px;right:10px;width:110px;height:110px;background:rgba(0,0,0,0.8);border:2px solid rgba(78,205,196,0.5);border-radius:10px;box-shadow:0 0 20px rgba(78,205,196,0.3)}
-#miniMapCanvas{width:100%;height:100%;border-radius:8px;display:block}
-.bottom-bar{background:rgba(10,10,30,0.95);backdrop-filter:blur(10px);padding:10px;border-top:1px solid rgba(78,205,196,0.3);display:flex;gap:8px;flex-shrink:0}
-.action-btn{flex:1;padding:10px 4px;border:none;border-radius:12px;background:rgba(255,255,255,0.08);color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid rgba(255,255,255,0.1)}
-.action-btn:active{transform:scale(0.95);background:rgba(78,205,196,0.2);border-color:#4ecdc4}
-.action-icon{font-size:22px}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;align-items:flex-end;z-index:100}
-.modal.show{display:flex}
-.modal-content{width:100%;max-height:85vh;background:linear-gradient(180deg,#1a1a3e,#0a0a1a);border-radius:24px 24px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));overflow-y:auto;animation:slideUp 0.3s;border-top:1px solid rgba(78,205,196,0.4)}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.modal-title{font-size:20px;font-weight:800}
-.close-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.leaderboard-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08)}
-.leaderboard-item.you{background:linear-gradient(135deg,rgba(78,205,196,0.2),rgba(68,163,170,0.1));border:1px solid #4ecdc4;box-shadow:0 0 15px rgba(78,205,196,0.2)}
-.rank{font-size:18px;font-weight:800;width:30px;text-align:center}
-.kingdom-flag{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.kingdom-details{flex:1;min-width:0}
-.kingdom-details-name{font-size:14px;font-weight:700;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.kingdom-details-territory{font-size:12px;opacity:0.7}
-.negotiation-options{display:flex;flex-direction:column;gap:10px}
-.negotiation-btn{padding:16px;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;text-align:left;transition:all 0.2s}
-.negotiation-btn:active{transform:scale(0.98)}
-.negotiation-btn.war{background:linear-gradient(135deg,#ff6b6b,#ee5a6f)}
-.negotiation-btn.peace{background:linear-gradient(135deg,#4ecdc4,#44a3aa)}
-.negotiation-btn.alliance{background:linear-gradient(135deg,#ffd93d,#ff9a3c);color:#000}
-.negotiation-btn.trade{background:linear-gradient(135deg,#a8edea,#fed6e3);color:#000}
-.notification{position:fixed;top:90px;left:50%;transform:translateX(-50%);background:rgba(10,10,30,0.95);backdrop-filter:blur(10px);padding:12px 20px;border-radius:12px;border:1px solid #4ecdc4;font-size:14px;font-weight:600;z-index:200;animation:fadeIn 0.3s;max-width:90%;text-align:center;box-shadow:0 0 20px rgba(78,205,196,0.4)}
-@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.menu-item{padding:16px;background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:10px;cursor:pointer;font-size:15px;font-weight:600;display:flex;align-items:center;gap:12px;border:1px solid rgba(255,255,255,0.08)}
-.menu-item:active{background:rgba(78,205,196,0.15);border-color:#4ecdc4}
-.army-unit{display:flex;justify-content:space-between;align-items:center;padding:14px;background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.08)}
-.army-unit-info{display:flex;align-items:center;gap:12px;flex:1}
-.army-unit-icon{font-size:30px}
-.hire-btn{padding:10px 18px;background:linear-gradient(135deg,#4ecdc4,#44a3aa);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(78,205,196,0.3)}
-.hire-btn:active{transform:scale(0.95)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3 Мировая - Стратегия</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Main Menu */
+        #mainMenu {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .menu-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            margin-bottom: 10px;
+            animation: titlePulse 2s infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .menu-subtitle {
+            font-size: 18px;
+            opacity: 0.8;
+            margin-bottom: 40px;
+        }
+
+        .menu-btn {
+            width: 280px;
+            padding: 18px;
+            margin: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6);
+        }
+
+        .menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Kingdom Name Input */
+        #kingdomNameInput {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            padding: 20px;
+        }
+
+        .name-box {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 40px;
+            border-radius: 25px;
+            border: 3px solid #ffd700;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .name-box h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .name-box input {
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .name-box button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* Game Container */
+        #gameContainer {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 2px solid #ffd700;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .resource-icon {
+            font-size: 24px;
+        }
+
+        .resource-value {
+            color: #ffd700;
+        }
+
+        /* Map Container */
+        .map-container {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+            background: #2d5016;
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(20, 60px);
+            grid-template-rows: repeat(20, 60px);
+            gap: 2px;
+            padding: 10px;
+            min-width: 1240px;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(0,0,0,0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        .cell.player {
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .cell.enemy {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            border-color: #ff4444;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .cell.neutral {
+            background: linear-gradient(135deg, #888, #666);
+            border-color: #999;
+        }
+
+        .cell.forest {
+            background: linear-gradient(135deg, #228b22, #006400);
+        }
+
+        .cell.mountain {
+            background: linear-gradient(135deg, #8b7355, #654321);
+        }
+
+        .cell.water {
+            background: linear-gradient(135deg, #4169e1, #0000cd);
+        }
+
+        .cell.selected {
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 20px #ffd700;
+            animation: selectedPulse 1s infinite;
+        }
+
+        @keyframes selectedPulse {
+            0%, 100% { box-shadow: 0 0 20px #ffd700; }
+            50% { box-shadow: 0 0 40px #ffd700; }
+        }
+
+        .cell-army {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 14px;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        /* Bottom Panel */
+        .bottom-panel {
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-top: 2px solid #ffd700;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 3px solid #ffd700;
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-align: center;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Leaderboard */
+        .leaderboard-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid transparent;
+        }
+
+        .leaderboard-item.player {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .leaderboard-rank {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            width: 40px;
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .leaderboard-territory {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        /* Profile */
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        /* Diplomacy */
+        .diplomacy-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .diplomacy-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-war {
+            background: #ff4444;
+        }
+
+        .status-peace {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .status-alliance {
+            background: #ffd700;
+            color: #000;
+        }
+
+        /* Game Over */
+        #gameOver {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #gameOver.active {
+            display: flex;
+        }
+
+        .game-over-text {
+            font-size: 64px;
+            font-weight: bold;
+            color: #ff4444;
+            text-shadow: 0 0 50px rgba(255, 68, 68, 0.8);
+            margin-bottom: 30px;
+            animation: gameOverPulse 2s infinite;
+        }
+
+        @keyframes gameOverPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Victory */
+        #victory {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #victory.active {
+            display: flex;
+        }
+
+        .victory-text {
+            font-size: 64px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+            margin-bottom: 30px;
+            animation: victoryPulse 2s infinite;
+        }
+
+        @keyframes victoryPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .menu-title {
+                font-size: 36px;
+            }
+            
+            .map-grid {
+                grid-template-columns: repeat(20, 50px);
+                grid-template-rows: repeat(20, 50px);
+            }
+            
+            .cell {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="app">
-  <div class="top-bar">
-    <div class="top-row">
-      <div class="kingdom-info">
-        <div class="kingdom-icon">👑</div>
-        <div class="kingdom-name" id="kingdomName">Твоё Королевство</div>
-      </div>
-      <div class="time-counter" id="timeCounter">⏱ 00:00:00</div>
+    <!-- Main Menu -->
+    <div id="mainMenu">
+        <div class="menu-title">3 МИРОВАЯ</div>
+        <div class="menu-subtitle">Стратегия захвата территорий</div>
+        <button class="menu-btn" onclick="startGame()">Начать игру</button>
+        <button class="menu-btn" onclick="showProfile()">Профиль</button>
+        <button class="menu-btn" onclick="showLeaderboard()">Топ игроков</button>
     </div>
-    <div class="resources">
-      <div class="resource">💎 <span id="crystals">100</span></div>
-      <div class="resource">⚡ <span id="energy">50</span></div>
-      <div class="resource">⚔️ <span id="army">10</span></div>
-    </div>
-  </div>
-  
-  <div class="map-container" id="mapContainer">
-    <canvas id="gameCanvas"></canvas>
-    <div class="mini-map" id="miniMapBox">
-      <canvas id="miniMapCanvas"></canvas>
-    </div>
-  </div>
-  
-  <div class="bottom-bar">
-    <button class="action-btn" onclick="openLeaderboard()">
-      <div class="action-icon">🏆</div>
-      <div>Топ</div>
-    </button>
-    <button class="action-btn" onclick="openBuild()">
-      <div class="action-icon">🏗</div>
-      <div>Строить</div>
-    </button>
-    <button class="action-btn" onclick="openArmy()">
-      <div class="action-icon">⚔️</div>
-      <div>Армия</div>
-    </button>
-    <button class="action-btn" onclick="openMenu()">
-      <div class="action-icon">☰</div>
-      <div>Меню</div>
-    </button>
-  </div>
-</div>
 
-<div class="modal" id="leaderboardModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">🏆 Топ Королевств</div>
-      <button class="close-btn" onclick="closeModal('leaderboardModal')">×</button>
+    <!-- Kingdom Name Input -->
+    <div id="kingdomNameInput">
+        <div class="name-box">
+            <h2>Назови своё королевство</h2>
+            <input type="text" id="kingdomName" placeholder="Введи название..." maxlength="20">
+            <button onclick="confirmKingdomName()">Начать завоевания</button>
+        </div>
     </div>
-    <div id="leaderboardList"></div>
-  </div>
-</div>
 
-<div class="modal" id="negotiationModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title" id="negotiationTitle">Переговоры</div>
-      <button class="close-btn" onclick="closeModal('negotiationModal')">×</button>
+    <!-- Game Container -->
+    <div id="gameContainer">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="resource">
+                <span class="resource-icon">💰</span>
+                <span class="resource-value" id="goldDisplay">1000</span>
+            </div>
+            <div class="resource">
+                <span class="resource-icon">🌾</span>
+                <span class="resource-value" id="foodDisplay">500</span>
+            </div>
+            <div class="resource">
+                <span class="resource-icon">⚔️</span>
+                <span class="resource-value" id="armyDisplay">100</span>
+            </div>
+            <div class="resource">
+                <span class="resource-icon">🏰</span>
+                <span class="resource-value" id="territoryDisplay">1</span>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div class="map-grid" id="mapGrid"></div>
+        </div>
+
+        <!-- Bottom Panel -->
+        <div class="bottom-panel">
+            <div class="action-buttons">
+                <button class="action-btn" onclick="buildFarm()">🌾 Ферма (100💰)</button>
+                <button class="action-btn" onclick="buildBarracks()">⚔️ Казарма (200💰)</button>
+                <button class="action-btn" onclick="buildWall()">🏰 Стена (150💰)</button>
+                <button class="action-btn" onclick="recruitArmy()">👥 Нанять (50💰)</button>
+                <button class="action-btn" onclick="attackCell()">⚔️ Атаковать</button>
+                <button class="action-btn" onclick="showDiplomacy()">🤝 Дипломатия</button>
+                <button class="action-btn" onclick="showLeaderboard()">🏆 Топ</button>
+                <button class="action-btn" onclick="showProfile()">👤 Профиль</button>
+            </div>
+        </div>
     </div>
-    <div id="negotiationInfo" style="margin-bottom:15px;padding:12px;background:rgba(255,255,255,0.05);border-radius:10px;font-size:13px"></div>
-    <div class="negotiation-options">
-      <button class="negotiation-btn war" onclick="negotiate('war')">⚔️ Объявить войну и атаковать</button>
-      <button class="negotiation-btn peace" onclick="negotiate('peace')">🕊 Заключить мир</button>
-      <button class="negotiation-btn alliance" onclick="negotiate('alliance')">🤝 Предложить союз</button>
-      <button class="negotiation-btn trade" onclick="negotiate('trade')">💰 Торговля (50💎 → 10⚔️)</button>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content" id="modalContent"></div>
     </div>
-  </div>
-</div>
 
-<div class="modal" id="menuModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">☰ Меню</div>
-      <button class="close-btn" onclick="closeModal('menuModal')">×</button>
+    <!-- Game Over -->
+    <div id="gameOver">
+        <div class="game-over-text">GAME OVER</div>
+        <p style="font-size: 24px; margin-bottom: 30px;">Твоё королевство пало...</p>
+        <button class="menu-btn" onclick="restartGame()">Начать заново</button>
     </div>
-    <div class="menu-item" onclick="manualSave()">💾 Сохранить игру</div>
-    <div class="menu-item" onclick="resetGame()">🔄 Новая игра</div>
-    <div class="menu-item" onclick="showStats()">📊 Статистика</div>
-    <div class="menu-item" onclick="showAbout()">ℹ️ Об игре</div>
-  </div>
-</div>
 
-<div class="modal" id="armyModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">⚔️ Армия</div>
-      <button class="close-btn" onclick="closeModal('armyModal')">×</button>
+    <!-- Victory -->
+    <div id="victory">
+        <div class="victory-text">ПОБЕДА!</div>
+        <p style="font-size: 24px; margin-bottom: 30px;">Ты захватил весь мир!</p>
+        <button class="menu-btn" onclick="restartGame()">Начать новую игру</button>
     </div>
-    <div style="margin-bottom:15px;opacity:0.7;font-size:13px">Нанимай юнитов за кристаллы 💎</div>
-    <div class="army-unit">
-      <div class="army-unit-info">
-        <div class="army-unit-icon">🗡️</div>
-        <div><div style="font-weight:700">Пехотинец</div><div style="font-size:12px;opacity:0.7">Сила: 1 · 10 💎</div></div>
-      </div>
-      <button class="hire-btn" onclick="hireUnit(1,10)">+1</button>
-    </div>
-    <div class="army-unit">
-      <div class="army-unit-info">
-        <div class="army-unit-icon">🏹</div>
-        <div><div style="font-weight:700">Лучник</div><div style="font-size:12px;opacity:0.7">Сила: 2 · 25 💎</div></div>
-      </div>
-      <button class="hire-btn" onclick="hireUnit(2,25)">+1</button>
-    </div>
-    <div class="army-unit">
-      <div class="army-unit-info">
-        <div class="army-unit-icon">🐴</div>
-        <div><div style="font-weight:700">Всадник</div><div style="font-size:12px;opacity:0.7">Сила: 5 · 60 💎</div></div>
-      </div>
-      <button class="hire-btn" onclick="hireUnit(5,60)">+1</button>
-    </div>
-    <div class="army-unit">
-      <div class="army-unit-info">
-        <div class="army-unit-icon">🐉</div>
-        <div><div style="font-weight:700">Дракон</div><div style="font-size:12px;opacity:0.7">Сила: 20 · 250 💎</div></div>
-      </div>
-      <button class="hire-btn" onclick="hireUnit(20,250)">+1</button>
-    </div>
-  </div>
-</div>
 
-<div class="modal" id="buildModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">🏗 Строительство</div>
-      <button class="close-btn" onclick="closeModal('buildModal')">×</button>
-    </div>
-    <div style="margin-bottom:15px;opacity:0.7;font-size:13px">Выбери здание, потом тапни на свою пустую клетку</div>
-    <div class="army-unit">
-      <div class="army-unit-info">
-        <div class="army-unit-icon">⛏️</div>
-        <div><div style="font-weight:700">Шахта</div><div style="font-size:12px;opacity:0.7">+2 💎/цикл · 50 💎</div></div>
-      </div>
-      <button class="hire-btn" onclick="setBuildMode('mine',50)">🔨</button>
-    </div>
-    <div class="army-unit">
-      <div class="army-unit-info">
-        <div class="army-unit-icon">🏭</div>
-        <div><div style="font-weight:700">Фабрика</div><div style="font-size:12px;opacity:0.7">+2 ⚡/цикл · 40 💎</div></div>
-      </div>
-      <button class="hire-btn" onclick="setBuildMode('factory',40)">🔨</button>
-    </div>
-    <div class="army-unit">
-      <div class="army-unit-info">
-        <div class="army-unit-icon">🛡️</div>
-        <div><div style="font-weight:700">Башня</div><div style="font-size:12px;opacity:0.7">+10 защиты · 80 💎</div></div>
-      </div>
-      <button class="hire-btn" onclick="setBuildMode('tower',80)">🔨</button>
-    </div>
-    <div class="army-unit">
-      <div class="army-unit-info">
-        <div class="army-unit-icon">🏰</div>
-        <div><div style="font-weight:700">Казарма</div><div style="font-size:12px;opacity:0.7">+1 ⚔️/цикл · 100 💎</div></div>
-      </div>
-      <button class="hire-btn" onclick="setBuildMode('barracks',100)">🔨</button>
-    </div>
-  </div>
-</div>
+    <script>
+        // Game State
+        let gameState = {
+            kingdomName: '',
+            gold: 1000,
+            food: 500,
+            army: 100,
+            territories: 1,
+            buildings: {},
+            diplomacy: {},
+            selectedCell: null,
+            gameOver: false,
+            victory: false,
+            startTime: Date.now(),
+            lastSave: Date.now()
+        };
 
-<script>
-const tg = window.Telegram?.WebApp;
-if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor('#05050f'); } catch(e){} }
+        // Map Configuration
+        const MAP_SIZE = 20;
+        const TERRAIN_TYPES = ['plain', 'forest', 'mountain', 'water'];
+        const TERRAIN_ICONS = { plain: '', forest: '🌲', mountain: '⛰️', water: '🌊' };
+        
+        // AI Kingdoms
+        const AI_NAMES = [
+            'Империя Зла', 'Северный Альянс', 'Орда Хаоса', 'Королевство Теней',
+            'Лига Свободы', 'Тёмный Орден', 'Священная Империя', 'Клан Волка',
+            'Братство Стали', 'Последний Бастион'
+        ];
 
-const MAP_SIZE = 120;
-const CELL_SIZE = 50;
-const KINGDOMS_COUNT = 10;
-const FOG_RADIUS = 3;
-const ARMY_MAINTENANCE = 0.1;
+        const AI_COLORS = [
+            '#ff4444', '#4444ff', '#ff8800', '#8800ff', '#00ff88',
+            '#ff0088', '#88ff00', '#0088ff', '#ff0044', '#44ff88'
+        ];
 
-const kingdomColors = [
-  '#4ecdc4', '#ff4757', '#ffd93d', '#a55eea', '#ff6b9d',
-  '#45aaf2', '#ff9f43', '#26de81', '#fd79a8', '#a29bfe', '#00d2d3'
-];
+        let map = [];
+        let aiKingdoms = [];
 
-const kingdomNames = [
-  'Твоё Королевство', 'Красная Империя', 'Золотая Орда', 'Фиолетовый Орден',
-  'Розовый Альянс', 'Синий Легион', 'Оранжевая Орда', 'Изумрудный Дом',
-  'Чёрный Легион', 'Лавандовое Царство', 'Бирюзовая Империя'
-];
-
-let gameState = null;
-let canvas, ctx, miniMapCanvas, miniMapCtx;
-let canvasW = 0, canvasH = 0;
-let touchStart = null, touchMoved = false;
-let negotiationTarget = null;
-let buildMode = null, buildCost = 0;
-
-function getDefaultState() {
-  return {
-    map: [],
-    kingdoms: [],
-    player: { crystals: 100, energy: 50, army: 10, armyPower: 10 },
-    camera: { x: 0, y: 0, zoom: 1 },
-    time: parseInt(localStorage.getItem('gameTime') || '0'),
-    relations: {},
-    playerStart: { x: 0, y: 0 },
-    visibleCells: new Set()
-  };
-}
-
-function init() {
-  canvas = document.getElementById('gameCanvas');
-  ctx = canvas.getContext('2d');
-  miniMapCanvas = document.getElementById('miniMapCanvas');
-  miniMapCtx = miniMapCanvas.getContext('2d');
-  
-  if (!loadGame()) {
-    gameState = getDefaultState();
-    generateWorld();
-  }
-  
-  resizeCanvas();
-  window.addEventListener('resize', () => { resizeCanvas(); render(); });
-  window.addEventListener('orientationchange', () => { setTimeout(() => { resizeCanvas(); render(); }, 100); });
-  
-  setupControls();
-  updateFogOfWar();
-  updateUI();
-  render();
-  
-  setInterval(gameLoop, 3000);
-  setInterval(saveGame, 20000);
-  setInterval(updateTime, 1000);
-}
-
-function resizeCanvas() {
-  const container = document.getElementById('mapContainer');
-  const rect = container.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  
-  canvasW = rect.width;
-  canvasH = rect.height;
-  
-  canvas.width = canvasW * dpr;
-  canvas.height = canvasH * dpr;
-  canvas.style.width = canvasW + 'px';
-  canvas.style.height = canvasH + 'px';
-  
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  
-  miniMapCanvas.width = 110 * dpr;
-  miniMapCanvas.height = 110 * dpr;
-  miniMapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-
-function generateWorld() {
-  gameState.map = Array(MAP_SIZE).fill(null).map(() => Array(MAP_SIZE).fill(null));
-  
-  gameState.kingdoms = [];
-  for (let i = 0; i <= KINGDOMS_COUNT; i++) {
-    gameState.kingdoms.push({
-      id: i,
-      name: kingdomNames[i],
-      color: kingdomColors[i],
-      territory: 0,
-      aggression: 0.3 + Math.random() * 0.5,
-      economy: 0.3 + Math.random() * 0.5,
-      diplomacy: Math.random()
-    });
-  }
-  
-  const positions = [];
-  const cols = 4, rows = 3;
-  const cellW = MAP_SIZE / cols;
-  const cellH = MAP_SIZE / rows;
-  
-  for (let i = 0; i <= KINGDOMS_COUNT; i++) {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    if (row >= rows) break;
-    const x = Math.floor(cellW * col + cellW / 2 + (Math.random() - 0.5) * cellW * 0.3);
-    const y = Math.floor(cellH * row + cellH / 2 + (Math.random() - 0.5) * cellH * 0.3);
-    positions.push({ x: Math.max(4, Math.min(MAP_SIZE - 4, x)), y: Math.max(4, Math.min(MAP_SIZE - 4, y)) });
-  }
-  
-  for (let i = 0; i < positions.length; i++) {
-    const { x, y } = positions[i];
-    const size = i === 0 ? 1 : Math.floor(Math.random() * 2) + 1;
-    
-    for (let dx = -size; dx <= size; dx++) {
-      for (let dy = -size; dy <= size; dy++) {
-        const nx = x + dx, ny = y + dy;
-        if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
-          if (Math.abs(dx) + Math.abs(dy) <= size + 1 && !gameState.map[ny][nx]) {
-            gameState.map[ny][nx] = {
-              owner: i,
-              building: null,
-              army: i === 0 ? 10 : Math.floor(Math.random() * 15) + 5,
-              defense: 0,
-              level: 1
-            };
-            gameState.kingdoms[i].territory++;
-          }
-        }
-      }
-    }
-    
-    if (i === 0) gameState.playerStart = { x, y };
-  }
-  
-  // Боссы в центре
-  const centerX = Math.floor(MAP_SIZE / 2);
-  const centerY = Math.floor(MAP_SIZE / 2);
-  for (let i = 0; i < 5; i++) {
-    const bx = centerX + Math.floor((Math.random() - 0.5) * 20);
-    const by = centerY + Math.floor((Math.random() - 0.5) * 20);
-    if (bx >= 0 && bx < MAP_SIZE && by >= 0 && by < MAP_SIZE && !gameState.map[by][bx]) {
-      gameState.map[by][bx] = {
-        owner: -1,
-        building: 'boss',
-        army: 50 + Math.floor(Math.random() * 50),
-        defense: 30,
-        level: 1
-      };
-    }
-  }
-  
-  for (let i = 0; i <= KINGDOMS_COUNT; i++) {
-    for (let j = i + 1; j <= KINGDOMS_COUNT; j++) {
-      const r = Math.random();
-      gameState.relations[`${i}-${j}`] = r < 0.2 ? 'hostile' : r < 0.7 ? 'neutral' : 'friendly';
-    }
-  }
-  
-  gameState.camera.x = gameState.playerStart.x;
-  gameState.camera.y = gameState.playerStart.y;
-  gameState.camera.zoom = 1;
-}
-
-function updateFogOfWar() {
-  gameState.visibleCells = new Set();
-  
-  for (let y = 0; y < MAP_SIZE; y++) {
-    for (let x = 0; x < MAP_SIZE; x++) {
-      const cell = gameState.map[y][x];
-      if (cell && cell.owner === 0) {
-        for (let dy = -FOG_RADIUS; dy <= FOG_RADIUS; dy++) {
-          for (let dx = -FOG_RADIUS; dx <= FOG_RADIUS; dx++) {
-            const nx = x + dx, ny = y + dy;
-            if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
-              gameState.visibleCells.add(`${nx},${ny}`);
+        // Initialize Game
+        function initGame() {
+            const saved = localStorage.getItem('worldWar3Game');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                loadMap();
+                showGame();
             }
-          }
         }
-      }
-    }
-  }
-}
 
-function setupControls() {
-  canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-  canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-  canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-  canvas.addEventListener('click', handleClick);
-  document.getElementById('miniMapBox').addEventListener('click', handleMiniMapClick);
-}
-
-function handleTouchStart(e) {
-  e.preventDefault();
-  if (e.touches.length === 1) {
-    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    touchMoved = false;
-  }
-}
-
-function handleTouchMove(e) {
-  e.preventDefault();
-  if (touchStart && e.touches.length === 1) {
-    const dx = e.touches[0].clientX - touchStart.x;
-    const dy = e.touches[0].clientY - touchStart.y;
-    
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) touchMoved = true;
-    
-    if (touchMoved) {
-      gameState.camera.x -= dx / (CELL_SIZE * gameState.camera.zoom);
-      gameState.camera.y -= dy / (CELL_SIZE * gameState.camera.zoom);
-      touchStart.x = e.touches[0].clientX;
-      touchStart.y = e.touches[0].clientY;
-      render();
-    }
-  }
-}
-
-function handleTouchEnd() { touchStart = null; }
-
-function handleClick(e) {
-  if (touchMoved) { touchMoved = false; return; }
-  
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  
-  const cellScreenSize = CELL_SIZE * gameState.camera.zoom;
-  const worldX = (x - canvasW / 2) / cellScreenSize + gameState.camera.x;
-  const worldY = (y - canvasH / 2) / cellScreenSize + gameState.camera.y;
-  
-  const cellX = Math.floor(worldX);
-  const cellY = Math.floor(worldY);
-  
-  if (cellX < 0 || cellX >= MAP_SIZE || cellY < 0 || cellY >= MAP_SIZE) return;
-  
-  if (!gameState.visibleCells.has(`${cellX},${cellY}`)) {
-    showNotification('🌫 Туман войны — нужно исследовать!');
-    return;
-  }
-  
-  const cell = gameState.map[cellY][cellX];
-  
-  if (buildMode) {
-    if (cell && cell.owner === 0 && !cell.building) {
-      if (gameState.player.crystals >= buildCost) {
-        gameState.player.crystals -= buildCost;
-        cell.building = buildMode;
-        if (buildMode === 'tower') cell.defense = 10;
-        showNotification(`🏗 Построено!`);
-        buildMode = null;
-        updateUI();
-        render();
-      } else showNotification('❌ Мало 💎');
-    } else showNotification('⚠️ Выбери свою пустую клетку');
-    return;
-  }
-  
-  if (!cell) {
-    showNotification('🌫 Пустая клетка');
-    return;
-  }
-  
-  if (cell.owner === -1) {
-    showNotification(`👹 Босс! ⚔️${cell.army} 🛡️${cell.defense}`);
-  } else if (cell.owner === 0) {
-    const b = cell.building ? ` · ${cell.building}` : '';
-    showNotification(`👑 Твоя · Ур.${cell.level} · ⚔️${cell.army}${b}`);
-  } else {
-    if (!isAdjacentToPlayer(cellX, cellY)) {
-      showNotification('⚠️ Нужна соседняя клетка!');
-      return;
-    }
-    negotiationTarget = { owner: cell.owner, x: cellX, y: cellY };
-    const k = gameState.kingdoms[cell.owner];
-    document.getElementById('negotiationTitle').textContent = k.name;
-    document.getElementById('negotiationInfo').innerHTML = `⚔️ Армия: ${cell.army} · 🛡 Защита: ${cell.defense || 0} · Ур.${cell.level}<br>Твоя армия: ${gameState.player.army}`;
-    document.getElementById('negotiationModal').classList.add('show');
-  }
-}
-
-function isAdjacentToPlayer(x, y) {
-  const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
-  for (const [dx, dy] of dirs) {
-    const nx = x + dx, ny = y + dy;
-    if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
-      const c = gameState.map[ny][nx];
-      if (c && c.owner === 0) return true;
-    }
-  }
-  return false;
-}
-
-function handleMiniMapClick(e) {
-  const rect = miniMapCanvas.getBoundingClientRect();
-  gameState.camera.x = ((e.clientX - rect.left) / rect.width) * MAP_SIZE;
-  gameState.camera.y = ((e.clientY - rect.top) / rect.height) * MAP_SIZE;
-  render();
-}
-
-function render() {
-  if (!ctx || canvasW === 0) return;
-  
-  ctx.fillStyle = '#05050f';
-  ctx.fillRect(0, 0, canvasW, canvasH);
-  
-  const cellScreenSize = CELL_SIZE * gameState.camera.zoom;
-  const viewW = canvasW / cellScreenSize;
-  const viewH = canvasH / cellScreenSize;
-  
-  const startX = Math.max(0, Math.floor(gameState.camera.x - viewW / 2) - 1);
-  const startY = Math.max(0, Math.floor(gameState.camera.y - viewH / 2) - 1);
-  const endX = Math.min(MAP_SIZE, Math.ceil(gameState.camera.x + viewW / 2) + 1);
-  const endY = Math.min(MAP_SIZE, Math.ceil(gameState.camera.y + viewH / 2) + 1);
-  
-  ctx.strokeStyle = 'rgba(78,205,196,0.08)';
-  ctx.lineWidth = 1;
-  for (let x = startX; x <= endX; x++) {
-    const sx = (x - gameState.camera.x) * cellScreenSize + canvasW / 2;
-    ctx.beginPath();
-    ctx.moveTo(sx, 0);
-    ctx.lineTo(sx, canvasH);
-    ctx.stroke();
-  }
-  for (let y = startY; y <= endY; y++) {
-    const sy = (y - gameState.camera.y) * cellScreenSize + canvasH / 2;
-    ctx.beginPath();
-    ctx.moveTo(0, sy);
-    ctx.lineTo(canvasW, sy);
-    ctx.stroke();
-  }
-  
-  for (let y = startY; y < endY; y++) {
-    for (let x = startX; x < endX; x++) {
-      const sx = (x - gameState.camera.x) * cellScreenSize + canvasW / 2;
-      const sy = (y - gameState.camera.y) * cellScreenSize + canvasH / 2;
-      
-      const isVisible = gameState.visibleCells.has(`${x},${y}`);
-      const cell = gameState.map[y][x];
-      
-      if (cell && isVisible) {
-        const color = cell.owner === -1 ? '#ff0000' : gameState.kingdoms[cell.owner].color;
-        
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = color;
-        ctx.globalAlpha = cell.owner === -1 ? 0.8 : 1;
-        ctx.fillRect(sx + 1, sy + 1, cellScreenSize - 2, cellScreenSize - 2);
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
-        
-        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(sx + 1, sy + 1, cellScreenSize - 2, cellScreenSize - 2);
-        
-        if (cell.building === 'boss') {
-          ctx.font = `${Math.floor(cellScreenSize * 0.6)}px Arial`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('👹', sx + cellScreenSize / 2, sy + cellScreenSize / 2);
-        } else if (cell.building) {
-          ctx.font = `${Math.floor(cellScreenSize * 0.55)}px Arial`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          const icon = cell.building === 'mine' ? '⛏️' : cell.building === 'factory' ? '🏭' : cell.building === 'tower' ? '🛡️' : '🏰';
-          ctx.fillText(icon, sx + cellScreenSize / 2, sy + cellScreenSize / 2);
-        } else if (cellScreenSize > 25) {
-          ctx.fillStyle = '#fff';
-          ctx.font = `bold ${Math.floor(cellScreenSize * 0.4)}px Arial`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(cell.army, sx + cellScreenSize / 2, sy + cellScreenSize / 2);
-        }
-      } else if (!isVisible) {
-        ctx.fillStyle = 'rgba(20,20,40,0.6)';
-        ctx.fillRect(sx + 1, sy + 1, cellScreenSize - 2, cellScreenSize - 2);
-      }
-    }
-  }
-  
-  renderMiniMap();
-}
-
-function renderMiniMap() {
-  if (!miniMapCtx) return;
-  const w = 110, h = 110;
-  
-  miniMapCtx.fillStyle = '#05050f';
-  miniMapCtx.fillRect(0, 0, w, h);
-  
-  const scale = w / MAP_SIZE;
-  const step = Math.max(1, Math.floor(MAP_SIZE / 80));
-  
-  for (let y = 0; y < MAP_SIZE; y += step) {
-    for (let x = 0; x < MAP_SIZE; x += step) {
-      const cell = gameState.map[y][x];
-      if (cell) {
-        miniMapCtx.fillStyle = cell.owner === -1 ? '#ff0000' : gameState.kingdoms[cell.owner].color;
-        miniMapCtx.fillRect(x * scale, y * scale, scale * step + 1, scale * step + 1);
-      }
-    }
-  }
-  
-  const viewW = canvasW / (CELL_SIZE * gameState.camera.zoom);
-  const viewH = canvasH / (CELL_SIZE * gameState.camera.zoom);
-  miniMapCtx.strokeStyle = '#4ecdc4';
-  miniMapCtx.lineWidth = 2;
-  miniMapCtx.strokeRect(
-    (gameState.camera.x - viewW / 2) * scale,
-    (gameState.camera.y - viewH / 2) * scale,
-    viewW * scale,
-    viewH * scale
-  );
-  
-  miniMapCtx.fillStyle = '#fff';
-  miniMapCtx.beginPath();
-  miniMapCtx.arc(gameState.camera.x * scale, gameState.camera.y * scale, 3, 0, Math.PI * 2);
-  miniMapCtx.fill();
-}
-
-function gameLoop() {
-  // Содержание армии
-  const maintenance = gameState.player.army * ARMY_MAINTENANCE;
-  gameState.player.crystals = Math.max(0, gameState.player.crystals - maintenance);
-  
-  // Доход от зданий
-  for (let y = 0; y < MAP_SIZE; y++) {
-    for (let x = 0; x < MAP_SIZE; x++) {
-      const cell = gameState.map[y][x];
-      if (cell && cell.owner === 0 && cell.building) {
-        if (cell.building === 'mine') gameState.player.crystals += 2 * cell.level;
-        if (cell.building === 'factory') gameState.player.energy += 2 * cell.level;
-        if (cell.building === 'barracks') gameState.player.army += 1;
-      }
-      
-      // Прокачка уровней
-      if (cell && cell.owner === 0 && cell.level < 3) {
-        if (Math.random() < 0.01) cell.level++;
-      }
-    }
-  }
-  
-  // Пассивный доход
-  gameState.player.crystals += Math.floor(gameState.kingdoms[0].territory / 10);
-  
-  // ИИ
-  for (let i = 1; i <= KINGDOMS_COUNT; i++) aiTurn(i);
-  
-  updateFogOfWar();
-  updateUI();
-  render();
-}
-
-function aiTurn(kingdomId) {
-  const kingdom = gameState.kingdoms[kingdomId];
-  if (kingdom.territory === 0) return;
-  if (Math.random() > kingdom.aggression * 0.15) return;
-  
-  const borderCells = [];
-  for (let y = 0; y < MAP_SIZE; y++) {
-    for (let x = 0; x < MAP_SIZE; x++) {
-      const cell = gameState.map[y][x];
-      if (cell && cell.owner === kingdomId) {
-        const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
-        for (const [dx, dy] of dirs) {
-          const nx = x + dx, ny = y + dy;
-          if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
-            const target = gameState.map[ny][nx];
-            if (target && target.owner !== kingdomId && target.owner !== -1) {
-              const key = kingdomId < target.owner ? `${kingdomId}-${target.owner}` : `${target.owner}-${kingdomId}`;
-              if (gameState.relations[key] !== 'alliance') {
-                borderCells.push({ x, y, tx: nx, ty: ny, target });
-              }
+        // Start Game
+        function startGame() {
+            const saved = localStorage.getItem('worldWar3Game');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                loadMap();
+                showGame();
+            } else {
+                document.getElementById('mainMenu').style.display = 'none';
+                document.getElementById('kingdomNameInput').style.display = 'flex';
             }
-          }
         }
-      }
-    }
-  }
-  
-  if (borderCells.length === 0) return;
-  
-  const attack = borderCells[Math.floor(Math.random() * borderCells.length)];
-  const source = gameState.map[attack.y][attack.x];
-  
-  if (source.army > attack.target.army * 1.5) {
-    const loss = Math.floor(attack.target.army * 0.5);
-    source.army -= loss;
-    
-    if (attack.target.owner === 0) {
-      gameState.player.army = Math.max(0, gameState.player.army - loss);
-    } else if (attack.target.owner > 0) {
-      gameState.kingdoms[attack.target.owner].territory--;
-    }
-    
-    const oldOwner = attack.target.owner;
-    attack.target.owner = kingdomId;
-    attack.target.army = Math.floor(source.army * 0.5);
-    attack.target.building = null;
-    attack.target.defense = 0;
-    attack.target.level = 1;
-    kingdom.territory++;
-  }
-}
 
-function negotiate(action) {
-  if (!negotiationTarget) return;
-  
-  const targetId = negotiationTarget.owner;
-  const target = gameState.kingdoms[targetId];
-  const key = 0 < targetId ? `0-${targetId}` : `${targetId}-0`;
-  
-  let message = '';
-  
-  switch(action) {
-    case 'war':
-      gameState.relations[key] = 'hostile';
-      performAttack(negotiationTarget.x, negotiationTarget.y);
-      message = `⚔️ Атакуем ${target.name}!`;
-      break;
-    case 'peace':
-      if (target.diplomacy > 0.4) {
-        gameState.relations[key] = 'neutral';
-        message = `🕊 ${target.name} согласился на мир`;
-      } else message = `❌ ${target.name} отказался`;
-      break;
-    case 'alliance':
-      if (target.diplomacy > 0.6) {
-        gameState.relations[key] = 'alliance';
-        message = `🤝 Союз с ${target.name}!`;
-      } else message = `❌ ${target.name} отказался`;
-      break;
-    case 'trade':
-      if (gameState.player.crystals >= 50) {
-        gameState.player.crystals -= 50;
-        gameState.player.army += 10;
-        gameState.player.armyPower += 10;
-        message = `💰 Куплено 10 юнитов`;
-      } else message = `❌ Нужно 50 💎`;
-      break;
-  }
-  
-  showNotification(message);
-  closeModal('negotiationModal');
-  negotiationTarget = null;
-  updateUI();
-  render();
-}
+        // Confirm Kingdom Name
+        function confirmKingdomName() {
+            const name = document.getElementById('kingdomName').value.trim();
+            if (name.length < 3) {
+                alert('Название должно содержать минимум 3 символа!');
+                return;
+            }
+            
+            gameState.kingdomName = name;
+            generateMap();
+            saveGame();
+            showGame();
+        }
 
-function performAttack(tx, ty) {
-  const target = gameState.map[ty][tx];
-  if (!target) return;
-  
-  const myPower = gameState.player.army;
-  const enemyPower = target.army + (target.defense || 0);
-  
-  if (myPower > enemyPower) {
-    const loss = Math.floor(enemyPower * 0.5);
-    gameState.player.army -= loss;
-    gameState.player.armyPower = Math.max(0, gameState.player.armyPower - loss);
-    
-    const oldOwner = target.owner;
-    if (oldOwner > 0) gameState.kingdoms[oldOwner].territory--;
-    target.owner = 0;
-    target.army = Math.max(1, Math.floor((myPower - loss) * 0.5));
-    target.building = null;
-    target.defense = 0;
-    target.level = 1;
-    gameState.kingdoms[0].territory++;
-    
-    showNotification(`🎉 Победа! Потери: ${loss}`);
-  } else {
-    const loss = Math.floor(myPower * 0.8);
-    gameState.player.army -= loss;
-    gameState.player.armyPower = Math.max(0, gameState.player.armyPower - loss);
-    target.army = Math.max(1, target.army - Math.floor(myPower * 0.3));
-    showNotification(`💀 Поражение! Потери: ${loss}`);
-  }
-}
+        // Generate Map
+        function generateMap() {
+            map = [];
+            aiKingdoms = [];
+            
+            // Initialize empty map
+            for (let y = 0; y < MAP_SIZE; y++) {
+                map[y] = [];
+                for (let x = 0; x < MAP_SIZE; x++) {
+                    const terrain = TERRAIN_TYPES[Math.floor(Math.random() * TERRAIN_TYPES.length)];
+                    map[y][x] = {
+                        x, y,
+                        terrain,
+                        owner: null,
+                        army: 0,
+                        buildings: []
+                    };
+                }
+            }
 
-function openLeaderboard() {
-  const list = document.getElementById('leaderboardList');
-  const sorted = [...gameState.kingdoms].filter(k => k.territory > 0).sort((a, b) => b.territory - a.territory);
-  
-  list.innerHTML = sorted.map((k, i) => `
-    <div class="leaderboard-item ${k.id === 0 ? 'you' : ''}">
-      <div class="rank">${i + 1}</div>
-      <div class="kingdom-flag" style="background:${k.color}">${k.id === 0 ? '👑' : '🏰'}</div>
-      <div class="kingdom-details">
-        <div class="kingdom-details-name">${k.name}</div>
-        <div class="kingdom-details-territory">${k.territory} клеток · ${k.aggression < 0.5 ? '🕊 Мирный' : k.aggression < 0.7 ? '⚖️ Осторожный' : '⚔️ Агрессивный'}</div>
-      </div>
-    </div>
-  `).join('');
-  
-  document.getElementById('leaderboardModal').classList.add('show');
-}
+            // Place player kingdom (random position)
+            const playerStart = getRandomPosition();
+            map[playerStart.y][playerStart.x].owner = 'player';
+            map[playerStart.y][playerStart.x].army = gameState.army;
 
-function openBuild() { document.getElementById('buildModal').classList.add('show'); }
-function openArmy() { document.getElementById('armyModal').classList.add('show'); }
-function openMenu() { document.getElementById('menuModal').classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+            // Place AI kingdoms
+            for (let i = 0; i < 10; i++) {
+                const pos = getRandomPosition();
+                const ai = {
+                    name: AI_NAMES[i],
+                    color: AI_COLORS[i],
+                    territories: 1,
+                    army: 100 + Math.floor(Math.random() * 200),
+                    diplomacy: {}
+                };
+                aiKingdoms.push(ai);
+                map[pos.y][pos.x].owner = i;
+                map[pos.y][pos.x].army = ai.army;
+            }
 
-function setBuildMode(type, cost) {
-  if (gameState.player.crystals < cost) {
-    showNotification('❌ Мало 💎');
-    return;
-  }
-  buildMode = type;
-  buildCost = cost;
-  closeModal('buildModal');
-  showNotification(`🏗 Тапни на свою клетку`);
-}
+            // Initialize diplomacy
+            aiKingdoms.forEach((ai, i) => {
+                gameState.diplomacy[i] = 'peace';
+                ai.diplomacy = {};
+                aiKingdoms.forEach((_, j) => {
+                    if (i !== j) ai.diplomacy[j] = 'peace';
+                });
+            });
 
-function hireUnit(power, cost) {
-  if (gameState.player.crystals < cost) {
-    showNotification('❌ Мало 💎');
-    return;
-  }
-  gameState.player.crystals -= cost;
-  gameState.player.army += 1;
-  gameState.player.armyPower += power;
-  showNotification(`✅ +${power} силы`);
-  updateUI();
-}
+            renderMap();
+        }
 
-function manualSave() {
-  saveGame();
-  showNotification('💾 Сохранено!');
-  closeModal('menuModal');
-}
+        // Load Map
+        function loadMap() {
+            const savedMap = localStorage.getItem('worldWar3Map');
+            if (savedMap) {
+                map = JSON.parse(savedMap);
+                aiKingdoms = JSON.parse(localStorage.getItem('worldWar3AI'));
+            } else {
+                generateMap();
+            }
+            renderMap();
+        }
 
-function resetGame() {
-  if (confirm('Начать заново? Прогресс пропадёт!')) {
-    localStorage.removeItem('neonConquestSave');
-    gameState = getDefaultState();
-    generateWorld();
-    updateFogOfWar();
-    updateUI();
-    render();
-    closeModal('menuModal');
-    showNotification('🔄 Новая игра!');
-  }
-}
+        // Get Random Position
+        function getRandomPosition() {
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * MAP_SIZE);
+                y = Math.floor(Math.random() * MAP_SIZE);
+            } while (map[y][x].owner !== null || map[y][x].terrain === 'water');
+            return { x, y };
+        }
 
-function showStats() {
-  const k = gameState.kingdoms[0];
-  alert(`📊 Статистика:\n\n🗺 Территория: ${k.territory}\n💎 Кристаллы: ${Math.floor(gameState.player.crystals)}\n⚡ Энергия: ${gameState.player.energy}\n⚔️ Армия: ${gameState.player.army}\n💪 Сила: ${gameState.player.armyPower}\n⏱ Время: ${Math.floor(gameState.time/60)} мин`);
-  closeModal('menuModal');
-}
+        // Render Map
+        function renderMap() {
+            const grid = document.getElementById('mapGrid');
+            grid.innerHTML = '';
 
-function showAbout() {
-  alert('🎮 Neon Conquest\n\n• Карта 120×120 с туманом войны\n• 10 ИИ-соперников с характерами\n• Захватывай территории, строй здания\n• Веди дипломатию или войну\n• Боссы в центре карты\n• Игра на 1+ час\n• Захвати всю карту для победы!');
-  closeModal('menuModal');
-}
+            for (let y = 0; y < MAP_SIZE; y++) {
+                for (let x = 0; x < MAP_SIZE; x++) {
+                    const cell = map[y][x];
+                    const div = document.createElement('div');
+                    div.className = 'cell';
+                    div.dataset.x = x;
+                    div.dataset.y = y;
 
-function showNotification(text) {
-  const existing = document.querySelector('.notification');
-  if (existing) existing.remove();
-  
-  const notif = document.createElement('div');
-  notif.className = 'notification';
-  notif.textContent = text;
-  document.body.appendChild(notif);
-  setTimeout(() => notif.remove(), 2500);
-}
+                    // Terrain
+                    if (cell.terrain === 'forest') div.classList.add('forest');
+                    else if (cell.terrain === 'mountain') div.classList.add('mountain');
+                    else if (cell.terrain === 'water') div.classList.add('water');
 
-function updateUI() {
-  document.getElementById('crystals').textContent = Math.floor(gameState.player.crystals);
-  document.getElementById('energy').textContent = gameState.player.energy;
-  document.getElementById('army').textContent = gameState.player.army;
-  document.getElementById('kingdomName').textContent = gameState.kingdoms[0].name;
-}
+                    // Owner
+                    if (cell.owner === 'player') {
+                        div.classList.add('player');
+                    } else if (cell.owner !== null) {
+                        div.classList.add('enemy');
+                        div.style.background = `linear-gradient(135deg, ${aiKingdoms[cell.owner].color}, ${aiKingdoms[cell.owner].color}88)`;
+                    } else {
+                        div.classList.add('neutral');
+                    }
 
-function updateTime() {
-  gameState.time++;
-  const h = Math.floor(gameState.time / 3600).toString().padStart(2, '0');
-  const m = Math.floor((gameState.time % 3600) / 60).toString().padStart(2, '0');
-  const s = (gameState.time % 60).toString().padStart(2, '0');
-  document.getElementById('timeCounter').textContent = `⏱ ${h}:${m}:${s}`;
-}
+                    // Terrain icon
+                    div.textContent = TERRAIN_ICONS[cell.terrain];
 
-function saveGame() {
-  try {
-    const saveData = { ...gameState, visibleCells: Array.from(gameState.visibleCells) };
-    localStorage.setItem('neonConquestSave', JSON.stringify(saveData));
-    localStorage.setItem('gameTime', gameState.time);
-  } catch(e) { console.error('Save error:', e); }
-}
+                    // Army count
+                    if (cell.army > 0) {
+                        const armyBadge = document.createElement('div');
+                        armyBadge.className = 'cell-army';
+                        armyBadge.textContent = cell.army;
+                        div.appendChild(armyBadge);
+                    }
 
-function loadGame() {
-  try {
-    const save = localStorage.getItem('neonConquestSave');
-    if (save) {
-      const data = JSON.parse(save);
-      gameState = { ...data, visibleCells: new Set(data.visibleCells || []) };
-      if (!gameState.map || gameState.map.length === 0) return false;
-      return true;
-    }
-  } catch(e) { console.error('Load error:', e); }
-  return false;
-}
+                    // Selected
+                    if (gameState.selectedCell && gameState.selectedCell.x === x && gameState.selectedCell.y === y) {
+                        div.classList.add('selected');
+                    }
 
-window.addEventListener('beforeunload', saveGame);
-document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
+                    div.onclick = () => selectCell(x, y);
+                    grid.appendChild(div);
+                }
+            }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
-</script>
+            updateUI();
+        }
+
+        // Select Cell
+        function selectCell(x, y) {
+            gameState.selectedCell = { x, y };
+            renderMap();
+        }
+
+        // Update UI
+        function updateUI() {
+            document.getElementById('goldDisplay').textContent = Math.floor(gameState.gold);
+            document.getElementById('foodDisplay').textContent = Math.floor(gameState.food);
+            document.getElementById('armyDisplay').textContent = Math.floor(gameState.army);
+            document.getElementById('territoryDisplay').textContent = gameState.territories;
+        }
+
+        // Build Farm
+        function buildFarm() {
+            if (!gameState.selectedCell) {
+                alert('Выбери клетку!');
+                return;
+            }
+            if (gameState.gold < 100) {
+                alert('Недостаточно золота!');
+                return;
+            }
+            
+            const cell = map[gameState.selectedCell.y][gameState.selectedCell.x];
+            if (cell.owner !== 'player') {
+                alert('Можно строить только на своей территории!');
+                return;
+            }
+
+            gameState.gold -= 100;
+            cell.buildings.push('farm');
+            gameState.food += 50;
+            saveGame();
+            renderMap();
+            alert('Ферма построена! +50🌾');
+        }
+
+        // Build Barracks
+        function buildBarracks() {
+            if (!gameState.selectedCell) {
+                alert('Выбери клетку!');
+                return;
+            }
+            if (gameState.gold < 200) {
+                alert('Недостаточно золота!');
+                return;
+            }
+            
+            const cell = map[gameState.selectedCell.y][gameState.selectedCell.x];
+            if (cell.owner !== 'player') {
+                alert('Можно строить только на своей территории!');
+                return;
+            }
+
+            gameState.gold -= 200;
+            cell.buildings.push('barracks');
+            saveGame();
+            renderMap();
+            alert('Казарма построена! Теперь можно нанимать больше войск.');
+        }
+
+        // Build Wall
+        function buildWall() {
+            if (!gameState.selectedCell) {
+                alert('Выбери клетку!');
+                return;
+            }
+            if (gameState.gold < 150) {
+                alert('Недостаточно золота!');
+                return;
+            }
+            
+            const cell = map[gameState.selectedCell.y][gameState.selectedCell.x];
+            if (cell.owner !== 'player') {
+                alert('Можно строить только на своей территории!');
+                return;
+            }
+
+            gameState.gold -= 150;
+            cell.buildings.push('wall');
+            saveGame();
+            renderMap();
+            alert('Стена построена! Защита увеличена.');
+        }
+
+        // Recruit Army
+        function recruitArmy() {
+            if (gameState.gold < 50) {
+                alert('Недостаточно золота!');
+                return;
+            }
+            if (gameState.food < 20) {
+                alert('Недостаточно еды!');
+                return;
+            }
+
+            gameState.gold -= 50;
+            gameState.food -= 20;
+            gameState.army += 20;
+            
+            // Add army to selected cell or random player cell
+            if (gameState.selectedCell && map[gameState.selectedCell.y][gameState.selectedCell.x].owner === 'player') {
+                map[gameState.selectedCell.y][gameState.selectedCell.x].army += 20;
+            } else {
+                const playerCells = getPlayerCells();
+                if (playerCells.length > 0) {
+                    const randomCell = playerCells[Math.floor(Math.random() * playerCells.length)];
+                    map[randomCell.y][randomCell.x].army += 20;
+                }
+            }
+            
+            saveGame();
+            renderMap();
+            alert('Нанято 20 воинов!');
+        }
+
+        // Attack Cell
+        function attackCell() {
+            if (!gameState.selectedCell) {
+                alert('Выбери клетку для атаки!');
+                return;
+            }
+
+            const target = map[gameState.selectedCell.y][gameState.selectedCell.x];
+            
+            // Check if adjacent to player territory
+            const adjacentToPlayer = isAdjacentToPlayer(gameState.selectedCell.x, gameState.selectedCell.y);
+            if (!adjacentToPlayer && target.owner !== 'player') {
+                alert('Можно атаковать только соседние клетки!');
+                return;
+            }
+
+            if (target.owner === 'player') {
+                alert('Это уже твоя территория!');
+                return;
+            }
+
+            if (target.terrain === 'water') {
+                alert('Нельзя атаковать воду!');
+                return;
+            }
+
+            // Calculate battle
+            const playerStrength = gameState.army;
+            const targetStrength = target.army + (target.buildings.includes('wall') ? 50 : 0);
+
+            if (playerStrength > targetStrength) {
+                // Victory
+                const reward = 100 + Math.floor(Math.random() * 200);
+                gameState.gold += reward;
+                gameState.army -= Math.floor(targetStrength * 0.3);
+                target.owner = 'player';
+                target.army = Math.floor(playerStrength * 0.7);
+                gameState.territories++;
+                
+                saveGame();
+                renderMap();
+                alert(`Победа! Захвачена территория. +${reward}💰`);
+                
+                checkVictory();
+            } else {
+                // Defeat
+                gameState.army -= Math.floor(playerStrength * 0.5);
+                saveGame();
+                renderMap();
+                alert('Поражение! Армия понесла потери.');
+                
+                checkGameOver();
+            }
+        }
+
+        // Is Adjacent to Player
+        function isAdjacentToPlayer(x, y) {
+            const directions = [[0,1], [0,-1], [1,0], [-1,0]];
+            for (let [dx, dy] of directions) {
+                const nx = x + dx, ny = y + dy;
+                if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
+                    if (map[ny][nx].owner === 'player') return true;
+                }
+            }
+            return false;
+        }
+
+        // Get Player Cells
+        function getPlayerCells() {
+            const cells = [];
+            for (let y = 0; y < MAP_SIZE; y++) {
+                for (let x = 0; x < MAP_SIZE; x++) {
+                    if (map[y][x].owner === 'player') cells.push({x, y});
+                }
+            }
+            return cells;
+        }
+
+        // AI Turn
+        function aiTurn() {
+            aiKingdoms.forEach((ai, aiIndex) => {
+                if (Math.random() < 0.3) { // 30% chance to act
+                    // Find adjacent enemy cells
+                    const targets = [];
+                    for (let y = 0; y < MAP_SIZE; y++) {
+                        for (let x = 0; x < MAP_SIZE; x++) {
+                            if (map[y][x].owner === aiIndex) {
+                                const directions = [[0,1], [0,-1], [1,0], [-1,0]];
+                                for (let [dx, dy] of directions) {
+                                    const nx = x + dx, ny = y + dy;
+                                    if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
+                                        const target = map[ny][nx];
+                                        if (target.owner !== aiIndex && target.owner !== null && target.terrain !== 'water') {
+                                            if (ai.diplomacy[target.owner] === 'war' || Math.random() < 0.2) {
+                                                targets.push({x: nx, y: ny, cell: target});
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (targets.length > 0 && ai.army > 50) {
+                        const target = targets[Math.floor(Math.random() * targets.length)];
+                        const targetOwner = target.cell.owner;
+                        const targetArmy = target.cell.army;
+
+                        if (ai.army > targetArmy) {
+                            // AI wins
+                            ai.army -= Math.floor(targetArmy * 0.3);
+                            target.cell.owner = aiIndex;
+                            target.cell.army = Math.floor(ai.army * 0.7);
+                            ai.territories++;
+                            
+                            if (targetOwner === 'player') {
+                                gameState.territories--;
+                            } else if (targetOwner !== null) {
+                                aiKingdoms[targetOwner].territories--;
+                            }
+                        } else {
+                            // AI loses
+                            ai.army -= Math.floor(ai.army * 0.5);
+                        }
+                    }
+                }
+
+                // Random diplomacy changes
+                if (Math.random() < 0.05) {
+                    const otherAI = Math.floor(Math.random() * 10);
+                    if (otherAI !== aiIndex) {
+                        const relations = ['war', 'peace', 'alliance'];
+                        ai.diplomacy[otherAI] = relations[Math.floor(Math.random() * relations.length)];
+                    }
+                }
+            });
+
+            // Resource generation
+            gameState.gold += gameState.territories * 10;
+            gameState.food += gameState.territories * 5;
+            
+            // Army recruitment from barracks
+            const playerCells = getPlayerCells();
+            playerCells.forEach(cell => {
+                if (map[cell.y][cell.x].buildings.includes('barracks')) {
+                    map[cell.y][cell.x].army += 5;
+                    gameState.army += 5;
+                }
+            });
+
+            saveGame();
+            renderMap();
+            checkGameOver();
+        }
+
+        // Check Game Over
+        function checkGameOver() {
+            if (gameState.territories === 0) {
+                gameState.gameOver = true;
+                document.getElementById('gameOver').classList.add('active');
+            }
+        }
+
+        // Check Victory
+        function checkVictory() {
+            if (gameState.territories === MAP_SIZE * MAP_SIZE - 40) { // All non-water cells
+                gameState.victory = true;
+                document.getElementById('victory').classList.add('active');
+            }
+        }
+
+        // Show Diplomacy
+        function showDiplomacy() {
+            let html = '<div class="modal-title">🤝 Дипломатия</div>';
+            aiKingdoms.forEach((ai, i) => {
+                const status = gameState.diplomacy[i] || 'peace';
+                const statusClass = status === 'war' ? 'status-war' : (status === 'alliance' ? 'status-alliance' : 'status-peace');
+                const statusText = status === 'war' ? 'Война' : (status === 'alliance' ? 'Союз' : 'Мир');
+                
+                html += `
+                    <div class="diplomacy-item">
+                        <div>
+                            <div style="font-weight: bold; color: ${ai.color}">${ai.name}</div>
+                            <div style="font-size: 12px; opacity: 0.7">Территорий: ${ai.territories}</div>
+                        </div>
+                        <div>
+                            <span class="diplomacy-status ${statusClass}">${statusText}</span>
+                            <button class="action-btn" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;" onclick="changeDiplomacy(${i})">Изменить</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '<button class="modal-btn" onclick="closeModal()">Закрыть</button>';
+            showModal(html);
+        }
+
+        // Change Diplomacy
+        function changeDiplomacy(aiIndex) {
+            const current = gameState.diplomacy[aiIndex] || 'peace';
+            const next = current === 'peace' ? 'war' : (current === 'war' ? 'alliance' : 'peace');
+            gameState.diplomacy[aiIndex] = next;
+            aiKingdoms[aiIndex].diplomacy['player'] = next;
+            saveGame();
+            showDiplomacy();
+        }
+
+        // Show Leaderboard
+        function showLeaderboard() {
+            const scores = [{name: gameState.kingdomName || 'Игрок', territories: gameState.territories, isPlayer: true}];
+            aiKingdoms.forEach(ai => {
+                scores.push({name: ai.name, territories: ai.territories, isPlayer: false});
+            });
+            scores.sort((a, b) => b.territories - a.territories);
+
+            let html = '<div class="modal-title">🏆 Топ по территориям</div>';
+            scores.forEach((score, i) => {
+                html += `
+                    <div class="leaderboard-item ${score.isPlayer ? 'player' : ''}">
+                        <div class="leaderboard-rank">${i + 1}</div>
+                        <div class="leaderboard-name">${score.name}</div>
+                        <div class="leaderboard-territory">${score.territories} 🏰</div>
+                    </div>
+                `;
+            });
+            html += '<button class="modal-btn" onclick="closeModal()">Закрыть</button>';
+            showModal(html);
+        }
+
+        // Show Profile
+        function showProfile() {
+            const playTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const hours = Math.floor(playTime / 3600);
+            const minutes = Math.floor((playTime % 3600) / 60);
+
+            let html = `
+                <div class="modal-title">👤 Профиль</div>
+                <div style="text-align: center; margin: 20px 0;">
+                    <input type="text" id="profileName" value="${gameState.kingdomName}" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #ffd700; background: rgba(0,0,0,0.5); color: #fff; font-size: 18px; text-align: center;">
+                    <button class="action-btn" style="margin-top: 10px;" onclick="changeName()">Сохранить имя</button>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Территории</div>
+                        <div class="stat-value">${gameState.territories}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Армия</div>
+                        <div class="stat-value">${Math.floor(gameState.army)}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Золото</div>
+                        <div class="stat-value">${Math.floor(gameState.gold)}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Время в игре</div>
+                        <div class="stat-value">${hours}ч ${minutes}м</div>
+                    </div>
+                </div>
+                <button class="modal-btn" onclick="closeModal()">Закрыть</button>
+            `;
+            showModal(html);
+        }
+
+        // Change Name
+        function changeName() {
+            const newName = document.getElementById('profileName').value.trim();
+            if (newName.length >= 3) {
+                gameState.kingdomName = newName;
+                saveGame();
+                alert('Имя изменено!');
+                closeModal();
+            } else {
+                alert('Имя должно содержать минимум 3 символа!');
+            }
+        }
+
+        // Show Modal
+        function showModal(html) {
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Show Game
+        function showGame() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('kingdomNameInput').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+            renderMap();
+        }
+
+        // Save Game
+        function saveGame() {
+            gameState.lastSave = Date.now();
+            localStorage.setItem('worldWar3Game', JSON.stringify(gameState));
+            localStorage.setItem('worldWar3Map', JSON.stringify(map));
+            localStorage.setItem('worldWar3AI', JSON.stringify(aiKingdoms));
+        }
+
+        // Restart Game
+        function restartGame() {
+            localStorage.removeItem('worldWar3Game');
+            localStorage.removeItem('worldWar3Map');
+            localStorage.removeItem('worldWar3AI');
+            location.reload();
+        }
+
+        // Game Loop
+        setInterval(() => {
+            if (!gameState.gameOver && !gameState.victory) {
+                aiTurn();
+            }
+        }, 5000); // AI acts every 5 seconds
+
+        // Auto-save
+        setInterval(saveGame, 10000);
+
+        // Init
+        window.onload = initGame;
+    </script>
 </body>
 </html>
