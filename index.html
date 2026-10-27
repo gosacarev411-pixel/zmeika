@@ -14,11 +14,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0f08;font-family:
 }
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 
-/* ===== ЭКРАН МЕНЮ ===== */
 #menu{position:fixed;inset:0;z-index:100;background:
   radial-gradient(circle at 50% 30%,rgba(212,175,55,.15),transparent 60%),
   linear-gradient(180deg,#1a0f08 0%,#0a0504 100%);
-  display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;text-align:center}
+  display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;text-align:center;overflow-y:auto}
 #menu h1{font-size:clamp(40px,10vw,80px);font-weight:900;letter-spacing:4px;
   background:linear-gradient(180deg,#f4d77a,#d4af37,#8b7220);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
@@ -34,14 +33,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .form-row input:focus,.form-row select:focus{outline:none;border-color:var(--gold)}
 .start-btn{background:linear-gradient(180deg,#d4af37,#8b7220);color:#1a0f08;
   padding:14px 40px;border-radius:8px;font-size:16px;font-weight:900;letter-spacing:3px;
-  margin-top:10px;box-shadow:0 6px 20px rgba(212,175,55,.3);transition:transform .15s}
+  margin-top:10px;box-shadow:0 6px 20px rgba(212,175,55,.3);transition:transform .15s;width:100%}
 .start-btn:active{transform:scale(.96)}
 
-/* ===== ОСНОВНОЙ ИНТЕРФЕЙС ===== */
 #game{position:fixed;inset:0;display:none;flex-direction:column}
 #game.active{display:flex}
 
-/* Верхняя панель */
 #topbar{background:linear-gradient(180deg,#2a1810,#1a0f08);border-bottom:2px solid var(--gold-dark);
   padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;z-index:10}
 .res-group{display:flex;gap:6px;flex-wrap:wrap}
@@ -55,10 +52,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .turn-info{text-align:right;font-size:12px;color:#a88860}
 .turn-info b{color:var(--gold);font-size:14px;display:block}
 
-/* Основная область */
 #main{flex:1;display:flex;overflow:hidden;position:relative}
 
-/* Карта */
 #mapWrap{flex:1;position:relative;overflow:hidden;background:#0a0504}
 #map{position:absolute;cursor:grab;image-rendering:pixelated}
 #map:active{cursor:grabbing}
@@ -67,7 +62,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   border-radius:6px;color:var(--gold);font-size:18px;font-weight:900;backdrop-filter:blur(6px)}
 .map-btn:active{background:var(--gold-dark);color:#1a0f08}
 
-/* Боковая панель */
 #sidebar{width:320px;background:linear-gradient(180deg,#2a1810,#1a0f08);
   border-left:2px solid var(--gold-dark);display:flex;flex-direction:column;overflow:hidden}
 .side-tabs{display:flex;border-bottom:1px solid var(--gold-dark)}
@@ -79,29 +73,26 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .side-content::-webkit-scrollbar{width:6px}
 .side-content::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:3px}
 
-/* Карточки в сайдбаре */
 .card{background:rgba(212,175,55,.05);border:1px solid var(--gold-dark);border-radius:8px;
   padding:10px;margin-bottom:8px}
 .card h4{color:var(--gold);font-size:13px;margin-bottom:6px;letter-spacing:1px}
 .card .row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:#c9b78a}
 .card .row b{color:var(--parchment)}
 
-/* Кнопки действий */
 .action-btn{background:linear-gradient(180deg,rgba(212,175,55,.2),rgba(139,114,32,.2));
   border:1px solid var(--gold-dark);border-radius:6px;padding:8px 12px;color:var(--parchment);
   font-size:12px;width:100%;margin-top:6px;text-align:left;transition:all .15s}
 .action-btn:hover{background:rgba(212,175,55,.3);border-color:var(--gold)}
+.action-btn:active{transform:scale(.98)}
 .action-btn:disabled{opacity:.4;cursor:not-allowed}
 .action-btn b{color:var(--gold);display:block;margin-bottom:2px}
 
-/* Конец хода */
 #endTurnBtn{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
   background:linear-gradient(180deg,#d4af37,#8b7220);color:#1a0f08;
   padding:12px 30px;border-radius:8px;font-size:14px;font-weight:900;letter-spacing:2px;
   box-shadow:0 6px 20px rgba(212,175,55,.4);z-index:6}
 #endTurnBtn:active{transform:translateX(-50%) scale(.96)}
 
-/* ===== МОДАЛКИ ===== */
 .modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
   display:none;justify-content:center;align-items:center;padding:20px}
 .modal.show{display:flex}
@@ -109,11 +100,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   border-radius:12px;padding:24px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;
   box-shadow:0 20px 60px rgba(0,0,0,.8)}
 .modal-box h2{color:var(--gold);font-size:20px;margin-bottom:14px;letter-spacing:2px;text-align:center}
-.modal-box h3{color:var(--gold);font-size:14px;margin:12px 0 8px;letter-spacing:1px}
 .close-x{float:right;color:#a88860;font-size:22px;cursor:pointer;line-height:1}
 .close-x:hover{color:var(--gold)}
 
-/* Список зданий/юнитов */
 .build-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .build-item{background:rgba(212,175,55,.05);border:1px solid var(--gold-dark);border-radius:6px;
   padding:8px;cursor:pointer;transition:all .15s;text-align:center}
@@ -123,7 +112,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .build-item .name{font-size:11px;color:var(--parchment);font-weight:700}
 .build-item .cost{font-size:10px;color:#a88860;margin-top:2px}
 
-/* Уведомления */
 #notif{position:fixed;top:80px;right:20px;z-index:60;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:linear-gradient(180deg,#2a1810,#1a0f08);border:1px solid var(--gold);
   border-radius:8px;padding:10px 16px;color:var(--parchment);font-size:12px;max-width:300px;
@@ -132,13 +120,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .toast.good{border-color:#7fb069}
 @keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* Журнал */
 .log-entry{font-size:11px;padding:6px 0;border-bottom:1px solid rgba(139,114,32,.2);color:#c9b78a}
 .log-entry b{color:var(--gold)}
 .log-entry.war{color:#c44}
 .log-entry.good{color:#7fb069}
 
-/* Дипломатия */
 .country-row{display:flex;align-items:center;gap:10px;padding:8px;background:rgba(212,175,55,.05);
   border:1px solid var(--gold-dark);border-radius:6px;margin-bottom:6px}
 .country-flag{width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;
@@ -151,7 +137,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .diplo-btn:hover{background:rgba(212,175,55,.3)}
 .diplo-btn.war{border-color:var(--blood);color:#ff8080}
 
-/* Мобильная адаптация */
 @media (max-width:768px){
   #sidebar{position:absolute;right:0;top:0;bottom:0;width:85%;max-width:340px;
     transform:translateX(100%);transition:transform .3s;z-index:20}
@@ -167,7 +152,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 </head>
 <body>
 
-<!-- ===== МЕНЮ ===== -->
 <div id="menu">
   <h1>ВЛАСТЕЛИН<br>ЭПОХ</h1>
   <div class="sub">★ СРЕДНЕВЕКОВАЯ СТРАТЕГИЯ ★</div>
@@ -190,11 +174,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
         <option value="despotism">⚔ Деспотия (армия +)</option>
       </select>
     </div>
-    <button class="start-btn" onclick="startGame()">НАЧАТЬ ПРАВЛЕНИЕ</button>
+    <button class="start-btn" id="startBtn">НАЧАТЬ ПРАВЛЕНИЕ</button>
   </div>
 </div>
 
-<!-- ===== ИГРА ===== -->
 <div id="game">
   <div id="topbar">
     <div class="res-group">
@@ -236,15 +219,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   </div>
 </div>
 
-<!-- Модалки -->
-<div class="modal" id="buildModal">
-  <div class="modal-box">
-    <span class="close-x" onclick="closeModal('buildModal')">×</span>
-    <h2 id="buildTitle">СТРОИТЕЛЬСТВО</h2>
-    <div id="buildList" class="build-list"></div>
-  </div>
-</div>
-
 <div class="modal" id="recruitModal">
   <div class="modal-box">
     <span class="close-x" onclick="closeModal('recruitModal')">×</span>
@@ -257,7 +231,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div class="modal-box">
     <h2>⚔ БИТВА ⚔</h2>
     <div id="battleContent"></div>
-    <button class="start-btn" style="margin-top:16px;width:100%" onclick="closeModal('battleModal')">ПРОДОЛЖИТЬ</button>
+    <button class="start-btn" style="margin-top:16px" onclick="closeModal('battleModal')">ПРОДОЛЖИТЬ</button>
   </div>
 </div>
 
@@ -265,14 +239,14 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div class="modal-box">
     <h2 id="eventTitle">СОБЫТИЕ</h2>
     <div id="eventContent" style="font-size:13px;line-height:1.6;color:#c9b78a"></div>
-    <button class="start-btn" style="margin-top:16px;width:100%" onclick="closeModal('eventModal')">ПОНЯТНО</button>
+    <button class="start-btn" style="margin-top:16px" onclick="closeModal('eventModal')">ПОНЯТНО</button>
   </div>
 </div>
 
 <div class="modal" id="gameOverModal">
   <div class="modal-box" style="text-align:center">
     <h2 id="goTitle">КОНЕЦ ПРАВЛЕНИЯ</h2>
-    <div id="goContent" style="font-size:13px;line-height:1.6;color:#c9b78a;margin:16px 0"></div>
+    <div id="goContent" style="font-size:13px;line-height:1.6;color:#c9b78a;margin:16px 0;white-space:pre-line"></div>
     <button class="start-btn" onclick="location.reload()">НАЧАТЬ ЗАНОВО</button>
   </div>
 </div>
@@ -280,11 +254,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <div id="notif"></div>
 
 <script>
+'use strict';
 // ============================================================
 //  ВЛАСТЕЛИН ЭПОХ — средневековая пошаговая стратегия
 // ============================================================
 
-// ===== КОНСТАНТЫ =====
 const MAP_W = 24, MAP_H = 16;
 const TILE = 40;
 const SEASONS = ['Весна','Лето','Осень','Зима'];
@@ -312,52 +286,56 @@ const BUILDINGS = {
 };
 
 const UNITS = {
-  militia:{name:'Ополчение',icon:'🗡',cost:{gold:20,iron:5},atk:3,def:2,hp:10,needBarracks:false},
-  archer:{name:'Лучники',icon:'🏹',cost:{gold:40,wood:20,iron:10},atk:5,def:2,hp:8,needBarracks:true},
-  knight:{name:'Рыцари',icon:'🐎',cost:{gold:100,iron:40},atk:8,def:6,hp:20,needBarracks:true},
-  siege:{name:'Катапульты',icon:'🎯',cost:{gold:150,wood:80,iron:30},atk:12,def:1,hp:15,needBarracks:true,siegeBonus:5}
+  militia:{name:'Ополчение',icon:'🗡',cost:{gold:20,iron:5},atk:3,def:2,hp:10},
+  archer:{name:'Лучники',icon:'🏹',cost:{gold:40,wood:20,iron:10},atk:5,def:2,hp:8},
+  knight:{name:'Рыцари',icon:'🐎',cost:{gold:100,iron:40},atk:8,def:6,hp:20},
+  siege:{name:'Катапульты',icon:'🎯',cost:{gold:150,wood:80,iron:30},atk:12,def:1,hp:15,siegeBonus:5}
 };
 
 const GOV_BONUSES = {
-  kingdom:{gold:1,happiness:2,desc:'Стабильная власть'},
-  republic:{gold:3,trade:1,desc:'Торговые преимущества'},
-  theocracy:{happiness:5,desc:'Божья благодать'},
-  despotism:{military:2,desc:'Сильная армия'}
+  kingdom:{gold:1,happiness:2},
+  republic:{gold:3,trade:1},
+  theocracy:{happiness:5},
+  despotism:{military:2}
 };
 
-// ===== СОСТОЯНИЕ ИГРЫ =====
-let G = null; // game state
-let selected = null; // {x,y}
+let G = null;
+let selected = null;
 let mapOffset = {x:0, y:0};
 let mapScale = 1;
 let dragging = false, dragStart = null;
 let currentTab = 'info';
+const canvas = document.getElementById('map');
+const ctx = canvas ? canvas.getContext('2d') : null;
 
-// ===== УТИЛИТЫ =====
 function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
 function choice(arr){return arr[Math.floor(Math.random()*arr.length)]}
 function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
 
-function notify(text,type=''){
+function notify(text,type){
   const n = document.getElementById('notif');
   const t = document.createElement('div');
-  t.className = 'toast ' + type;
+  t.className = 'toast ' + (type||'');
   t.textContent = text;
   n.appendChild(t);
   setTimeout(()=>t.remove(),4000);
 }
 
-function log(text,type=''){
+function log(text,type){
   if(!G) return;
-  G.log.unshift({text,type,turn:G.turn});
+  G.log.unshift({text,type:type||'',turn:G.turn});
   if(G.log.length>50) G.log.pop();
   if(currentTab==='log') renderSidebar();
 }
 
-// ===== ГЕНЕРАЦИЯ МИРА =====
+const NAME_PARTS_1 = ['Вест','Нор','Аст','Мид','Ост','Зен','Кел','Тор','Бра','Фен','Лин','Рос'];
+const NAME_PARTS_2 = ['ланд','гард','марк','хейм','бург','тон','форд','вик','мир','дор'];
+function generateProvinceName(){
+  return choice(NAME_PARTS_1) + choice(NAME_PARTS_2);
+}
+
 function generateWorld(){
   const map = [];
-  // Шумная генерация
   const noise = [];
   for(let y=0;y<MAP_H;y++){
     noise[y]=[];
@@ -365,7 +343,6 @@ function generateWorld(){
       noise[y][x] = Math.random();
     }
   }
-  // Сглаживание
   for(let k=0;k<2;k++){
     const n2 = [];
     for(let y=0;y<MAP_H;y++){
@@ -384,7 +361,6 @@ function generateWorld(){
     for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++)noise[y][x]=n2[y][x];
   }
   
-  // Биомы по высоте
   for(let y=0;y<MAP_H;y++){
     map[y]=[];
     for(let x=0;x<MAP_W;x++){
@@ -397,7 +373,6 @@ function generateWorld(){
       else if(h<0.82) biome='hills';
       else biome='mountain';
       
-      // Снег на краях
       if(y<2||y>MAP_H-3) if(Math.random()<0.5) biome='snow';
       
       map[y][x] = {
@@ -409,25 +384,17 @@ function generateWorld(){
   return map;
 }
 
-const NAME_PARTS_1 = ['Вест','Нор','Аст','Мид','Ост','Зен','Кел','Тор','Бра','Фен','Лин','Рос'];
-const NAME_PARTS_2 = ['ланд','гард','марк','хейм','бург','тон','форд','вик','мир','дор'];
-function generateProvinceName(){
-  return choice(NAME_PARTS_1) + choice(NAME_PARTS_2).toLowerCase();
-}
-
-// ===== СОЗДАНИЕ СТРАН =====
 function createCountries(){
   const countries = [];
   const colors = ['#c44','#48c','#4a4','#c84','#84c','#cc4','#4cc'];
   const names = ['Вестерланд','Нордгард','Астмарк','Зенхайм','Брактон','Фенланд','Мидтон'];
   const traits = ['balanced','aggressive','trader','defensive','expansionist','diplomatic','raider'];
+  const rulerNames = ['Альберт','Ричард','Генрих','Карл','Людвиг','Сигурд','Борис'];
   
-  // Найти стартовые позиции (далеко друг от друга, на суше)
   const starts = [];
-  const attempts = 200;
   for(let i=0;i<7;i++){
     let best = null, bestDist = 0;
-    for(let a=0;a<attempts;a++){
+    for(let a=0;a<200;a++){
       const x = rand(2,MAP_W-3), y = rand(2,MAP_H-3);
       if(G.map[y][x].biome==='water'||G.map[y][x].biome==='mountain') continue;
       let minDist = Infinity;
@@ -446,7 +413,7 @@ function createCountries(){
     const country = {
       id: i,
       name: i===0 ? G.playerCountryName : names[i],
-      ruler: i===0 ? G.playerRulerName : 'Правитель ' + choice(['Альберт','Ричард','Генрих','Карл','Людвиг','Сигурд','Борис']),
+      ruler: i===0 ? G.playerRulerName : choice(rulerNames),
       color: colors[i],
       trait: traits[i],
       isPlayer: i===0,
@@ -460,7 +427,6 @@ function createCountries(){
     };
     countries.push(country);
     
-    // Захватить стартовую провинцию + соседние
     const toClaim = [{x:s.x,y:s.y}];
     for(let dy=-1;dy<=1;dy++){
       for(let dx=-1;dx<=1;dx++){
@@ -480,43 +446,42 @@ function createCountries(){
   return countries;
 }
 
-// ===== СТАРТ ИГРЫ =====
 function startGame(){
-  G = {
-    playerCountryName: document.getElementById('countryName').value || 'Вестерланд',
-    playerRulerName: document.getElementById('rulerName').value || 'Король Артур',
-    govType: document.getElementById('govType').value,
-    turn: 1,
-    year: 1066,
-    season: 0,
-    map: generateWorld(),
-    countries: null,
-    log: [],
-    selectedArmy: null
-  };
-  G.countries = createCountries();
-  
-  // Применить бонусы правительства
-  const bonus = GOV_BONUSES[G.govType];
-  const p = G.countries[0];
-  if(bonus.gold) p.gold += bonus.gold*10;
-  
-  log('Ваше правление началось! Да хранит вас Господь.','good');
-  log('Форма правления: ' + {kingdom:'Королевство',republic:'Республика',theocracy:'Теократия',despotism:'Деспотия'}[G.govType]);
-  
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('game').classList.add('active');
-  
-  initMap();
-  centerMap();
-  renderTopbar();
-  renderSidebar();
-  renderMap();
+  try {
+    G = {
+      playerCountryName: document.getElementById('countryName').value || 'Вестерланд',
+      playerRulerName: document.getElementById('rulerName').value || 'Король Артур',
+      govType: document.getElementById('govType').value,
+      turn: 1,
+      year: 1066,
+      season: 0,
+      map: generateWorld(),
+      countries: null,
+      log: [],
+      selectedArmy: null
+    };
+    G.countries = createCountries();
+    
+    const bonus = GOV_BONUSES[G.govType];
+    const p = G.countries[0];
+    if(bonus && bonus.gold) p.gold += bonus.gold*10;
+    
+    log('Ваше правление началось! Да хранит вас Господь.','good');
+    log('Форма правления: ' + {kingdom:'Королевство',republic:'Республика',theocracy:'Теократия',despotism:'Деспотия'}[G.govType]);
+    
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('game').classList.add('active');
+    
+    initMap();
+    centerMap();
+    renderTopbar();
+    renderSidebar();
+    renderMap();
+  } catch(err){
+    console.error(err);
+    alert('Ошибка запуска: ' + err.message);
+  }
 }
-
-// ===== КАРТА =====
-const canvas = document.getElementById('map');
-const ctx = canvas.getContext('2d');
 
 function initMap(){
   canvas.width = MAP_W * TILE;
@@ -526,7 +491,7 @@ function initMap(){
   canvas.addEventListener('mousemove', onMapMove);
   canvas.addEventListener('mouseup', onMapUp);
   canvas.addEventListener('click', onMapClick);
-  canvas.addEventListener('wheel', onMapWheel);
+  canvas.addEventListener('wheel', onMapWheel, {passive:false});
   
   canvas.addEventListener('touchstart', onMapTouchStart, {passive:false});
   canvas.addEventListener('touchmove', onMapTouchMove, {passive:false});
@@ -534,6 +499,7 @@ function initMap(){
 }
 
 function renderMap(){
+  if(!ctx || !G) return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
   
   for(let y=0;y<MAP_H;y++){
@@ -542,11 +508,9 @@ function renderMap(){
       const b = BIOMES[t.biome];
       const px = x*TILE, py = y*TILE;
       
-      // Биом
       ctx.fillStyle = b.color;
       ctx.fillRect(px,py,TILE,TILE);
       
-      // Владелец (цветной оверлей)
       if(t.owner !== null){
         const c = G.countries[t.owner];
         if(c && !c.dead){
@@ -557,23 +521,18 @@ function renderMap(){
         }
       }
       
-      // Здание
+      ctx.font = '20px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       if(t.building){
-        ctx.font = '20px serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
         ctx.fillText(BUILDINGS[t.building].icon, px+TILE/2, py+TILE/2);
       } else {
-        ctx.font = '14px serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
         ctx.globalAlpha = 0.4;
         ctx.fillText(b.icon, px+TILE/2, py+TILE/2);
         ctx.globalAlpha = 1;
       }
       
-      // Армия
-      if(t.army && t.army.length > 0){
+      if(t.army && t.army.length > 0 && t.army[0].units.length > 0){
         ctx.fillStyle = G.countries[t.army[0].owner].color;
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
@@ -585,17 +544,16 @@ function renderMap(){
         ctx.font = 'bold 9px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(t.army.reduce((s,u)=>s+u.count,0), px+TILE-8, py+8);
+        const total = t.army[0].units.reduce((s,u)=>s+u.count,0);
+        ctx.fillText(total, px+TILE-8, py+8);
       }
       
-      // Границы
       ctx.strokeStyle = 'rgba(0,0,0,0.15)';
       ctx.lineWidth = 1;
       ctx.strokeRect(px,py,TILE,TILE);
     }
   }
   
-  // Выделение
   if(selected){
     const px = selected.x*TILE, py = selected.y*TILE;
     ctx.strokeStyle = '#ffd700';
@@ -603,7 +561,6 @@ function renderMap(){
     ctx.strokeRect(px+1,py+1,TILE-2,TILE-2);
   }
   
-  // Выделенная армия — подсветить путь
   if(G.selectedArmy){
     const a = G.selectedArmy;
     const px = a.x*TILE, py = a.y*TILE;
@@ -618,7 +575,7 @@ function renderMap(){
 }
 
 function updateMapTransform(){
-  canvas.style.transform = `translate(${mapOffset.x}px,${mapOffset.y}px) scale(${mapScale})`;
+  canvas.style.transform = 'translate('+mapOffset.x+'px,'+mapOffset.y+'px) scale('+mapScale+')';
   canvas.style.transformOrigin = '0 0';
 }
 
@@ -644,7 +601,6 @@ function screenToTile(clientX, clientY){
   return {x: Math.floor(x/TILE), y: Math.floor(y/TILE)};
 }
 
-// Drag
 function onMapMouseDown(e){
   dragging = true;
   dragStart = {x:e.clientX - mapOffset.x, y:e.clientY - mapOffset.y};
@@ -662,7 +618,6 @@ function onMapWheel(e){
   zoomMap(e.deltaY<0?1.15:0.87);
 }
 
-// Touch
 let touchStart = null, lastTouchDist = 0;
 function onMapTouchStart(e){
   e.preventDefault();
@@ -683,9 +638,7 @@ function onMapTouchMove(e){
     updateMapTransform();
   } else if(e.touches.length===2){
     const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
-    if(lastTouchDist>0){
-      zoomMap(d/lastTouchDist);
-    }
+    if(lastTouchDist>0) zoomMap(d/lastTouchDist);
     lastTouchDist = d;
   }
 }
@@ -705,7 +658,6 @@ function onMapTouchEnd(e){
 }
 
 function onMapClick(e){
-  if(dragging) return;
   const tile = screenToTile(e.clientX, e.clientY);
   handleTileClick(tile.x, tile.y);
 }
@@ -713,7 +665,6 @@ function onMapClick(e){
 function handleTileClick(x, y){
   if(x<0||x>=MAP_W||y<0||y>=MAP_H) return;
   
-  // Если выбрана армия — попытаться двинуть
   if(G.selectedArmy){
     const a = G.selectedArmy;
     const dx = Math.abs(a.x-x), dy = Math.abs(a.y-y);
@@ -732,7 +683,6 @@ function handleTileClick(x, y){
   renderSidebar();
 }
 
-// ===== РЕНДЕР ВЕРХНЕЙ ПАНЕЛИ =====
 function renderTopbar(){
   const p = G.countries[0];
   const deltas = calcDeltas(0);
@@ -758,7 +708,7 @@ function renderTopbar(){
 function setDelta(id, val){
   const el = document.getElementById(id);
   if(val>0){el.textContent='+'+val;el.className='delta pos';}
-  else if(val<0){el.textContent=val;el.className='delta neg';}
+  else if(val<0){el.textContent=''+val;el.className='delta neg';}
   else {el.textContent='';el.className='delta';}
 }
 
@@ -774,7 +724,6 @@ function calcDeltas(cid){
   const c = G.countries[cid];
   let gold=0,food=0,wood=0,stone=0,iron=0,pop=0;
   
-  // От построек
   for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
     const t = G.map[y][x];
     if(t.owner!==cid) continue;
@@ -795,26 +744,22 @@ function calcDeltas(cid){
     pop += 100;
   }
   
-  // Налоги (золото от населения)
   const tax = Math.floor(pop * 0.05);
   gold += tax;
   
-  // Армия ест
   for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
     const t = G.map[y][x];
     if(t.army && t.army[0] && t.army[0].owner===cid){
-      food -= t.army.reduce((s,u)=>s+u.count,0);
+      food -= t.army[0].units.reduce((s,u)=>s+u.count,0);
     }
   }
   
-  // Бонусы правительства
-  const bonus = GOV_BONUSES[c.govType||G.govType];
+  const bonus = GOV_BONUSES[cid===0 ? G.govType : 'kingdom'];
   if(bonus && bonus.gold) gold += bonus.gold;
   
   return {gold,food,wood,stone,iron,pop:Math.floor(pop*0.02)};
 }
 
-// ===== САЙДБАР =====
 function switchTab(tab){
   currentTab = tab;
   document.querySelectorAll('.side-tab').forEach(t=>{
@@ -838,54 +783,47 @@ function renderSidebar(){
 
 function renderInfoTab(el){
   if(!selected){
-    el.innerHTML = '<div class="card"><h4>📜 ВЫБЕРИТЕ ПРОВИНЦИЮ</h4><p style="font-size:12px;color:#a88860">Кликните на карту, чтобы увидеть информацию о провинции и доступные действия.</p></div>' + renderCountryOverview();
+    el.innerHTML = '<div class="card"><h4>📜 ВЫБЕРИТЕ ПРОВИНЦИЮ</h4><p style="font-size:12px;color:#a88860">Кликните на карту, чтобы увидеть информацию.</p></div>' + renderCountryOverview();
     return;
   }
   const t = G.map[selected.y][selected.x];
   const b = BIOMES[t.biome];
   const owner = t.owner!==null ? G.countries[t.owner] : null;
   
-  let html = `<div class="card">
-    <h4>${b.icon} ${t.name}</h4>
-    <div class="row"><span>Биом:</span><b>${b.name}</b></div>
-    <div class="row"><span>Владелец:</span><b style="color:${owner?owner.color:'#888'}">${owner?owner.name:'Ничья'}</b></div>`;
+  let html = '<div class="card"><h4>'+b.icon+' '+t.name+'</h4>';
+  html += '<div class="row"><span>Биом:</span><b>'+b.name+'</b></div>';
+  html += '<div class="row"><span>Владелец:</span><b style="color:'+(owner?owner.color:'#888')+'">'+(owner?owner.name:'Ничья')+'</b></div>';
   
   if(t.building){
-    html += `<div class="row"><span>Здание:</span><b>${BUILDINGS[t.building].icon} ${BUILDINGS[t.building].name}</b></div>`;
+    html += '<div class="row"><span>Здание:</span><b>'+BUILDINGS[t.building].icon+' '+BUILDINGS[t.building].name+'</b></div>';
   }
-  if(t.army && t.army.length>0){
-    const a = t.army[0];
-    const total = t.army.reduce((s,u)=>s+u.count,0);
-    html += `<div class="row"><span>Армия:</span><b>${total} воинов</b></div>`;
-    t.army.forEach(u=>{
-      html += `<div class="row"><span>${UNITS[u.type].icon} ${UNITS[u.type].name}</span><b>${u.count}</b></div>`;
+  if(t.army && t.army.length>0 && t.army[0].units.length>0){
+    const total = t.army[0].units.reduce((s,u)=>s+u.count,0);
+    html += '<div class="row"><span>Армия:</span><b>'+total+' воинов</b></div>';
+    t.army[0].units.forEach(u=>{
+      html += '<div class="row"><span>'+UNITS[u.type].icon+' '+UNITS[u.type].name+'</span><b>'+u.count+'</b></div>';
     });
   }
-  html += `</div>`;
+  html += '</div>';
   
-  // Действия
   if(t.owner === 0){
-    html += `<button class="action-btn" onclick="openBuildModal(${selected.x},${selected.y})"><b>🏗 Построить здание</b>Улучшить провинцию</button>`;
+    html += '<button class="action-btn" onclick="openBuildModal('+selected.x+','+selected.y+')"><b>🏗 Построить здание</b>Улучшить провинцию</button>';
     if(t.building === 'barracks' || hasNearbyBuilding(selected.x, selected.y, 'barracks')){
-      html += `<button class="action-btn" onclick="openRecruitModal(${selected.x},${selected.y})"><b>⚔ Нанять войска</b>Пополнить армию</button>`;
+      html += '<button class="action-btn" onclick="openRecruitModal('+selected.x+','+selected.y+')"><b>⚔ Нанять войска</b>Пополнить армию</button>';
     }
-    if(t.army && t.army.length>0){
-      html += `<button class="action-btn" onclick="selectArmy(${selected.x},${selected.y})"><b>🚩 Выбрать армию</b>Для перемещения</button>`;
+    if(t.army && t.army.length>0 && t.army[0].units.length>0){
+      html += '<button class="action-btn" onclick="selectArmy('+selected.x+','+selected.y+')"><b>🚩 Выбрать армию</b>Для перемещения</button>';
     }
   } else if(t.owner !== null && t.owner !== 0){
     const enemy = G.countries[t.owner];
     if(G.countries[0].atWar.has(t.owner)){
-      if(t.army && t.army[0] && t.army[0].owner === 0){
-        html += `<div class="card" style="border-color:#c44"><h4 style="color:#c44">⚔ ЗОНА ВОЙНЫ</h4><p style="font-size:12px">Это территория ${enemy.name}. Ваши войска могут атаковать.</p></div>`;
-      } else {
-        html += `<div class="card" style="border-color:#c44"><h4 style="color:#c44">⚔ ВРАЖЕСКАЯ ТЕРРИТОРИЯ</h4><p style="font-size:12px">Подведите армию и атакуйте!</p></div>`;
-      }
+      html += '<div class="card" style="border-color:#c44"><h4 style="color:#c44">⚔ ЗОНА ВОЙНЫ</h4><p style="font-size:12px">Территория '+enemy.name+'. Атакуйте!</p></div>';
     } else {
-      html += `<div class="card"><h4>🕊 Территория ${enemy.name}</h4><p style="font-size:12px;color:#a88860">Мирные отношения. Объявите войну через вкладку "Мир".</p></div>`;
+      html += '<div class="card"><h4>🕊 Территория '+enemy.name+'</h4><p style="font-size:12px;color:#a88860">Мир. Объявите войну через вкладку "Мир".</p></div>';
     }
   } else {
     if(t.biome !== 'water' && t.biome !== 'mountain'){
-      html += `<button class="action-btn" onclick="colonize(${selected.x},${selected.y})"><b>🚩 Колонизировать</b>Стоимость: 50 золота</button>`;
+      html += '<button class="action-btn" onclick="colonize('+selected.x+','+selected.y+')"><b>🚩 Колонизировать</b>Стоимость: 50 золота</button>';
     }
   }
   
@@ -895,15 +833,15 @@ function renderInfoTab(el){
 function renderCountryOverview(){
   const p = G.countries[0];
   const provinces = countProvinces(0);
-  return `<div class="card">
-    <h4>👑 ${p.name}</h4>
-    <div class="row"><span>Правитель:</span><b>${p.ruler}</b></div>
-    <div class="row"><span>Правление:</span><b>${{kingdom:'Королевство',republic:'Республика',theocracy:'Теократия',despotism:'Деспотия'}[G.govType]}</b></div>
-    <div class="row"><span>Провинций:</span><b>${provinces}</b></div>
-    <div class="row"><span>Счастье:</span><b>${Math.floor(p.happiness)}%</b></div>
-    <div class="row"><span>Стабильность:</span><b>${Math.floor(p.stability)}%</b></div>
-    <div class="row"><span>Технологии:</span><b>Ур. ${p.tech}</b></div>
-  </div>`;
+  const govNames = {kingdom:'Королевство',republic:'Республика',theocracy:'Теократия',despotism:'Деспотия'};
+  return '<div class="card"><h4>👑 '+p.name+'</h4>'+
+    '<div class="row"><span>Правитель:</span><b>'+p.ruler+'</b></div>'+
+    '<div class="row"><span>Правление:</span><b>'+govNames[G.govType]+'</b></div>'+
+    '<div class="row"><span>Провинций:</span><b>'+provinces+'</b></div>'+
+    '<div class="row"><span>Счастье:</span><b>'+Math.floor(p.happiness)+'%</b></div>'+
+    '<div class="row"><span>Стабильность:</span><b>'+Math.floor(p.stability)+'%</b></div>'+
+    '<div class="row"><span>Технологии:</span><b>Ур. '+p.tech+'</b></div>'+
+    '</div>';
 }
 
 function countProvinces(cid){
@@ -924,30 +862,34 @@ function hasNearbyBuilding(x, y, type){
 
 function renderBuildTab(el){
   if(!selected || G.map[selected.y][selected.x].owner!==0){
-    el.innerHTML = '<div class="card"><h4>🏗 СТРОИТЕЛЬСТВО</h4><p style="font-size:12px;color:#a88860">Выберите свою провинцию для строительства.</p></div>';
+    el.innerHTML = '<div class="card"><h4>🏗 СТРОИТЕЛЬСТВО</h4><p style="font-size:12px;color:#a88860">Выберите свою провинцию.</p></div>';
     return;
   }
   const t = G.map[selected.y][selected.x];
   if(t.building){
-    el.innerHTML = `<div class="card"><h4>⚠ ЗАНЯТО</h4><p style="font-size:12px">В этой провинции уже построено: ${BUILDINGS[t.building].icon} ${BUILDINGS[t.building].name}</p></div>`;
+    el.innerHTML = '<div class="card"><h4>⚠ ЗАНЯТО</h4><p style="font-size:12px">Построено: '+BUILDINGS[t.building].icon+' '+BUILDINGS[t.building].name+'</p></div>';
     return;
   }
   
   const isCoastal = isCoast(selected.x, selected.y);
-  let html = `<div class="card"><h4>🏗 ДОСТУПНЫЕ ПОСТРОЙКИ</h4><p style="font-size:11px;color:#a88860;margin-bottom:8px">Провинция: ${t.name}</p></div><div class="build-list">`;
+  let html = '<div class="card"><h4>🏗 ПОСТРОЙКИ</h4><p style="font-size:11px;color:#a88860;margin-bottom:8px">'+t.name+'</p></div><div class="build-list">';
   
   for(const key in BUILDINGS){
     const b = BUILDINGS[key];
     if(b.needCoast && !isCoastal) continue;
     const canAfford = canPay(b.cost);
-    html += `<div class="build-item ${canAfford?'':'disabled'}" onclick="${canAfford?`build('${key}')\`:''}">
-      <span class="ico">${b.icon}</span>
-      <div class="name">${b.name}</div>
-      <div class="cost">${formatCost(b.cost)}</div>
-    </div>`;
+    html += '<div class="build-item '+(canAfford?'':'disabled')+'" data-build="'+key+'">';
+    html += '<span class="ico">'+b.icon+'</span>';
+    html += '<div class="name">'+b.name+'</div>';
+    html += '<div class="cost">'+formatCost(b.cost)+'</div>';
+    html += '</div>';
   }
-  html += `</div>`;
+  html += '</div>';
   el.innerHTML = html;
+  
+  el.querySelectorAll('.build-item:not(.disabled)').forEach(item=>{
+    item.addEventListener('click', ()=>build(item.dataset.build));
+  });
 }
 
 function isCoast(x, y){
@@ -974,33 +916,31 @@ function formatCost(cost){
 }
 
 function renderArmyTab(el){
-  const p = G.countries[0];
   let totalArmy = 0;
   const armies = [];
   for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
     const t = G.map[y][x];
-    if(t.army && t.army[0] && t.army[0].owner===0){
-      const count = t.army.reduce((s,u)=>s+u.count,0);
+    if(t.army && t.army[0] && t.army[0].owner===0 && t.army[0].units.length>0){
+      const count = t.army[0].units.reduce((s,u)=>s+u.count,0);
       totalArmy += count;
       armies.push({x,y,count,tile:t});
     }
   }
   
-  let html = `<div class="card">
-    <h4>⚔ ВАША АРМИЯ</h4>
-    <div class="row"><span>Всего воинов:</span><b>${totalArmy}</b></div>
-  </div>`;
+  let html = '<div class="card"><h4>⚔ ВАША АРМИЯ</h4><div class="row"><span>Всего воинов:</span><b>'+totalArmy+'</b></div></div>';
   
   if(armies.length===0){
-    html += `<div class="card"><p style="font-size:12px;color:#a88860">У вас нет армий. Наймите войска в провинции с казармой.</p></div>`;
+    html += '<div class="card"><p style="font-size:12px;color:#a88860">Нет армий. Наймите войска в провинции с казармой.</p></div>';
   } else {
     armies.forEach(a=>{
       const t = a.tile;
-      html += `<div class="card" style="cursor:pointer" onclick="focusTile(${a.x},${a.y})">
-        <h4>🚩 Армия в ${t.name}</h4>
-        <div class="row"><span>Воины:</span><b>${a.count}</b></div>
-        ${t.army.map(u=>`<div class="row"><span>${UNITS[u.type].icon} ${UNITS[u.type].name}</span><b>${u.count}</b></div>`).join('')}
-      </div>`;
+      html += '<div class="card" style="cursor:pointer" onclick="focusTile('+a.x+','+a.y+')">';
+      html += '<h4>🚩 Армия в '+t.name+'</h4>';
+      html += '<div class="row"><span>Воины:</span><b>'+a.count+'</b></div>';
+      t.army[0].units.forEach(u=>{
+        html += '<div class="row"><span>'+UNITS[u.type].icon+' '+UNITS[u.type].name+'</span><b>'+u.count+'</b></div>';
+      });
+      html += '</div>';
     });
   }
   el.innerHTML = html;
@@ -1017,7 +957,7 @@ function focusTile(x, y){
 }
 
 function renderDiploTab(el){
-  let html = `<div class="card"><h4>🕊 ОТНОШЕНИЯ С ДРУГИМИ СТРАНАМИ</h4></div>`;
+  let html = '<div class="card"><h4>🕊 ОТНОШЕНИЯ</h4></div>';
   G.countries.forEach(c=>{
     if(c.isPlayer || c.dead) return;
     const atWar = G.countries[0].atWar.has(c.id);
@@ -1026,19 +966,22 @@ function renderDiploTab(el){
     const rel = atWar ? '⚔ ВОЙНА' : allied ? '🤝 СОЮЗ' : '🕊 МИР';
     const relColor = atWar ? '#c44' : allied ? '#7fb069' : '#a88860';
     
-    html += `<div class="country-row">
-      <div class="country-flag" style="background:${c.color}">${c.name[0]}</div>
-      <div class="country-info">
-        <b>${c.name}</b>
-        <div style="color:${relColor};font-size:11px">${rel}</div>
-        <div style="font-size:10px;color:#a88860">${c.ruler} • ${provinces} пров.</div>
-      </div>
-    </div>
-    <div class="diplo-btns">
-      ${atWar ? `<button class="diplo-btn" onclick="proposePeace(${c.id})">🕊 Предложить мир</button>` : 
-        `<button class="diplo-btn war" onclick="declareWar(${c.id})">⚔ Объявить войну</button>`}
-      ${!allied && !atWar ? `<button class="diplo-btn" onclick="proposeAlliance(${c.id})">🤝 Союз</button>` : ''}
-    </div>`;
+    html += '<div class="country-row">';
+    html += '<div class="country-flag" style="background:'+c.color+'">'+c.name[0]+'</div>';
+    html += '<div class="country-info"><b>'+c.name+'</b>';
+    html += '<div style="color:'+relColor+';font-size:11px">'+rel+'</div>';
+    html += '<div style="font-size:10px;color:#a88860">'+c.ruler+' • '+provinces+' пров.</div>';
+    html += '</div></div>';
+    html += '<div class="diplo-btns">';
+    if(atWar){
+      html += '<button class="diplo-btn" onclick="proposePeace('+c.id+')">🕊 Предложить мир</button>';
+    } else {
+      html += '<button class="diplo-btn war" onclick="declareWar('+c.id+')">⚔ Объявить войну</button>';
+    }
+    if(!allied && !atWar){
+      html += '<button class="diplo-btn" onclick="proposeAlliance('+c.id+')">🤝 Союз</button>';
+    }
+    html += '</div>';
   });
   el.innerHTML = html;
 }
@@ -1048,10 +991,9 @@ function renderLogTab(el){
     el.innerHTML = '<div class="card"><p style="font-size:12px;color:#a88860">Журнал пуст.</p></div>';
     return;
   }
-  el.innerHTML = G.log.map(e=>`<div class="log-entry ${e.type}"><b>Ход ${e.turn}:</b> ${e.text}</div>`).join('');
+  el.innerHTML = G.log.map(e=>'<div class="log-entry '+e.type+'"><b>Ход '+e.turn+':</b> '+e.text+'</div>').join('');
 }
 
-// ===== ДЕЙСТВИЯ =====
 function build(type){
   if(!selected) return;
   const t = G.map[selected.y][selected.x];
@@ -1060,8 +1002,8 @@ function build(type){
   if(!canPay(b.cost)) return;
   pay(b.cost);
   t.building = type;
-  log(`Построено: ${b.icon} ${b.name} в ${t.name}`,'good');
-  notify(`${b.icon} ${b.name} построено!`,'good');
+  log('Построено: '+b.icon+' '+b.name+' в '+t.name,'good');
+  notify(b.icon+' '+b.name+' построено!','good');
   renderTopbar();
   renderMap();
   renderSidebar();
@@ -1087,14 +1029,17 @@ function openRecruitModal(x, y){
   for(const key in UNITS){
     const u = UNITS[key];
     const canAfford = canPay(u.cost);
-    html += `<div class="build-item ${canAfford?'':'disabled'}" onclick="${canAfford?`recruit('${key}')\`:''}">
-      <span class="ico">${u.icon}</span>
-      <div class="name">${u.name}</div>
-      <div class="cost">${formatCost(u.cost)}</div>
-      <div class="cost">⚔${u.atk} 🛡${u.def} ❤${u.hp}</div>
-    </div>`;
+    html += '<div class="build-item '+(canAfford?'':'disabled')+'" data-unit="'+key+'">';
+    html += '<span class="ico">'+u.icon+'</span>';
+    html += '<div class="name">'+u.name+'</div>';
+    html += '<div class="cost">'+formatCost(u.cost)+'</div>';
+    html += '<div class="cost">⚔'+u.atk+' 🛡'+u.def+' ❤'+u.hp+'</div>';
+    html += '</div>';
   }
   list.innerHTML = html;
+  list.querySelectorAll('.build-item:not(.disabled)').forEach(item=>{
+    item.addEventListener('click', ()=>recruit(item.dataset.unit));
+  });
   document.getElementById('recruitModal').classList.add('show');
 }
 
@@ -1109,8 +1054,8 @@ function recruit(type){
   const existing = t.army[0].units.find(x=>x.type===type);
   if(existing) existing.count++;
   else t.army[0].units.push({type, count:1});
-  log(`Наняты: ${u.icon} ${u.name} в ${t.name}`,'good');
-  notify(`${u.icon} ${u.name} нанят!`,'good');
+  log('Наняты: '+u.icon+' '+u.name+' в '+t.name,'good');
+  notify(u.icon+' '+u.name+' нанят!','good');
   closeModal('recruitModal');
   renderTopbar();
   renderMap();
@@ -1120,8 +1065,8 @@ function recruit(type){
 function selectArmy(x, y){
   const t = G.map[y][x];
   if(!t.army || t.army[0].owner!==0) return;
-  G.selectedArmy = {x, y, ...t.army[0]};
-  notify('🚩 Армия выбрана. Кликните на соседнюю клетку для перемещения.');
+  G.selectedArmy = {x, y, units:t.army[0].units};
+  notify('🚩 Армия выбрана. Кликните на соседнюю клетку.');
   renderMap();
 }
 
@@ -1131,36 +1076,32 @@ function moveArmy(army, tx, ty){
   const b = BIOMES[to.biome];
   if(!b.passable){ notify('⚠ Нельзя пройти!'); return; }
   
-  // Атака?
   if(to.owner !== null && to.owner !== 0){
     if(!G.countries[0].atWar.has(to.owner)){
       notify('⚠ Нет войны с этой страной!');
       return;
     }
-    if(to.army && to.army.length>0 && to.army[0].owner !== 0){
+    if(to.army && to.army.length>0 && to.army[0].owner !== 0 && to.army[0].units.length>0){
       resolveBattle(army, tx, ty);
       return;
     } else {
-      // Захват без боя
       captureProvince(army, tx, ty);
       return;
     }
   }
   
-  // Простое перемещение
   if(to.army && to.army[0] && to.army[0].owner === 0){
-    // Объединить
     to.army[0].units.forEach(u=>{
       const ex = from.army[0].units.find(x=>x.type===u.type);
       if(ex) ex.count += u.count;
-      else from.army[0].units.push({...u});
+      else from.army[0].units.push({type:u.type, count:u.count});
     });
     from.army = null;
   } else {
     to.army = from.army;
     from.army = null;
   }
-  log(`Армия перемещена в ${to.name}`);
+  log('Армия перемещена в '+to.name);
 }
 
 function captureProvince(army, tx, ty){
@@ -1168,12 +1109,10 @@ function captureProvince(army, tx, ty){
   const to = G.map[ty][tx];
   const prevOwner = to.owner;
   to.owner = 0;
-  to.army = from.army;
+  to.army = [{owner:0, units:from.army[0].units}];
   from.army = null;
-  log(`🚩 Захвачена провинция ${to.name}!`,'good');
-  notify(`🚩 Захвачена ${to.name}!`,'good');
-  
-  // Проверка на уничтожение страны
+  log('🚩 Захвачена провинция '+to.name+'!','good');
+  notify('🚩 Захвачена '+to.name+'!','good');
   checkCountryDeath(prevOwner);
 }
 
@@ -1192,42 +1131,40 @@ function resolveBattle(attacker, tx, ty){
     defPower += (info.def * 2 + info.atk) * u.count;
   });
   
-  // Бонус замка
   if(defTile.building === 'castle') defPower *= 1.5;
   
-  // Случайность
   atkPower *= 0.8 + Math.random()*0.4;
   defPower *= 0.8 + Math.random()*0.4;
   
   const atkWon = atkPower > defPower;
   const ratio = atkWon ? defPower/atkPower : atkPower/defPower;
   
-  let html = `<div style="text-align:center;font-size:14px;line-height:1.8">
-    <div style="color:#7fb069"><b>АТАКУЮЩИЙ (Вы)</b><br>Сила: ${Math.floor(atkPower)}</div>
-    <div style="font-size:24px;margin:10px 0">⚔</div>
-    <div style="color:#c44"><b>ЗАЩИТНИК (${G.countries[defTile.owner].name})</b><br>Сила: ${Math.floor(defPower)}</div>
-    <div style="margin-top:16px;font-size:16px;color:var(--gold)">
-      ${atkWon ? '🏆 ВАША ПОБЕДА!' : '💀 ПОРАЖЕНИЕ!'}
-    </div>`;
+  let html = '<div style="text-align:center;font-size:14px;line-height:1.8">';
+  html += '<div style="color:#7fb069"><b>АТАКУЮЩИЙ (Вы)</b><br>Сила: '+Math.floor(atkPower)+'</div>';
+  html += '<div style="font-size:24px;margin:10px 0">⚔</div>';
+  html += '<div style="color:#c44"><b>ЗАЩИТНИК ('+G.countries[defTile.owner].name+')</b><br>Сила: '+Math.floor(defPower)+'</div>';
+  html += '<div style="margin-top:16px;font-size:16px;color:var(--gold)">';
+  html += atkWon ? '🏆 ВАША ПОБЕДА!' : '💀 ПОРАЖЕНИЕ!';
+  html += '</div></div>';
   
   if(atkWon){
-    // Потери атакующего
     const losses = Math.ceil(ratio * 0.6);
     applyLosses(attacker.units, losses);
-    captureProvince({x:attacker.x, y:attacker.y, units:attacker.units}, tx, ty);
+    if(attacker.units.length === 0){
+      G.map[attacker.y][attacker.x].army = null;
+    } else {
+      captureProvince({x:attacker.x, y:attacker.y, units:attacker.units}, tx, ty);
+    }
   } else {
-    // Потери защитника
     const losses = Math.ceil(ratio * 0.4);
     applyLosses(defUnits, losses);
-    // Атакующий уничтожен
     G.map[attacker.y][attacker.x].army = null;
   }
   
-  html += `</div>`;
   document.getElementById('battleContent').innerHTML = html;
   document.getElementById('battleModal').classList.add('show');
   
-  log(`⚔ Битва за ${defTile.name}: ${atkWon?'победа':'поражение'}`, atkWon?'good':'war');
+  log('⚔ Битва за '+defTile.name+': '+(atkWon?'победа':'поражение'), atkWon?'good':'war');
   renderMap();
   renderTopbar();
 }
@@ -1237,7 +1174,6 @@ function applyLosses(units, lossPercent){
     const lost = Math.max(1, Math.floor(u.count * lossPercent));
     u.count = Math.max(0, u.count - lost);
   });
-  // Удалить пустые
   for(let i=units.length-1;i>=0;i--) if(units[i].count<=0) units.splice(i,1);
 }
 
@@ -1246,8 +1182,8 @@ function colonize(x, y){
   if(G.countries[0].gold < 50){ notify('⚠ Нужно 50 золота!'); return; }
   G.countries[0].gold -= 50;
   t.owner = 0;
-  log(`🚩 Колонизирована ${t.name}`,'good');
-  notify(`🚩 ${t.name} — ваша!`,'good');
+  log('🚩 Колонизирована '+t.name,'good');
+  notify('🚩 '+t.name+' — ваша!','good');
   renderTopbar();
   renderMap();
   renderSidebar();
@@ -1258,25 +1194,24 @@ function declareWar(cid){
   if(G.countries[0].atWar.has(cid)) return;
   G.countries[0].atWar.add(cid);
   c.atWar.add(0);
-  log(`⚔ ОБЪЯВЛЕНА ВОЙНА: ${c.name}!`,'war');
-  notify(`⚔ Война с ${c.name}!`,'war');
+  log('⚔ ОБЪЯВЛЕНА ВОЙНА: '+c.name+'!','war');
+  notify('⚔ Война с '+c.name+'!','war');
   renderSidebar();
 }
 
 function proposePeace(cid){
   const c = G.countries[cid];
-  // Шанс мира зависит от соотношения сил
   const myPower = getCountryMilitaryPower(0);
   const theirPower = getCountryMilitaryPower(cid);
   const chance = theirPower > myPower ? 0.7 : 0.3;
   if(Math.random() < chance){
     G.countries[0].atWar.delete(cid);
     c.atWar.delete(0);
-    log(`🕊 Мир с ${c.name}`,'good');
-    notify(`🕊 ${c.name} согласились на мир!`,'good');
+    log('🕊 Мир с '+c.name,'good');
+    notify('🕊 '+c.name+' согласились на мир!','good');
   } else {
-    log(`❌ ${c.name} отвергли мир`);
-    notify(`❌ ${c.name} отвергли мир!`);
+    log('❌ '+c.name+' отвергли мир');
+    notify('❌ '+c.name+' отвергли мир!');
   }
   renderSidebar();
 }
@@ -1287,11 +1222,11 @@ function proposeAlliance(cid){
   if(Math.random() < chance){
     G.countries[0].allies.add(cid);
     c.allies.add(0);
-    log(`🤝 Союз с ${c.name}!`,'good');
-    notify(`🤝 ${c.name} — ваши союзники!`,'good');
+    log('🤝 Союз с '+c.name+'!','good');
+    notify('🤝 '+c.name+' — ваши союзники!','good');
   } else {
-    log(`❌ ${c.name} отвергли союз`);
-    notify(`❌ ${c.name} отвергли союз!`);
+    log('❌ '+c.name+' отвергли союз');
+    notify('❌ '+c.name+' отвергли союз!');
   }
   renderSidebar();
 }
@@ -1313,8 +1248,8 @@ function checkCountryDeath(cid){
   if(cid===0) return;
   if(countProvinces(cid) === 0){
     G.countries[cid].dead = true;
-    log(`💀 ${G.countries[cid].name} уничтожена!`,'good');
-    notify(`💀 ${G.countries[cid].name} пала!`,'good');
+    log('💀 '+G.countries[cid].name+' уничтожена!','good');
+    notify('💀 '+G.countries[cid].name+' пала!','good');
   }
 }
 
@@ -1322,9 +1257,7 @@ function closeModal(id){
   document.getElementById(id).classList.remove('show');
 }
 
-// ===== КОНЕЦ ХОДА =====
 function endTurn(){
-  // 1. Сбор ресурсов для всех стран
   G.countries.forEach((c, cid)=>{
     if(c.dead) return;
     const d = calcDeltas(cid);
@@ -1334,43 +1267,34 @@ function endTurn(){
     c.stone += d.stone;
     c.iron += d.iron;
     
-    // Нехватка еды → несчастье
     if(c.food < 0){
       c.happiness -= 5;
       c.food = 0;
       if(cid===0){ log('⚠ Голод! Народ недоволен.','war'); notify('⚠ Голод!','war'); }
     }
     
-    // Счастье стабилизируется
     if(c.food > 50) c.happiness = Math.min(100, c.happiness + 1);
-    
-    // Стабильность
     if(c.happiness < 30) c.stability -= 3;
     else c.stability = Math.min(100, c.stability + 1);
   });
   
-  // 2. ИИ ходы
   aiTurn();
   
-  // 3. События
   if(Math.random() < 0.3) triggerRandomEvent();
   
-  // 4. Проверка бунта
   if(G.countries[0].stability < 20 && Math.random() < 0.3){
-    triggerEvent('🔥 БУНТ!', 'Народ восстал против вашего правления! Вы потеряли 2 провинции и 100 золота.', ()=>{
-      let lost = 0;
-      for(let y=0;y<MAP_H&&lost<2;y++)for(let x=0;x<MAP_W&&lost<2;x++){
-        if(G.map[y][x].owner===0 && Math.random()<0.3){
-          G.map[y][x].owner = null;
-          lost++;
-        }
+    triggerEvent('🔥 БУНТ!', 'Народ восстал! Вы потеряли провинции и 100 золота.');
+    let lost = 0;
+    for(let y=0;y<MAP_H&&lost<2;y++)for(let x=0;x<MAP_W&&lost<2;x++){
+      if(G.map[y][x].owner===0 && Math.random()<0.3){
+        G.map[y][x].owner = null;
+        lost++;
       }
-      G.countries[0].gold = Math.max(0, G.countries[0].gold - 100);
-      G.countries[0].stability = 50;
-    });
+    }
+    G.countries[0].gold = Math.max(0, G.countries[0].gold - 100);
+    G.countries[0].stability = 50;
   }
   
-  // 5. Проверка победы/поражения
   if(countProvinces(0) === 0){
     gameOver(false);
     return;
@@ -1381,7 +1305,6 @@ function endTurn(){
     return;
   }
   
-  // 6. Время
   G.turn++;
   G.season = (G.season + 1) % 4;
   if(G.season === 0) G.year++;
@@ -1392,18 +1315,15 @@ function endTurn(){
   notify('📜 Ход ' + G.turn + '. ' + SEASONS[G.season] + ', ' + G.year + ' г.');
 }
 
-// ===== ИИ =====
 function aiTurn(){
   G.countries.forEach((c, cid)=>{
     if(c.isPlayer || c.dead) return;
     
-    // Постройка зданий
     const myProvinces = [];
     for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
       if(G.map[y][x].owner===cid) myProvinces.push({x,y,tile:G.map[y][x]});
     }
     
-    // Построить случайное здание в случайной провинции
     if(Math.random() < 0.4){
       const empty = myProvinces.filter(p=>!p.tile.building);
       if(empty.length > 0){
@@ -1423,7 +1343,6 @@ function aiTurn(){
       }
     }
     
-    // Найм войск
     const hasBarracks = myProvinces.some(p=>p.tile.building==='barracks');
     if(hasBarracks && Math.random() < 0.5){
       const barr = choice(myProvinces.filter(p=>p.tile.building==='barracks'));
@@ -1441,15 +1360,12 @@ function aiTurn(){
       }
     }
     
-    // Агрессивность по трейту
     const aggrFactor = c.trait==='aggressive'?0.3:c.trait==='raider'?0.4:c.trait==='expansionist'?0.25:0.1;
     
-    // Движение и атака
     myProvinces.forEach(p=>{
       if(!p.tile.army || p.tile.army[0].owner!==cid) return;
       if(Math.random() > 0.5) return;
       
-      // Найти соседнюю клетку
       const dirs = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]];
       const targets = [];
       dirs.forEach(([dx,dy])=>{
@@ -1462,18 +1378,15 @@ function aiTurn(){
       
       if(targets.length === 0) return;
       
-      // Приоритет: вражеская территория < своя пустая < нейтральная
       let target;
       const enemies = targets.filter(t=>t.tile.owner!==null && t.tile.owner!==cid && c.atWar.has(t.tile.owner));
       const neutral = targets.filter(t=>t.tile.owner===null);
       
       if(enemies.length>0 && Math.random()<aggrFactor+0.3){
         target = choice(enemies);
-        if(target.tile.army && target.tile.army[0] && target.tile.army[0].owner!==cid){
-          // Битва
+        if(target.tile.army && target.tile.army[0] && target.tile.army[0].owner!==cid && target.tile.army[0].units.length>0){
           aiBattle(p.x, p.y, target.x, target.y, cid);
         } else {
-          // Захват
           const prev = target.tile.owner;
           target.tile.owner = cid;
           target.tile.army = p.tile.army;
@@ -1486,16 +1399,14 @@ function aiTurn(){
         target.tile.army = p.tile.army;
         p.tile.army = null;
       } else {
-        // Случайное движение по своей территории
         const own = targets.filter(t=>t.tile.owner===cid && (!t.tile.army || t.tile.army[0].owner===cid));
         if(own.length>0){
           target = choice(own);
           if(target.tile.army){
-            // Объединить
             target.tile.army[0].units.forEach(u=>{
               const ex = p.tile.army[0].units.find(x=>x.type===u.type);
               if(ex) ex.count += u.count;
-              else p.tile.army[0].units.push({...u});
+              else p.tile.army[0].units.push({type:u.type, count:u.count});
             });
             p.tile.army = null;
           } else {
@@ -1506,31 +1417,14 @@ function aiTurn(){
       }
     });
     
-    // ИИ дипломатия
-    if(Math.random() < 0.05){
-      const others = G.countries.filter(o=>!o.isPlayer && !o.dead && o.id!==cid);
-      if(others.length>0){
-        const other = choice(others);
-        if(!c.atWar.has(other.id) && Math.random()<0.3){
-          // Объявить войну
-          if(c.trait==='aggressive' || c.trait==='raider' || c.trait==='expansionist'){
-            c.atWar.add(other.id);
-            other.atWar.add(cid);
-            log(`⚔ ${c.name} объявила войну ${other.name}!`,'war');
-          }
-        }
-      }
-    }
-    
-    // ИИ предлагает мир игроку, если проигрывает
     if(c.atWar.has(0)){
       const myPow = getCountryMilitaryPower(cid);
       const playerPow = getCountryMilitaryPower(0);
       if(myPow < playerPow * 0.5 && Math.random() < 0.2){
         c.atWar.delete(0);
         G.countries[0].atWar.delete(cid);
-        log(`🕊 ${c.name} просит мира`,'good');
-        notify(`🕊 ${c.name} предложили мир!`,'good');
+        log('🕊 '+c.name+' просит мира','good');
+        notify('🕊 '+c.name+' предложили мир!','good');
       }
     }
   });
@@ -1539,7 +1433,6 @@ function aiTurn(){
 function aiBattle(ax, ay, tx, ty, attackerCid){
   const from = G.map[ay][ax];
   const to = G.map[ty][tx];
-  const defCid = to.army[0].owner;
   
   let atkPow = 0, defPow = 0;
   from.army[0].units.forEach(u=>{
@@ -1568,30 +1461,19 @@ function aiBattle(ax, ay, tx, ty, attackerCid){
   }
 }
 
-// ===== СОБЫТИЯ =====
 function triggerRandomEvent(){
   const events = [
-    {title:'🌾 БОГАТЫЙ УРОЖАЙ', text:'Дождь и солнце дали обильный урожай. +100 еды.', effect:()=>{G.countries[0].food+=100;}, type:'good'},
-    {title:'🏜 ЗАСУХА', text:'Засуха погубила посевы. -50 еды.', effect:()=>{G.countries[0].food=Math.max(0,G.countries[0].food-50);}, type:'war'},
+    {title:'🌾 БОГАТЫЙ УРОЖАЙ', text:'Обильный урожай. +100 еды.', effect:()=>{G.countries[0].food+=100;}, type:'good'},
+    {title:'🏜 ЗАСУХА', text:'Засуха. -50 еды.', effect:()=>{G.countries[0].food=Math.max(0,G.countries[0].food-50);}, type:'war'},
     {title:'💰 ТОРГОВЫЙ КАРАВАН', text:'Купцы принесли богатства. +80 золота.', effect:()=>{G.countries[0].gold+=80;}, type:'good'},
-    {title:'🦠 ЭПИДЕМИЯ', text:'Чума унесла жизни. -50 золота на лечение, -5 счастья.', effect:()=>{G.countries[0].gold=Math.max(0,G.countries[0].gold-50);G.countries[0].happiness-=5;}, type:'war'},
-    {title:'⛏ ЗОЛОТАЯ ЖИЛА', text:'Найдена золотая жила! +150 золота.', effect:()=>{G.countries[0].gold+=150;}, type:'good'},
-    {title:'📚 МУДРЕЦ', text:'Странствующий мудрец поделился знаниями. +1 технология.', effect:()=>{G.countries[0].tech++;}, type:'good'},
-    {title:'🔥 ПОЖАР', text:'Пожар уничтожил запасы дерева. -40 дерева.', effect:()=>{G.countries[0].wood=Math.max(0,G.countries[0].wood-40);}, type:'war'},
-    {title:'⚒ НАЁМНИКИ', text:'Отряд наёмников предлагает службу. +50 железа за 30 золота?', 
-      effect:()=>{
-        if(G.countries[0].gold>=30){
-          G.countries[0].gold-=30;
-          G.countries[0].iron+=50;
-          return true;
-        }
-        return false;
-      }, type:'good'}
+    {title:'🦠 ЭПИДЕМИЯ', text:'Чума. -50 золота, -5 счастья.', effect:()=>{G.countries[0].gold=Math.max(0,G.countries[0].gold-50);G.countries[0].happiness-=5;}, type:'war'},
+    {title:'⛏ ЗОЛОТАЯ ЖИЛА', text:'Найдена жила! +150 золота.', effect:()=>{G.countries[0].gold+=150;}, type:'good'},
+    {title:'📚 МУДРЕЦ', text:'Мудрец поделился знаниями. +1 технология.', effect:()=>{G.countries[0].tech++;}, type:'good'},
+    {title:'🔥 ПОЖАР', text:'Пожар. -40 дерева.', effect:()=>{G.countries[0].wood=Math.max(0,G.countries[0].wood-40);}, type:'war'}
   ];
   const e = choice(events);
-  const ok = e.effect();
-  if(ok === false) return;
-  log(`${e.title}: ${e.text}`, e.type);
+  e.effect();
+  log(e.title+': '+e.text, e.type);
   triggerEvent(e.title, e.text);
 }
 
@@ -1601,24 +1483,24 @@ function triggerEvent(title, text){
   document.getElementById('eventModal').classList.add('show');
 }
 
-// ===== GAME OVER =====
 function gameOver(won){
   const title = won ? '🏆 ВЕЛИКАЯ ПОБЕДА!' : '💀 ПАДЕНИЕ КОРОЛЕВСТВА';
   const content = won 
-    ? `Вы покорили весь известный мир!\n\n${G.playerRulerName} из ${G.playerCountryName} войдёт в легенды.\n\nХодов: ${G.turn}\nЛет правления: ${G.year - 1066}`
-    : `Ваше королевство пало.\n\n${G.playerRulerName} потерял все земли.\n\nХодов продлилось: ${G.turn}`;
+    ? 'Вы покорили весь мир!\n\n'+G.playerRulerName+' из '+G.playerCountryName+' войдёт в легенды.\n\nХодов: '+G.turn+'\nЛет: '+(G.year - 1066)
+    : 'Ваше королевство пало.\n\n'+G.playerRulerName+' потерял все земли.\n\nХодов: '+G.turn;
   document.getElementById('goTitle').textContent = title;
   document.getElementById('goContent').textContent = content;
   document.getElementById('gameOverModal').classList.add('show');
 }
 
-// ===== АВТОСОХРАНЕНИЕ (в память) =====
-// Можно добавить позже
-
 // ===== ИНИЦИАЛИЗАЦИЯ =====
+document.getElementById('startBtn').addEventListener('click', startGame);
+
 window.addEventListener('resize', ()=>{
   if(G) renderMap();
 });
+
+console.log('✓ ВЛАСТЕЛИН ЭПОХ загружен');
 </script>
 </body>
 </html>
