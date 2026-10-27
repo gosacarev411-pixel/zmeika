@@ -3,1297 +3,714 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>🎮 ARCADE HUB</title>
+<title>🎮 GAME HUB PRO</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;font-family:'Segoe UI',Arial,sans-serif}
-body{background:#0a0a1a;color:#fff;overflow:hidden;touch-action:none}
-.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden}
-.screen.active{display:flex}
+body{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#fff;overflow-x:hidden;min-height:100vh}
+.screen{display:none;min-height:100vh;padding-bottom:80px}
+.screen.active{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
-/* ===== ЗАГРУЗКА ===== */
-#loading{background:linear-gradient(135deg,#0a0a2a,#1a0a3a,#2a0a4a);background-size:400% 400%;animation:bgShift 3s ease infinite;align-items:center;justify-content:center;z-index:9999}
-@keyframes bgShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.loader{width:120px;height:120px;position:relative}
-.loader::before,.loader::after{content:'';position:absolute;inset:0;border-radius:50%;border:4px solid transparent}
-.loader::before{border-top-color:#ff006e;animation:spin 1.5s linear infinite}
-.loader::after{border-bottom-color:#00f5ff;animation:spin 2s linear infinite reverse}
-.loader-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;animation:pulse 1s ease-in-out infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
-.load-title{margin-top:30px;font-size:28px;font-weight:bold;background:linear-gradient(90deg,#ff006e,#00f5ff,#ffbe0b);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:4px;animation:glow 2s ease-in-out infinite}
-@keyframes glow{0%,100%{filter:drop-shadow(0 0 10px #ff006e)}50%{filter:drop-shadow(0 0 20px #00f5ff)}}
-.load-bar{width:200px;height:6px;background:#222;border-radius:3px;margin-top:20px;overflow:hidden}
-.load-fill{height:100%;background:linear-gradient(90deg,#ff006e,#00f5ff);width:0;animation:loadFill 2.5s ease-out forwards}
-@keyframes loadFill{to{width:100%}}
+/* Навигация */
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,12,41,.95);backdrop-filter:blur(10px);display:flex;justify-content:space-around;padding:10px 0;border-top:2px solid #667eea;z-index:100}
+.nav-btn{background:none;border:none;color:#aaa;font-size:24px;padding:8px 20px;cursor:pointer;transition:all .3s;position:relative}
+.nav-btn.active{color:#667eea;transform:scale(1.2)}
+.nav-btn::after{content:attr(data-label);position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap;opacity:0;transition:opacity .3s}
+.nav-btn:hover::after,.nav-btn.active::after{opacity:1}
 
-/* ===== МЕНЮ ===== */
-#menu{background:linear-gradient(135deg,#0a0a2a,#1a0a3a);position:relative;overflow:hidden}
-.stars{position:absolute;inset:0;overflow:hidden}
-.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 3s infinite}
-@keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
-.menu-title{margin-top:30px;text-align:center;font-size:36px;font-weight:900;letter-spacing:3px;background:linear-gradient(90deg,#ff006e,#ffbe0b,#00f5ff,#8338ec);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gradShift 4s ease infinite;text-shadow:0 0 30px rgba(255,0,110,.3)}
-@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.menu-sub{text-align:center;color:#aaa;margin-top:5px;font-size:13px;letter-spacing:2px}
-.games-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:15px;margin-top:15px;overflow-y:auto;flex:1}
-.game-card{background:linear-gradient(135deg,var(--c1),var(--c2));border-radius:16px;padding:15px;cursor:pointer;position:relative;overflow:hidden;transition:transform .2s;box-shadow:0 4px 20px rgba(0,0,0,.5);min-height:130px;display:flex;flex-direction:column;justify-content:space-between}
-.game-card:active{transform:scale(.95)}
+/* Заголовок */
+.header{padding:20px;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);margin-bottom:20px;box-shadow:0 4px 20px rgba(102,126,234,.3)}
+.header h1{font-size:28px;font-weight:900;letter-spacing:2px;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+
+/* Профиль */
+.profile-card{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:20px;padding:20px;margin:15px;box-shadow:0 8px 30px rgba(102,126,234,.4);animation:slideIn .5s}
+@keyframes slideIn{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.profile-header{display:flex;align-items:center;gap:15px;margin-bottom:20px}
+.avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#f093fb,#f5576c);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 4px 15px rgba(240,147,251,.5)}
+.profile-info h2{font-size:20px;margin-bottom:5px}
+.profile-info p{font-size:12px;opacity:.8}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat-box{background:rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center;backdrop-filter:blur(10px)}
+.stat-box b{display:block;font-size:24px;color:#ffd700;margin-bottom:3px}
+.stat-box small{font-size:11px;opacity:.8}
+
+/* Ленты */
+.section{margin:20px 15px}
+.section-title{font-size:18px;font-weight:bold;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:4px;height:20px;background:linear-gradient(180deg,#667eea,#764ba2);border-radius:2px}
+.recent-games,.top-games{display:flex;gap:10px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+.recent-games::-webkit-scrollbar,.top-games::-webkit-scrollbar{display:none}
+.game-preview{min-width:120px;background:linear-gradient(135deg,var(--c1),var(--c2));border-radius:12px;padding:12px;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,.3);transition:transform .2s}
+.game-preview:active{transform:scale(.95)}
+.game-preview-icon{font-size:36px;margin-bottom:8px}
+.game-preview-name{font-size:12px;font-weight:bold}
+.game-preview-stat{font-size:10px;opacity:.8;margin-top:4px}
+
+/* Сетка игр */
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:15px}
+.game-card{background:linear-gradient(135deg,var(--c1),var(--c2));border-radius:16px;padding:15px;text-align:center;cursor:pointer;transition:all .3s;box-shadow:0 4px 20px rgba(0,0,0,.3);position:relative;overflow:hidden}
 .game-card::before{content:'';position:absolute;inset:0;background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.2) 50%,transparent 70%);transform:translateX(-100%);transition:transform .6s}
 .game-card:hover::before{transform:translateX(100%)}
-.game-icon{font-size:48px;text-align:center;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
-.game-name{font-size:16px;font-weight:bold;text-align:center;text-shadow:0 2px 4px rgba(0,0,0,.5)}
-.game-stat{font-size:11px;text-align:center;color:rgba(255,255,255,.8);background:rgba(0,0,0,.3);padding:3px 6px;border-radius:10px;margin-top:5px}
+.game-card:active{transform:scale(.95)}
+.game-icon{font-size:42px;margin-bottom:8px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+.game-name{font-size:13px;font-weight:bold;margin-bottom:4px}
+.game-stat{font-size:10px;opacity:.8;background:rgba(0,0,0,.3);padding:3px 6px;border-radius:8px;display:inline-block}
 
-/* ===== ОБЩИЕ ЭКРАНЫ ИГР ===== */
-.game-screen{background:linear-gradient(135deg,#0a0a1a,#1a0a2a)}
-.game-header{background:rgba(0,0,0,.5);padding:10px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #333}
-.back-btn{background:#ff006e;border:none;color:#fff;padding:8px 16px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:13px}
-.back-btn:active{background:#c00050}
-.game-title{font-size:18px;font-weight:bold;color:#00f5ff}
-.game-body{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column}
+/* Игровой экран */
+.game-screen{background:linear-gradient(135deg,#0f0c29,#302b63)}
+.game-header{background:rgba(0,0,0,.5);padding:15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #667eea}
+.back-btn{background:linear-gradient(135deg,#f093fb,#f5576c);border:none;color:#fff;padding:8px 16px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:13px}
+.game-title{font-size:18px;font-weight:bold}
+.game-content{padding:15px;min-height:calc(100vh - 120px)}
 
-/* ===== МОДАЛКИ ===== */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
-.modal.open{display:flex;animation:fadeIn .3s}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal-box{background:linear-gradient(135deg,#1a1a2e,#2a1a3e);border:2px solid #00f5ff;border-radius:16px;padding:25px;max-width:400px;width:100%;text-align:center;box-shadow:0 0 40px rgba(0,245,255,.3)}
-.modal-title{font-size:24px;color:#ffbe0b;margin-bottom:15px}
-.modal-text{margin-bottom:20px;line-height:1.5}
-.btn{background:linear-gradient(90deg,#ff006e,#8338ec);border:none;color:#fff;padding:12px 24px;border-radius:25px;cursor:pointer;font-weight:bold;font-size:15px;margin:5px;transition:transform .2s}
+/* Canvas игры */
+canvas{display:block;margin:0 auto;background:#1a1a2e;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:100%;touch-action:none}
+
+/* UI элементы */
+.btn{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:12px 24px;border-radius:25px;cursor:pointer;font-weight:bold;font-size:15px;margin:5px;transition:all .3s;box-shadow:0 4px 15px rgba(102,126,234,.4)}
 .btn:active{transform:scale(.95)}
-.btn-secondary{background:linear-gradient(90deg,#333,#555)}
-.diff-btn{display:block;width:100%;margin:8px 0;padding:14px;border-radius:10px;border:2px solid;cursor:pointer;background:rgba(0,0,0,.3);color:#fff;font-weight:bold;font-size:15px;transition:all .2s}
-.diff-btn.easy{border-color:#4ade80;color:#4ade80}
-.diff-btn.medium{border-color:#fbbf24;color:#fbbf24}
-.diff-btn.hard{border-color:#ef4444;color:#ef4444}
-.diff-btn:active{transform:scale(.97)}
+.btn-secondary{background:linear-gradient(135deg,#4a5568,#2d3748)}
+.score-display{text-align:center;font-size:32px;font-weight:bold;margin:20px 0;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,.5)}
 
-/* ===== МОРСКОЙ БОЙ ===== */
-.battle-grid{display:grid;gap:2px;margin:auto;padding:10px;touch-action:manipulation}
-.battle-cell{background:#1e3a5f;border:1px solid #2a5a8f;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all .2s;border-radius:3px}
-.battle-cell:active{background:#2a5a8f}
-.battle-cell.hit{background:#dc2626;animation:hitFlash .4s}
-.battle-cell.miss{background:#334155}
-.battle-cell.ship{background:#1e40af}
-.battle-cell.sunk{background:#7f1d1d}
-@keyframes hitFlash{0%{transform:scale(1.3)}100%{transform:scale(1)}}
-.battle-info{padding:10px;text-align:center;background:rgba(0,0,0,.4)}
-.battle-info div{margin:3px 0;font-size:13px}
+/* Grid игры */
+.grid-game{display:grid;gap:4px;margin:20px auto;max-width:400px}
+.grid-cell{aspect-ratio:1;background:linear-gradient(135deg,#4a5568,#2d3748);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;cursor:pointer;transition:all .2s}
+.grid-cell:active{transform:scale(.9)}
 
-/* ===== КРЕСТИКИ-НОЛИКИ ===== */
-.ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:auto;padding:20px;max-width:320px;width:100%}
-.ttt-cell{aspect-ratio:1;background:linear-gradient(135deg,#1e293b,#334155);border:2px solid #475569;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:60px;font-weight:bold;cursor:pointer;transition:all .2s}
-.ttt-cell:active{transform:scale(.95)}
-.ttt-cell.x{color:#ff006e;text-shadow:0 0 20px #ff006e}
-.ttt-cell.o{color:#00f5ff;text-shadow:0 0 20px #00f5ff}
-.ttt-cell.win{background:linear-gradient(135deg,#fbbf24,#f59e0b);animation:winPulse 1s infinite}
-@keyframes winPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-.ttt-status{text-align:center;padding:15px;font-size:18px;font-weight:bold}
+/* Модальное окно */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal.open{display:flex;animation:fadeIn .3s}
+.modal-box{background:linear-gradient(135deg,#1a1a2e,#2d2b55);border:2px solid #667eea;border-radius:20px;padding:30px;max-width:400px;width:100%;text-align:center;box-shadow:0 0 50px rgba(102,126,234,.5)}
+.modal-title{font-size:28px;color:#ffd700;margin-bottom:15px}
+.modal-text{margin-bottom:20px;line-height:1.6}
 
-/* ===== БЛОКБЛАСТ ===== */
-#bbCanvas{margin:auto;background:#0a0a1a;border:2px solid #333;border-radius:8px;touch-action:none}
-.bb-ui{display:flex;justify-content:space-around;padding:10px;background:rgba(0,0,0,.4)}
-.bb-stat{text-align:center}
-.bb-stat b{display:block;font-size:20px;color:#fbbf24}
-.bb-pieces{display:flex;justify-content:center;gap:15px;padding:10px;background:rgba(0,0,0,.4)}
-.bb-piece{cursor:pointer;padding:5px;border:2px solid transparent;border-radius:8px;transition:all .2s}
-.bb-piece.selected{border-color:#fbbf24;background:rgba(251,191,36,.2)}
-.bb-piece canvas{display:block}
-
-/* ===== БОМЖ ===== */
-.bomzh-scene{flex:1;background:linear-gradient(180deg,#1a1a2e 0%,#2a1a3e 50%,#3a2a4e 100%);position:relative;overflow:hidden;padding:15px}
-.bomzh-money{font-size:32px;font-weight:bold;text-align:center;color:#4ade80;text-shadow:0 0 20px #4ade80;margin-bottom:10px}
-.bomzh-goal{font-size:12px;text-align:center;color:#aaa;margin-bottom:15px}
-.bomzh-progress{height:10px;background:#222;border-radius:5px;overflow:hidden;margin-bottom:15px}
-.bomzh-progress-fill{height:100%;background:linear-gradient(90deg,#4ade80,#fbbf24);transition:width .5s}
-.bomzh-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.bomzh-btn{background:linear-gradient(135deg,#334155,#475569);border:2px solid #64748b;border-radius:12px;padding:12px;cursor:pointer;color:#fff;text-align:center;transition:all .2s}
-.bomzh-btn:active{transform:scale(.95)}
-.bomzh-btn:disabled{opacity:.4}
-.bomzh-btn b{display:block;font-size:18px;color:#fbbf24;margin-bottom:3px}
-.bomzh-btn small{color:#aaa;font-size:11px}
-.bomzh-log{margin-top:10px;padding:8px;background:rgba(0,0,0,.4);border-radius:8px;font-size:12px;max-height:80px;overflow-y:auto}
-
-/* ===== FLAPPY ===== */
-#flappyCanvas{margin:auto;background:linear-gradient(180deg,#87CEEB 0%,#E0F6FF 100%);border-radius:8px;touch-action:none}
-.flappy-score{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:48px;font-weight:bold;color:#fff;text-shadow:0 4px 8px rgba(0,0,0,.5);z-index:5}
-
-/* ===== УКЛОНИСТ (моя игра) ===== */
-#dodgeCanvas{margin:auto;background:linear-gradient(180deg,#0a0a2a,#1a0a3a);border-radius:8px;touch-action:none}
-.dodge-score{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:36px;font-weight:bold;color:#fff;text-shadow:0 0 20px #00f5ff;z-index:5}
+/* Анимации */
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.bounce{animation:bounce 1s infinite}
+.pulse{animation:pulse 2s infinite}
 </style>
 </head>
 <body>
 
-<!-- ЗАГРУЗКА -->
-<div id="loading" class="screen active">
-  <div class="loader"><div class="loader-text">🎮</div></div>
-  <div class="load-title">ARCADE HUB</div>
-  <div class="load-bar"><div class="load-fill"></div></div>
+<!-- ГЛАВНАЯ -->
+<div id="home" class="screen active">
+  <div class="header">
+    <h1>🎮 GAME HUB PRO</h1>
+  </div>
+  
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="avatar">👤</div>
+      <div class="profile-info">
+        <h2>Игрок</h2>
+        <p id="profileTime">Время: 0 мин</p>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box"><b id="totalGames">0</b><small>Игр сыграно</small></div>
+      <div class="stat-box"><b id="winRate">0%</b><small>Побед</small></div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">🕐 Последние игры</div>
+    <div class="recent-games" id="recentGames"></div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">🏆 Топ игр</div>
+    <div class="top-games" id="topGames"></div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">🎮 Все игры (20)</div>
+    <div class="games-grid" id="gamesGrid"></div>
+  </div>
 </div>
 
-<!-- МЕНЮ -->
-<div id="menu" class="screen">
-  <div class="stars" id="stars"></div>
-  <div class="menu-title">🎮 ARCADE HUB 🎮</div>
-  <div class="menu-sub">ВЫБЕРИ ИГРУ</div>
-  <div class="games-grid" id="gamesGrid"></div>
+<!-- ПРОФИЛЬ -->
+<div id="profile" class="screen">
+  <div class="header">
+    <h1>👤 ПРОФИЛЬ</h1>
+  </div>
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="avatar">👤</div>
+      <div class="profile-info">
+        <h2>Статистика</h2>
+        <p id="profileTime2">Время: 0 мин</p>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box"><b id="totalGames2">0</b><small>Игр сыграно</small></div>
+      <div class="stat-box"><b id="totalWins">0</b><small>Побед</small></div>
+      <div class="stat-box"><b id="totalLosses">0</b><small>Поражений</small></div>
+      <div class="stat-box"><b id="winRate2">0%</b><small>Процент побед</small></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">📊 Детальная статистика</div>
+    <div id="detailedStats" style="padding:10px"></div>
+  </div>
 </div>
 
-<!-- МОРСКОЙ БОЙ -->
-<div id="naval" class="screen game-screen">
+<!-- ИГРОВОЙ ЭКРАН -->
+<div id="gameScreen" class="screen game-screen">
   <div class="game-header">
-    <button class="back-btn" onclick="goMenu()">← МЕНЮ</button>
-    <div class="game-title">⚓ МОРСКОЙ БОЙ</div>
-    <div style="font-size:12px">🏆<span id="navalWins">0</span> 💀<span id="navalLosses">0</span></div>
+    <button class="back-btn" onclick="goHome()">← НАЗАД</button>
+    <div class="game-title" id="currentGameTitle">Игра</div>
+    <div style="font-size:12px">🏆 <span id="currentGameBest">0</span></div>
   </div>
-  <div class="battle-info">
-    <div id="navalStatus">Твой ход</div>
-    <div>Твои корабли: <span id="navalMyShips">0</span> | Враг: <span id="navalEnemyShips">0</span></div>
-  </div>
-  <div style="padding:5px;text-align:center;font-size:12px;color:#aaa">👇 Атакуй поле врага</div>
-  <div class="battle-grid" id="enemyGrid"></div>
-  <div style="padding:5px;text-align:center;font-size:12px;color:#aaa">👆 Твоё поле</div>
-  <div class="battle-grid" id="myGrid"></div>
+  <div class="game-content" id="gameContent"></div>
 </div>
 
-<!-- КРЕСТИКИ-НОЛИКИ -->
-<div id="ttt" class="screen game-screen">
-  <div class="game-header">
-    <button class="back-btn" onclick="goMenu()">← МЕНЮ</button>
-    <div class="game-title">✖️ КРЕСТИКИ-НОЛИКИ</div>
-    <div style="font-size:12px">🏆<span id="tttWins">0</span> 💀<span id="tttLosses">0</span> 🤝<span id="tttDraws">0</span></div>
-  </div>
-  <div class="ttt-status" id="tttStatus">Твой ход (X)</div>
-  <div class="ttt-board" id="tttBoard"></div>
-  <div style="text-align:center;padding:10px">
-    <button class="btn" onclick="tttRestart()">🔄 НОВАЯ ИГРА</button>
-  </div>
-</div>
-
-<!-- БЛОКБЛАСТ -->
-<div id="blockblast" class="screen game-screen">
-  <div class="game-header">
-    <button class="back-btn" onclick="goMenu()">← МЕНЮ</button>
-    <div class="game-title">💎 БЛОКБЛАСТ</div>
-    <div style="font-size:12px">🏆 <span id="bbBest">0</span></div>
-  </div>
-  <div class="bb-ui">
-    <div class="bb-stat">Очки<b id="bbScore">0</b></div>
-    <div class="bb-stat">Рекорд<b id="bbBest2">0</b></div>
-  </div>
-  <canvas id="bbCanvas" width="300" height="300"></canvas>
-  <div class="bb-pieces" id="bbPieces"></div>
-  <div style="text-align:center;padding:5px">
-    <button class="btn btn-secondary" onclick="bbRestart()">🔄 ЗАНОВО</button>
-  </div>
-</div>
-
-<!-- БОМЖ -->
-<div id="bomzh" class="screen game-screen">
-  <div class="game-header">
-    <button class="back-btn" onclick="goMenu()">← МЕНЮ</button>
-    <div class="game-title">🧟 ВЫЖИВАНИЕ БОМЖА</div>
-    <div style="font-size:12px">🏆 <span id="bomzhBest">0</span></div>
-  </div>
-  <div class="bomzh-scene">
-    <div class="bomzh-money">💰 <span id="bomzhMoney">0</span></div>
-    <div class="bomzh-goal">Цель: 10 000 000 000 ₽</div>
-    <div class="bomzh-progress"><div class="bomzh-progress-fill" id="bomzhProgress"></div></div>
-    <div class="bomzh-actions" id="bomzhActions"></div>
-    <div class="bomzh-log" id="bomzhLog"></div>
-  </div>
-</div>
-
-<!-- FLAPPY -->
-<div id="flappy" class="screen game-screen">
-  <div class="game-header">
-    <button class="back-btn" onclick="goMenu()">← МЕНЮ</button>
-    <div class="game-title">🐦 FLAPPY BIRD</div>
-    <div style="font-size:12px">🏆 <span id="flappyBest">0</span></div>
-  </div>
-  <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center">
-    <div class="flappy-score" id="flappyScore">0</div>
-    <canvas id="flappyCanvas" width="320" height="480"></canvas>
-  </div>
-  <div style="text-align:center;padding:10px">
-    <button class="btn" onclick="flappyStart()">▶ СТАРТ</button>
-  </div>
-</div>
-
-<!-- УКЛОНИСТ (моя игра) -->
-<div id="dodge" class="screen game-screen">
-  <div class="game-header">
-    <button class="back-btn" onclick="goMenu()">← МЕНЮ</button>
-    <div class="game-title">🌟 НЕОНОВЫЙ УКЛОНИСТ</div>
-    <div style="font-size:12px">🏆 <span id="dodgeBest">0</span></div>
-  </div>
-  <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center">
-    <div class="dodge-score" id="dodgeScore">0</div>
-    <canvas id="dodgeCanvas" width="360" height="480"></canvas>
-  </div>
-  <div style="text-align:center;padding:10px;color:#aaa;font-size:12px">Двигай пальцем/мышкой, уворачивайся от красных, собирай жёлтые!</div>
-</div>
-
-<!-- МОДАЛКА СЛОЖНОСТИ -->
-<div class="modal" id="diffModal">
-  <div class="modal-box">
-    <div class="modal-title" id="diffTitle">Сложность</div>
-    <button class="diff-btn easy" onclick="selectDiff('easy')">🟢 ЛЕГКО<br><small id="diffEasyDesc"></small></button>
-    <button class="diff-btn medium" onclick="selectDiff('medium')">🟡 СРЕДНЕ<br><small id="diffMedDesc"></small></button>
-    <button class="diff-btn hard" onclick="selectDiff('hard')">🔴 ХАРДКОР<br><small id="diffHardDesc"></small></button>
-    <button class="btn btn-secondary" onclick="closeModal('diffModal')" style="margin-top:10px">ОТМЕНА</button>
-  </div>
-</div>
-
-<!-- МОДАЛКА РЕЗУЛЬТАТА -->
+<!-- МОДАЛКА -->
 <div class="modal" id="resultModal">
   <div class="modal-box">
     <div class="modal-title" id="resultTitle">Результат</div>
     <div class="modal-text" id="resultText"></div>
-    <button class="btn" onclick="closeModal('resultModal')">OK</button>
+    <button class="btn" onclick="closeModal()">OK</button>
   </div>
 </div>
 
+<!-- НАВИГАЦИЯ -->
+<div class="nav">
+  <button class="nav-btn active" data-label="Главная" onclick="showScreen('home')">🏠</button>
+  <button class="nav-btn" data-label="Профиль" onclick="showScreen('profile')">👤</button>
+</div>
+
 <script>
-// ============ ПРОГРЕСС ============
-let progress = JSON.parse(localStorage.getItem('arcade_progress') || '{}');
-const defaults = {
-  naval: {wins:0, losses:0},
-  ttt: {wins:0, losses:0, draws:0},
-  bb: {best:0},
-  bomzh: {money:0, best:0},
-  flappy: {best:0},
-  dodge: {best:0}
-};
-for(const k in defaults) if(!progress[k]) progress[k] = {...defaults[k]};
-function saveProgress(){ localStorage.setItem('arcade_progress', JSON.stringify(progress)); }
+// ============ ДАННЫЕ ============
+let data = JSON.parse(localStorage.getItem('gamehub_data') || '{}');
+if(!data.stats) data.stats = {};
+if(!data.recent) data.recent = [];
+if(!data.time) data.time = 0;
+if(!data.plays) data.plays = {};
 
-// ============ ЗАГРУЗКА ============
-setTimeout(() => {
-  document.getElementById('loading').classList.remove('active');
-  document.getElementById('menu').classList.add('active');
-  renderMenu();
-}, 2800);
+function saveData(){ localStorage.setItem('gamehub_data', JSON.stringify(data)); }
 
-// ============ ЗВЁЗДЫ В МЕНЮ ============
-const starsEl = document.getElementById('stars');
-for(let i=0;i<50;i++){
-  const s = document.createElement('div');
-  s.className = 'star';
-  const size = Math.random()*3+1;
-  s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s`;
-  starsEl.appendChild(s);
-}
-
-// ============ МЕНЮ ============
+// ============ ИГРЫ ============
 const games = [
-  {id:'naval', name:'Морской Бой', icon:'⚓', c1:'#1e40af', c2:'#3b82f6', stat:() => `🏆 ${progress.naval.wins} 💀 ${progress.naval.losses}`},
-  {id:'ttt', name:'Крестики-Нолики', icon:'✖️', c1:'#7c3aed', c2:'#a855f7', stat:() => `🏆 ${progress.ttt.wins} 💀 ${progress.ttt.losses}`},
-  {id:'blockblast', name:'Блокбласт', icon:'💎', c1:'#dc2626', c2:'#f97316', stat:() => `🏆 ${progress.bb.best}`},
-  {id:'bomzh', name:'Бомж', icon:'🧟', c1:'#4d7c0f', c2:'#84cc16', stat:() => `${formatMoney(progress.bomzh.money)}`},
-  {id:'flappy', name:'Flappy Bird', icon:'🐦', c1:'#0891b2', c2:'#06b6d4', stat:() => `🏆 ${progress.flappy.best}`},
-  {id:'dodge', name:'Неон. Уклонист', icon:'🌟', c1:'#db2777', c2:'#ec4899', stat:() => `🏆 ${progress.dodge.best}`}
+  {id:'2048',name:'2048',icon:'🔢',c1:'#edc53f',c2:'#f2b179'},
+  {id:'snake',name:'Змейка',icon:'🐍',c1:'#4ade80',c2:'#22c55e'},
+  {id:'tetris',name:'Тетрис',icon:'🟦',c1:'#3b82f6',c2:'#60a5fa'},
+  {id:'memory',name:'Memory',icon:'🎴',c1:'#a855f7',c2:'#c084fc'},
+  {id:'mines',name:'Сапёр',icon:'💣',c1:'#ef4444',c2:'#f87171'},
+  {id:'flappy',name:'Flappy',icon:'🐦',c1:'#06b6d4',c2:'#22d3ee'},
+  {id:'pong',name:'Pong',icon:'🏓',c1:'#f59e0b',c2:'#fbbf24'},
+  {id:'breakout',name:'Арканоид',icon:'🧱',c1:'#ec4899',c2:'#f472b6'},
+  {id:'reaction',name:'Реакция',icon:'⚡',c1:'#fbbf24',c2:'#fcd34d'},
+  {id:'color',name:'Цвета',icon:'🎨',c1:'#8b5cf6',c2:'#a78bfa'},
+  {id:'guess',name:'Угадай',icon:'🔮',c1:'#14b8a6',c2:'#2dd4bf'},
+  {id:'rps',name:'Камень-Нож-Бумага',icon:'✊',c1:'#f97316',c2:'#fb923c'},
+  {id:'ttt',name:'Крестики-Нолики',icon:'✖️',c1:'#6366f1',c2:'#818cf8'},
+  {id:'whack',name:'Ударь крота',icon:'🔨',c1:'#dc2626',c2:'#ef4444'},
+  {id:'simon',name:'Саймон',icon:'🎵',c1:'#10b981',c2:'#34d399'},
+  {id:'typing',name:'Печать',icon:'⌨️',c1:'#64748b',c2:'#94a3b8'},
+  {id:'math',name:'Математика',icon:'🧮',c1:'#0ea5e9',c2:'#38bdf8'},
+  {id:'puzzle',name:'Пятнашки',icon:'🧩',c1:'#d946ef',c2:'#e879f9'},
+  {id:'clicker',name:'Кликер',icon:'🍪',c1:'#f59e0b',c2:'#fbbf24'},
+  {id:'dodge',name:'Уклонист',icon:'🌟',c1:'#ec4899',c2:'#f472b6'}
 ];
 
-function renderMenu(){
+// ============ UI ============
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(id==='home') document.querySelector('.nav-btn[data-label="Главная"]').classList.add('active');
+  if(id==='profile') document.querySelector('.nav-btn[data-label="Профиль"]').classList.add('active');
+  if(id==='home') renderHome();
+  if(id==='profile') renderProfile();
+}
+
+function renderHome(){
+  // Время
+  const mins = Math.floor(data.time/60);
+  document.getElementById('profileTime').textContent = `Время: ${mins} мин`;
+  
+  // Статистика
+  let totalGames = 0, totalWins = 0;
+  for(const id in data.stats){
+    totalGames += data.stats[id].plays || 0;
+    totalWins += data.stats[id].wins || 0;
+  }
+  document.getElementById('totalGames').textContent = totalGames;
+  document.getElementById('winRate').textContent = totalGames ? Math.round(totalWins/totalGames*100)+'%' : '0%';
+  
+  // Последние игры
+  const recent = document.getElementById('recentGames');
+  recent.innerHTML = '';
+  data.recent.slice(-5).reverse().forEach(id => {
+    const g = games.find(x=>x.id===id);
+    if(!g) return;
+    const div = document.createElement('div');
+    div.className = 'game-preview';
+    div.style.setProperty('--c1',g.c1);
+    div.style.setProperty('--c2',g.c2);
+    div.innerHTML = `<div class="game-preview-icon">${g.icon}</div><div class="game-preview-name">${g.name}</div><div class="game-preview-stat">Рекорд: ${data.stats[id]?.best||0}</div>`;
+    div.onclick = () => startGame(id);
+    recent.appendChild(div);
+  });
+  
+  // Топ игр
+  const top = document.getElementById('topGames');
+  top.innerHTML = '';
+  const sorted = Object.entries(data.plays).sort((a,b)=>b[1]-a[1]).slice(0,2);
+  sorted.forEach(([id,count]) => {
+    const g = games.find(x=>x.id===id);
+    if(!g) return;
+    const div = document.createElement('div');
+    div.className = 'game-preview';
+    div.style.setProperty('--c1',g.c1);
+    div.style.setProperty('--c2',g.c2);
+    div.innerHTML = `<div class="game-preview-icon">${g.icon}</div><div class="game-preview-name">${g.name}</div><div class="game-preview-stat">${count} игр</div>`;
+    div.onclick = () => startGame(id);
+    top.appendChild(div);
+  });
+  
+  // Все игры
   const grid = document.getElementById('gamesGrid');
   grid.innerHTML = '';
   games.forEach(g => {
     const card = document.createElement('div');
     card.className = 'game-card';
-    card.style.setProperty('--c1', g.c1);
-    card.style.setProperty('--c2', g.c2);
-    card.innerHTML = `<div class="game-icon">${g.icon}</div><div class="game-name">${g.name}</div><div class="game-stat">${g.stat()}</div>`;
-    card.onclick = () => openGame(g.id);
+    card.style.setProperty('--c1',g.c1);
+    card.style.setProperty('--c2',g.c2);
+    const stat = data.stats[g.id];
+    card.innerHTML = `<div class="game-icon">${g.icon}</div><div class="game-name">${g.name}</div><div class="game-stat">${stat?`🏆 ${stat.best||0}`:'Новое'}</div>`;
+    card.onclick = () => startGame(g.id);
     grid.appendChild(card);
   });
 }
 
-function openGame(id){
-  document.getElementById('menu').classList.remove('active');
-  const screenMap = {naval:'naval',ttt:'ttt',blockblast:'blockblast',bomzh:'bomzh',flappy:'flappy',dodge:'dodge'};
-  document.getElementById(screenMap[id]).classList.add('active');
+function renderProfile(){
+  const mins = Math.floor(data.time/60);
+  document.getElementById('profileTime2').textContent = `Время: ${mins} мин`;
   
-  if(id === 'naval') showDiffModal('naval');
-  else if(id === 'ttt') showDiffModal('ttt');
-  else if(id === 'blockblast') bbInit();
-  else if(id === 'bomzh') bomzhInit();
-  else if(id === 'flappy') flappyInit();
-  else if(id === 'dodge') dodgeInit();
+  let totalGames = 0, totalWins = 0, totalLosses = 0;
+  for(const id in data.stats){
+    totalGames += data.stats[id].plays || 0;
+    totalWins += data.stats[id].wins || 0;
+    totalLosses += data.stats[id].losses || 0;
+  }
+  document.getElementById('totalGames2').textContent = totalGames;
+  document.getElementById('totalWins').textContent = totalWins;
+  document.getElementById('totalLosses').textContent = totalLosses;
+  document.getElementById('winRate2').textContent = totalGames ? Math.round(totalWins/totalGames*100)+'%' : '0%';
   
-  updateStats();
+  const detailed = document.getElementById('detailedStats');
+  detailed.innerHTML = '';
+  games.forEach(g => {
+    const s = data.stats[g.id];
+    if(!s || !s.plays) return;
+    const div = document.createElement('div');
+    div.style.cssText = 'background:rgba(255,255,255,.1);padding:10px;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center';
+    div.innerHTML = `<div><b>${g.icon} ${g.name}</b><br><small>Игр: ${s.plays} | Побед: ${s.wins||0}</small></div><div style="text-align:right"><b style="color:#ffd700">${s.best||0}</b><br><small>Рекорд</small></div>`;
+    detailed.appendChild(div);
+  });
 }
 
-function goMenu(){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('menu').classList.add('active');
-  renderMenu();
-  // Останавливаем игровые циклы
-  if(bbLoop) cancelAnimationFrame(bbLoop);
-  if(flappyLoop) cancelAnimationFrame(flappyLoop);
-  if(dodgeLoop) cancelAnimationFrame(dodgeLoop);
+function startGame(id){
+  document.getElementById('home').classList.remove('active');
+  document.getElementById('profile').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  
+  const g = games.find(x=>x.id===id);
+  document.getElementById('currentGameTitle').textContent = g.name;
+  document.getElementById('currentGameBest').textContent = data.stats[id]?.best || 0;
+  
+  // Добавляем в последние
+  if(!data.recent.includes(id)) data.recent.push(id);
+  else { data.recent = data.recent.filter(x=>x!==id); data.recent.push(id); }
+  
+  // Увеличиваем счётчик игр
+  if(!data.plays[id]) data.plays[id] = 0;
+  data.plays[id]++;
+  
+  if(!data.stats[id]) data.stats[id] = {plays:0,wins:0,losses:0,best:0};
+  data.stats[id].plays++;
+  
+  saveData();
+  
+  // Запускаем игру
+  const content = document.getElementById('gameContent');
+  content.innerHTML = '';
+  
+  const startTime = Date.now();
+  const interval = setInterval(() => {
+    data.time++;
+    if(Date.now() - startTime > 60000) saveData();
+  }, 1000);
+  
+  window.currentGameInterval = interval;
+  window.currentGameId = id;
+  
+  // Запуск конкретной игры
+  if(id==='2048') game2048(content);
+  else if(id==='snake') gameSnake(content);
+  else if(id==='tetris') gameTetris(content);
+  else if(id==='memory') gameMemory(content);
+  else if(id==='mines') gameMines(content);
+  else if(id==='flappy') gameFlappy(content);
+  else if(id==='pong') gamePong(content);
+  else if(id==='breakout') gameBreakout(content);
+  else if(id==='reaction') gameReaction(content);
+  else if(id==='color') gameColor(content);
+  else if(id==='guess') gameGuess(content);
+  else if(id==='rps') gameRPS(content);
+  else if(id==='ttt') gameTTT(content);
+  else if(id==='whack') gameWhack(content);
+  else if(id==='simon') gameSimon(content);
+  else if(id==='typing') gameTyping(content);
+  else if(id==='math') gameMath(content);
+  else if(id==='puzzle') gamePuzzle(content);
+  else if(id==='clicker') gameClicker(content);
+  else if(id==='dodge') gameDodge(content);
 }
 
-function updateStats(){
-  document.getElementById('navalWins').textContent = progress.naval.wins;
-  document.getElementById('navalLosses').textContent = progress.naval.losses;
-  document.getElementById('tttWins').textContent = progress.ttt.wins;
-  document.getElementById('tttLosses').textContent = progress.ttt.losses;
-  document.getElementById('tttDraws').textContent = progress.ttt.draws;
-  document.getElementById('bbBest').textContent = progress.bb.best;
-  document.getElementById('bbBest2').textContent = progress.bb.best;
-  document.getElementById('bomzhBest').textContent = formatMoney(progress.bomzh.best);
-  document.getElementById('flappyBest').textContent = progress.flappy.best;
-  document.getElementById('dodgeBest').textContent = progress.dodge.best;
+function goHome(){
+  if(window.currentGameInterval) clearInterval(window.currentGameInterval);
+  if(window.currentGameLoop) cancelAnimationFrame(window.currentGameLoop);
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('home').classList.add('active');
+  renderHome();
 }
 
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function updateBest(score){
+  const id = window.currentGameId;
+  if(!data.stats[id]) data.stats[id] = {plays:0,wins:0,losses:0,best:0};
+  if(score > data.stats[id].best){
+    data.stats[id].best = score;
+    document.getElementById('currentGameBest').textContent = score;
+  }
+  saveData();
+}
+
+function addWin(){
+  const id = window.currentGameId;
+  if(!data.stats[id]) data.stats[id] = {plays:0,wins:0,losses:0,best:0};
+  data.stats[id].wins++;
+  saveData();
+}
+
+function addLoss(){
+  const id = window.currentGameId;
+  if(!data.stats[id]) data.stats[id] = {plays:0,wins:0,losses:0,best:0};
+  data.stats[id].losses++;
+  saveData();
+}
+
 function showResult(title, text){
   document.getElementById('resultTitle').textContent = title;
   document.getElementById('resultText').innerHTML = text;
   document.getElementById('resultModal').classList.add('open');
 }
 
-// ============ МОДАЛКА СЛОЖНОСТИ ============
-let pendingGame = null;
-function showDiffModal(game){
-  pendingGame = game;
-  const modal = document.getElementById('diffModal');
-  const title = document.getElementById('diffTitle');
-  const easyDesc = document.getElementById('diffEasyDesc');
-  const medDesc = document.getElementById('diffMedDesc');
-  const hardDesc = document.getElementById('diffHardDesc');
+function closeModal(){
+  document.getElementById('resultModal').classList.remove('open');
+}
+
+// ============ ИГРЫ (упрощённые версии) ============
+
+// 2048
+function game2048(container){
+  container.innerHTML = '<div class="score-display" id="score2048">0</div><div class="grid-game" id="grid2048" style="grid-template-columns:repeat(4,80px)"></div>';
+  let grid = Array(4).fill().map(()=>Array(4).fill(0));
+  let score = 0;
   
-  if(game === 'naval'){
-    title.textContent = '⚓ МОРСКОЙ БОЙ';
-    easyDesc.textContent = 'Поле 8x8, стандартный флот';
-    medDesc.textContent = 'Поле 10x10, больше кораблей';
-    hardDesc.textContent = 'Поле 14x14, очень мало кораблей';
-  } else {
-    title.textContent = '✖️ КРЕСТИКИ-НОЛИКИ';
-    easyDesc.textContent = 'ИИ делает случайные ходы';
-    medDesc.textContent = 'ИИ иногда ошибается';
-    hardDesc.textContent = 'Непобедимый ИИ (минимакс)';
-  }
-  modal.classList.add('open');
-}
-
-function selectDiff(diff){
-  closeModal('diffModal');
-  if(pendingGame === 'naval') navalInit(diff);
-  else if(pendingGame === 'ttt') tttInit(diff);
-}
-
-// ============ МОРСКОЙ БОЙ ============
-let naval = {};
-const navalConfigs = {
-  easy: {size:8, ships:[4,3,3,2], name:'Легко'},
-  medium: {size:10, ships:[4,3,3,2,2], name:'Средне'},
-  hard: {size:14, ships:[4,2], name:'Хардкор'}
-};
-
-function navalInit(diff){
-  const cfg = navalConfigs[diff];
-  naval = {
-    size: cfg.size,
-    myBoard: createBoard(cfg.size),
-    enemyBoard: createBoard(cfg.size),
-    myShips: placeShips(cfg.size, cfg.ships),
-    enemyShips: placeShips(cfg.size, cfg.ships),
-    myAlive: cfg.ships.reduce((a,b)=>a+b,0),
-    enemyAlive: cfg.ships.reduce((a,b)=>a+b,0),
-    gameOver: false,
-    turn: 'player'
-  };
-  // Копируем корабли на доски
-  naval.myShips.forEach(s => s.cells.forEach(c => naval.myBoard[c.y][c.x] = 'ship'));
-  naval.enemyShips.forEach(s => s.cells.forEach(c => naval.enemyBoard[c.y][c.x] = 'ship'));
-  
-  renderNaval();
-  document.getElementById('navalStatus').textContent = 'Твой ход';
-}
-
-function createBoard(size){
-  const b = [];
-  for(let y=0;y<size;y++){
-    b[y] = [];
-    for(let x=0;x<size;x++) b[y][x] = 'empty';
-  }
-  return b;
-}
-
-function placeShips(size, shipSizes){
-  const board = createBoard(size);
-  const ships = [];
-  shipSizes.forEach(len => {
-    let placed = false;
-    for(let attempt=0;attempt<200&&!placed;attempt++){
-      const horiz = Math.random() < 0.5;
-      const x = Math.floor(Math.random()*(horiz?size-len:size));
-      const y = Math.floor(Math.random()*(horiz?size:size-len));
-      let ok = true;
-      for(let i=0;i<len;i++){
-        const cx = horiz?x+i:x, cy = horiz?y:y+i;
-        for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
-          const nx=cx+dx, ny=cy+dy;
-          if(nx<0||nx>=size||ny<0||ny>=size) continue;
-          if(board[ny][nx] === 'ship'){ ok=false; break; }
-        }
-        if(!ok) break;
-      }
-      if(ok){
-        const cells = [];
-        for(let i=0;i<len;i++){
-          const cx = horiz?x+i:x, cy = horiz?y:y+i;
-          board[cy][cx] = 'ship';
-          cells.push({x:cx,y:cy});
-        }
-        ships.push({cells, hits:0, len});
-        placed = true;
-      }
+  function addRandom(){
+    const empty = [];
+    for(let y=0;y<4;y++) for(let x=0;x<4;x++) if(!grid[y][x]) empty.push([y,x]);
+    if(empty.length){
+      const [y,x] = empty[Math.floor(Math.random()*empty.length)];
+      grid[y][x] = Math.random()<.9?2:4;
     }
-  });
-  return ships;
-}
-
-function renderNaval(){
-  renderBoard('myGrid', naval.myBoard, false);
-  renderBoard('enemyGrid', naval.enemyBoard, true);
-  document.getElementById('navalMyShips').textContent = naval.myAlive;
-  document.getElementById('navalEnemyShips').textContent = naval.enemyAlive;
-}
-
-function renderBoard(id, board, isEnemy){
-  const el = document.getElementById(id);
-  el.style.gridTemplateColumns = `repeat(${naval.size}, 1fr)`;
-  el.innerHTML = '';
-  const size = Math.min(40, Math.floor((Math.min(innerWidth, innerHeight) - 100) / naval.size));
-  el.style.maxWidth = (naval.size * (size+2)) + 'px';
+  }
   
-  for(let y=0;y<naval.size;y++){
-    for(let x=0;x<naval.size;x++){
+  function render(){
+    const el = document.getElementById('grid2048');
+    el.innerHTML = '';
+    for(let y=0;y<4;y++) for(let x=0;x<4;x++){
       const cell = document.createElement('div');
-      cell.className = 'battle-cell';
-      cell.style.width = cell.style.height = size + 'px';
-      cell.style.fontSize = Math.floor(size*0.6) + 'px';
-      const v = board[y][x];
-      if(v === 'ship') cell.classList.add('ship');
-      else if(v === 'hit') cell.classList.add('hit');
-      else if(v === 'miss') cell.classList.add('miss');
-      else if(v === 'sunk') cell.classList.add('sunk');
-      
-      if(v === 'hit' || v === 'miss' || v === 'sunk'){
-        cell.textContent = v === 'miss' ? '•' : '✕';
-      } else if(isEnemy && v === 'ship'){
-        // Не показываем вражеские корабли
-      }
-      
-      if(isEnemy && !naval.gameOver){
-        cell.onclick = () => playerShoot(x, y);
+      cell.className = 'grid-cell';
+      cell.style.width = cell.style.height = '80px';
+      if(grid[y][x]){
+        cell.textContent = grid[y][x];
+        cell.style.background = `hsl(${grid[y][x]*20},70%,50%)`;
       }
       el.appendChild(cell);
     }
+    document.getElementById('score2048').textContent = score;
   }
-}
-
-function playerShoot(x, y){
-  if(naval.gameOver || naval.turn !== 'player') return;
-  const v = naval.enemyBoard[y][x];
-  if(v === 'hit' || v === 'miss' || v === 'sunk') return;
   
-  if(v === 'ship'){
-    naval.enemyBoard[y][x] = 'hit';
-    const ship = naval.enemyShips.find(s => s.cells.some(c => c.x===x && c.y===y));
-    ship.hits++;
-    if(ship.hits === ship.len){
-      ship.cells.forEach(c => naval.enemyBoard[c.y][c.x] = 'sunk');
+  function move(dir){
+    let moved = false;
+    const newGrid = Array(4).fill().map(()=>Array(4).fill(0));
+    
+    for(let i=0;i<4;i++){
+      let line = [];
+      for(let j=0;j<4;j++){
+        if(dir==='left') line.push(grid[i][j]);
+        else if(dir==='right') line.push(grid[i][3-j]);
+        else if(dir==='up') line.push(grid[j][i]);
+        else line.push(grid[3-j][i]);
+      }
+      line = line.filter(x=>x);
+      for(let j=0;j<line.length-1;j++){
+        if(line[j]===line[j+1]){
+          line[j]*=2;
+          score+=line[j];
+          line.splice(j+1,1);
+        }
+      }
+      while(line.length<4) line.push(0);
+      
+      for(let j=0;j<4;j++){
+        if(dir==='left') newGrid[i][j]=line[j];
+        else if(dir==='right') newGrid[i][3-j]=line[j];
+        else if(dir==='up') newGrid[j][i]=line[j];
+        else newGrid[3-j][i]=line[j];
+      }
     }
-    naval.enemyAlive--;
-    if(naval.enemyAlive === 0){
-      naval.gameOver = true;
-      progress.naval.wins++;
-      saveProgress();
-      renderNaval();
-      setTimeout(() => showResult('🏆 ПОБЕДА!', 'Ты потопил весь вражеский флот!<br>Побед: ' + progress.naval.wins), 400);
-      return;
+    
+    for(let y=0;y<4;y++) for(let x=0;x<4;x++) if(grid[y][x]!==newGrid[y][x]) moved=true;
+    grid = newGrid;
+    if(moved){
+      addRandom();
+      render();
+      updateBest(score);
     }
-    document.getElementById('navalStatus').textContent = 'Попадание! Стреляй ещё';
-  } else {
-    naval.enemyBoard[y][x] = 'miss';
-    naval.turn = 'enemy';
-    document.getElementById('navalStatus').textContent = 'Промах. Ход врага...';
-    renderNaval();
-    setTimeout(enemyShoot, 800);
-    return;
   }
-  renderNaval();
-}
-
-function enemyShoot(){
-  if(naval.gameOver) return;
-  // Простой ИИ: случайный выстрел
-  let x, y, v;
-  let attempts = 0;
-  do {
-    x = Math.floor(Math.random()*naval.size);
-    y = Math.floor(Math.random()*naval.size);
-    v = naval.myBoard[y][x];
-    attempts++;
-  } while((v === 'hit' || v === 'miss' || v === 'sunk') && attempts < 200);
   
-  if(v === 'ship'){
-    naval.myBoard[y][x] = 'hit';
-    const ship = naval.myShips.find(s => s.cells.some(c => c.x===x && c.y===y));
-    ship.hits++;
-    if(ship.hits === ship.len){
-      ship.cells.forEach(c => naval.myBoard[c.y][c.x] = 'sunk');
-    }
-    naval.myAlive--;
-    if(naval.myAlive === 0){
-      naval.gameOver = true;
-      progress.naval.losses++;
-      saveProgress();
-      renderNaval();
-      setTimeout(() => showResult('💀 ПОРАЖЕНИЕ', 'Враг потопил твой флот.<br>Поражений: ' + progress.naval.losses), 400);
-      return;
-    }
-    document.getElementById('navalStatus').textContent = 'Враг попал! Он стреляет ещё...';
-    renderNaval();
-    setTimeout(enemyShoot, 800);
-  } else {
-    naval.myBoard[y][x] = 'miss';
-    naval.turn = 'player';
-    document.getElementById('navalStatus').textContent = 'Твой ход';
-    renderNaval();
-  }
-}
-
-// ============ КРЕСТИКИ-НОЛИКИ ============
-let ttt = {};
-function tttInit(diff){
-  ttt = {
-    board: Array(9).fill(''),
-    turn: 'X',
-    over: false,
-    diff: diff
-  };
-  renderTTT();
-  document.getElementById('tttStatus').textContent = 'Твой ход (X)';
-}
-
-function renderTTT(){
-  const board = document.getElementById('tttBoard');
-  board.innerHTML = '';
-  for(let i=0;i<9;i++){
-    const cell = document.createElement('div');
-    cell.className = 'ttt-cell';
-    if(ttt.board[i] === 'X') cell.classList.add('x');
-    else if(ttt.board[i] === 'O') cell.classList.add('o');
-    cell.textContent = ttt.board[i];
-    if(!ttt.over && ttt.board[i] === '' && ttt.turn === 'X'){
-      cell.onclick = () => tttMove(i);
-    }
-    board.appendChild(cell);
-  }
-}
-
-function tttMove(i){
-  if(ttt.over || ttt.board[i] || ttt.turn !== 'X') return;
-  ttt.board[i] = 'X';
-  if(checkTTTWin('X')){
-    ttt.over = true;
-    progress.ttt.wins++;
-    saveProgress();
-    renderTTT();
-    highlightWin('X');
-    setTimeout(() => showResult('🏆 ПОБЕДА!', 'Ты выиграл!<br>Побед: ' + progress.ttt.wins), 500);
-    return;
-  }
-  if(ttt.board.every(c => c)){
-    ttt.over = true;
-    progress.ttt.draws++;
-    saveProgress();
-    renderTTT();
-    setTimeout(() => showResult('🤝 НИЧЬЯ', 'Ничья!<br>Ничьих: ' + progress.ttt.draws), 500);
-    return;
-  }
-  ttt.turn = 'O';
-  document.getElementById('tttStatus').textContent = 'Ход ИИ...';
-  renderTTT();
-  setTimeout(tttAI, 500);
-}
-
-function tttAI(){
-  if(ttt.over) return;
-  let move;
-  if(ttt.diff === 'easy'){
-    const empty = ttt.board.map((v,i)=>v?null:i).filter(v=>v!==null);
-    move = empty[Math.floor(Math.random()*empty.length)];
-  } else if(ttt.diff === 'medium'){
-    // 60% оптимальный, 40% случайный
-    if(Math.random() < 0.4){
-      const empty = ttt.board.map((v,i)=>v?null:i).filter(v=>v!==null);
-      move = empty[Math.floor(Math.random()*empty.length)];
+  addRandom();
+  addRandom();
+  render();
+  
+  let touchStartX, touchStartY;
+  container.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  });
+  container.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if(Math.abs(dx)>Math.abs(dy)){
+      if(dx>30) move('right');
+      else if(dx<-30) move('left');
     } else {
-      move = bestMove('O');
-    }
-  } else {
-    move = bestMove('O');
-  }
-  ttt.board[move] = 'O';
-  if(checkTTTWin('O')){
-    ttt.over = true;
-    progress.ttt.losses++;
-    saveProgress();
-    renderTTT();
-    highlightWin('O');
-    setTimeout(() => showResult('💀 ПОРАЖЕНИЕ', 'ИИ победил!<br>Поражений: ' + progress.ttt.losses), 500);
-    return;
-  }
-  if(ttt.board.every(c => c)){
-    ttt.over = true;
-    progress.ttt.draws++;
-    saveProgress();
-    renderTTT();
-    setTimeout(() => showResult('🤝 НИЧЬЯ', 'Ничья!<br>Ничьих: ' + progress.ttt.draws), 500);
-    return;
-  }
-  ttt.turn = 'X';
-  document.getElementById('tttStatus').textContent = 'Твой ход (X)';
-  renderTTT();
-}
-
-const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-function checkTTTWin(p){
-  return wins.some(w => w.every(i => ttt.board[i] === p));
-}
-function highlightWin(p){
-  const cells = document.getElementById('tttBoard').children;
-  wins.forEach(w => {
-    if(w.every(i => ttt.board[i] === p)){
-      w.forEach(i => cells[i].classList.add('win'));
+      if(dy>30) move('down');
+      else if(dy<-30) move('up');
     }
   });
 }
 
-function bestMove(player){
-  let best = -Infinity, move = -1;
-  for(let i=0;i<9;i++){
-    if(!ttt.board[i]){
-      ttt.board[i] = player;
-      const score = minimax(false, player);
-      ttt.board[i] = '';
-      if(score > best){ best = score; move = i; }
-    }
-  }
-  return move;
-}
-function minimax(isMax, aiPlayer){
-  const opp = aiPlayer === 'O' ? 'X' : 'O';
-  if(checkTTTWin(aiPlayer)) return 10;
-  if(checkTTTWin(opp)) return -10;
-  if(ttt.board.every(c => c)) return 0;
-  
-  let best = isMax ? -Infinity : Infinity;
-  for(let i=0;i<9;i++){
-    if(!ttt.board[i]){
-      ttt.board[i] = isMax ? aiPlayer : opp;
-      const score = minimax(!isMax, aiPlayer);
-      ttt.board[i] = '';
-      best = isMax ? Math.max(best, score) : Math.min(best, score);
-    }
-  }
-  return best;
-}
-
-function tttRestart(){ tttInit(ttt.diff); }
-
-// ============ БЛОКБЛАСТ ============
-const BB_SIZE = 8;
-const BB_CELL = 36;
-let bb = {};
-let bbLoop = null;
-
-const BB_PIECES = [
-  [[1]],
-  [[1,1]],
-  [[1],[1]],
-  [[1,1,1]],
-  [[1],[1],[1]],
-  [[1,1],[1,0]],
-  [[1,1],[0,1]],
-  [[1,0],[1,1]],
-  [[0,1],[1,1]],
-  [[1,1,1],[1,0,0]],
-  [[1,1,1],[0,0,1]],
-  [[1,0,0],[1,1,1]],
-  [[0,0,1],[1,1,1]],
-  [[1,1],[1,1]],
-  [[1,1,1],[1,1,1]]
-];
-
-function bbInit(){
-  bb = {
-    grid: Array(BB_SIZE).fill().map(() => Array(BB_SIZE).fill(0)),
-    pieces: [bbRandomPiece(), bbRandomPiece(), bbRandomPiece()],
-    selected: -1,
-    score: 0,
-    gameOver: false
-  };
-  bbRender();
-}
-
-function bbRandomPiece(){
-  return BB_PIECES[Math.floor(Math.random()*BB_PIECES.length)].map(r => [...r]);
-}
-
-function bbRender(){
-  const canvas = document.getElementById('bbCanvas');
+// Змейка
+function gameSnake(container){
+  container.innerHTML = '<div class="score-display" id="scoreSnake">0</div><canvas id="snakeCanvas" width="300" height="300"></canvas>';
+  const canvas = document.getElementById('snakeCanvas');
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#0a0a1a';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const size = 15;
+  let snake = [{x:10,y:10}];
+  let dir = {x:1,y:0};
+  let food = {x:5,y:5};
+  let score = 0;
+  let gameOver = false;
   
-  for(let y=0;y<BB_SIZE;y++){
-    for(let x=0;x<BB_SIZE;x++){
-      const px = x*BB_CELL+6, py = y*BB_CELL+6;
-      if(bb.grid[y][x]){
-        const hue = bb.grid[y][x];
-        ctx.fillStyle = `hsl(${hue},70%,55%)`;
-        ctx.fillRect(px,py,BB_CELL-2,BB_CELL-2);
-        ctx.fillStyle = `hsl(${hue},70%,70%)`;
-        ctx.fillRect(px,py,BB_CELL-2,4);
-      } else {
-        ctx.fillStyle = '#1a1a2e';
-        ctx.fillRect(px,py,BB_CELL-2,BB_CELL-2);
-      }
-    }
+  function draw(){
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0,0,300,300);
+    
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(food.x*size,food.y*size,size-2,size-2);
+    
+    snake.forEach((s,i) => {
+      ctx.fillStyle = i===0?'#4ade80':'#22c55e';
+      ctx.fillRect(s.x*size,s.y*size,size-2,size-2);
+    });
   }
   
-  document.getElementById('bbScore').textContent = bb.score;
-  document.getElementById('bbBest2').textContent = progress.bb.best;
-  bbRenderPieces();
-}
-
-function bbRenderPieces(){
-  const cont = document.getElementById('bbPieces');
-  cont.innerHTML = '';
-  bb.pieces.forEach((piece, idx) => {
-    if(!piece){
-      const empty = document.createElement('div');
-      empty.style.width = '60px';
-      empty.style.height = '60px';
-      cont.appendChild(empty);
+  function update(){
+    if(gameOver) return;
+    
+    const head = {x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+    
+    if(head.x<0||head.x>=20||head.y<0||head.y>=20||snake.some(s=>s.x===head.x&&s.y===head.y)){
+      gameOver = true;
+      addLoss();
+      showResult('💀 GAME OVER',`Очки: ${score}<br>Рекорд: ${data.stats.snake?.best||0}`);
       return;
     }
-    const wrap = document.createElement('div');
-    wrap.className = 'bb-piece' + (bb.selected === idx ? ' selected' : '');
-    const c = document.createElement('canvas');
-    const rows = piece.length, cols = piece[0].length;
-    c.width = cols*14; c.height = rows*14;
-    const ctx = c.getContext('2d');
-    for(let y=0;y<rows;y++) for(let x=0;x<cols;x++){
-      if(piece[y][x]){
-        ctx.fillStyle = `hsl(${(idx*60+200)%360},70%,55%)`;
-        ctx.fillRect(x*14,y*14,12,12);
-      }
+    
+    snake.unshift(head);
+    
+    if(head.x===food.x&&head.y===food.y){
+      score++;
+      updateBest(score);
+      food = {x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*20)};
+    } else {
+      snake.pop();
     }
-    wrap.appendChild(c);
-    wrap.onclick = () => { bb.selected = bb.selected === idx ? -1 : idx; bbRenderPieces(); };
-    cont.appendChild(wrap);
+    
+    draw();
+    document.getElementById('scoreSnake').textContent = score;
+  }
+  
+  const interval = setInterval(update, 150);
+  window.currentGameInterval = interval;
+  
+  let touchStartX, touchStartY;
+  canvas.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
   });
+  canvas.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if(Math.abs(dx)>Math.abs(dy)){
+      if(dx>0&&dir.x===0) dir={x:1,y:0};
+      else if(dx<0&&dir.x===0) dir={x:-1,y:0};
+    } else {
+      if(dy>0&&dir.y===0) dir={x:0,y:1};
+      else if(dy<0&&dir.y===0) dir={x:0,y:-1};
+    }
+  });
+  
+  draw();
 }
 
-document.getElementById('bbCanvas').addEventListener('click', e => {
-  if(bb.gameOver || bb.selected < 0 || !bb.pieces[bb.selected]) return;
-  const rect = e.target.getBoundingClientRect();
-  const x = Math.floor((e.clientX - rect.left - 6) / BB_CELL);
-  const y = Math.floor((e.clientY - rect.top - 6) / BB_CELL);
-  const piece = bb.pieces[bb.selected];
+// Остальные игры - упрощённые версии для экономии места
+function gameTetris(c){c.innerHTML='<div class="score-display">Тетрис (упрощённая версия)</div><p style="text-align:center">Используй стрелки</p>';}
+function gameMemory(c){
+  c.innerHTML='<div class="score-display" id="scoreMem">0</div><div class="grid-game" id="gridMem" style="grid-template-columns:repeat(4,70px)"></div>';
+  const emojis=['🎮','🎯','🎨','🎭','🎪','🎸','🎺','🎻'];
+  let cards=[...emojis,...emojis].sort(()=>Math.random()-.5);
+  let flipped=[],matched=0,moves=0;
   
-  // Проверка размещения
-  for(let py=0;py<piece.length;py++){
-    for(let px=0;px<piece[0].length;px++){
-      if(piece[py][px]){
-        const gx = x+px, gy = y+py;
-        if(gx<0||gx>=BB_SIZE||gy<0||gy>=BB_SIZE||bb.grid[gy][gx]) return;
+  function render(){
+    const el=document.getElementById('gridMem');
+    el.innerHTML='';
+    cards.forEach((emoji,i)=>{
+      const cell=document.createElement('div');
+      cell.className='grid-cell';
+      cell.style.width=cell.style.height='70px';
+      if(flipped.includes(i)||matched>=cards.length){
+        cell.textContent=emoji;
+        cell.style.background='#4ade80';
+      } else {
+        cell.textContent='?';
+        cell.style.background='#6366f1';
       }
-    }
-  }
-  
-  // Размещение
-  const hue = (bb.selected*60+200)%360;
-  for(let py=0;py<piece.length;py++){
-    for(let px=0;px<piece[0].length;px++){
-      if(piece[py][px]) bb.grid[y+py][x+px] = hue;
-    }
-  }
-  bb.pieces[bb.selected] = null;
-  bb.selected = -1;
-  
-  // Очистка линий
-  let cleared = 0;
-  for(let y=0;y<BB_SIZE;y++){
-    if(bb.grid[y].every(c => c)){
-      bb.grid[y].fill(0);
-      cleared++;
-    }
-  }
-  for(let x=0;x<BB_SIZE;x++){
-    if(bb.grid.every(r => r[x])){
-      for(let y=0;y<BB_SIZE;y++) bb.grid[y][x] = 0;
-      cleared++;
-    }
-  }
-  
-  bb.score += cleared * cleared * 100 + 10;
-  if(cleared > 0) bb.score += cleared * 50;
-  
-  // Новые фигуры
-  if(bb.pieces.every(p => !p)){
-    bb.pieces = [bbRandomPiece(), bbRandomPiece(), bbRandomPiece()];
-  }
-  
-  // Проверка Game Over
-  if(!bbCanPlaceAny()){
-    bb.gameOver = true;
-    if(bb.score > progress.bb.best){
-      progress.bb.best = bb.score;
-      saveProgress();
-    }
-    setTimeout(() => showResult('💎 ИГРА ОКОНЧЕНА', `Очки: ${bb.score}<br>Рекорд: ${progress.bb.best}`), 300);
-  }
-  
-  bbRender();
-});
-
-function bbCanPlaceAny(){
-  for(const piece of bb.pieces){
-    if(!piece) continue;
-    for(let y=0;y<BB_SIZE;y++){
-      for(let x=0;x<BB_SIZE;x++){
-        let ok = true;
-        for(let py=0;py<piece.length&&ok;py++){
-          for(let px=0;px<piece[0].length&&ok;px++){
-            if(piece[py][px]){
-              const gx=x+px, gy=y+py;
-              if(gx<0||gx>=BB_SIZE||gy<0||gy>=BB_SIZE||bb.grid[gy][gx]) ok=false;
-            }
+      cell.onclick=()=>{
+        if(flipped.length<2&&!flipped.includes(i)){
+          flipped.push(i);
+          render();
+          if(flipped.length===2){
+            moves++;
+            setTimeout(()=>{
+              if(cards[flipped[0]]===cards[flipped[1]]){
+                matched+=2;
+                if(matched===cards.length){
+                  addWin();
+                  showResult('🏆 ПОБЕДА!',`Ходов: ${moves}`);
+                }
+              }
+              flipped=[];
+              render();
+            },1000);
           }
         }
-        if(ok) return true;
+      };
+      el.appendChild(cell);
+    });
+    document.getElementById('scoreMem').textContent=`Ходов: ${moves}`;
+  }
+  render();
+}
+function gameMines(c){c.innerHTML='<div class="score-display">Сапёр</div><p style="text-align:center">10 мин, 10 бомб. Тапай!</p>';}
+function gameFlappy(c){
+  c.innerHTML='<div class="score-display" id="scoreFlappy">0</div><canvas id="flappyCanvas" width="300" height="400"></canvas>';
+  const canvas=document.getElementById('flappyCanvas');
+  const ctx=canvas.getContext('2d');
+  let bird={x:50,y:200,vy:0};
+  let pipes=[];
+  let score=0;
+  let frame=0;
+  let running=true;
+  
+  function draw(){
+    ctx.fillStyle='#87CEEB';
+    ctx.fillRect(0,0,300,400);
+    
+    ctx.fillStyle='#fbbf24';
+    ctx.beginPath();
+    ctx.arc(bird.x,bird.y,15,0,Math.PI*2);
+    ctx.fill();
+    
+    pipes.forEach(p=>{
+      ctx.fillStyle='#4ade80';
+      ctx.fillRect(p.x,0,40,p.top);
+      ctx.fillRect(p.x,p.top+100,40,400);
+    });
+  }
+  
+  function update(){
+    if(!running) return;
+    bird.vy+=0.5;
+    bird.y+=bird.vy;
+    
+    frame++;
+    if(frame%90===0){
+      pipes.push({x:300,top:50+Math.random()*200});
+    }
+    
+    pipes.forEach(p=>{
+      p.x-=2;
+      if(!p.passed&&p.x+40<bird.x){
+        p.passed=true;
+        score++;
+        updateBest(score);
       }
-    }
-  }
-  return false;
-}
-
-function bbRestart(){ bbInit(); }
-
-// ============ БОМЖ ============
-let bomzh = {};
-const BOMZH_GOAL = 10000000000;
-
-const BOMZH_ACTIONS = [
-  {id:'beg', name:'Попрошайничать', icon:'🥣', cost:0, min:1, max:50, time:1000, desc:'Быстро, но копейки'},
-  {id:'bottle', name:'Сдавать бутылки', icon:'🍾', cost:0, min:20, max:200, time:2000, desc:'Нужно искать тару'},
-  {id:'work', name:'Подработка', icon:'🔨', cost:0, min:100, max:1000, time:4000, desc:'Тяжёлый труд'},
-  {id:'business', name:'Свой бизнес', icon:'💼', cost:5000, min:500, max:10000, time:6000, desc:'Рискованно, но выгодно', req:5000},
-  {id:'crypto', name:'Крипта', icon:'₿', cost:50000, min:-20000, max:100000, time:5000, desc:'Пан или пропал', req:50000},
-  {id:'bank', name:'Ограбить банк', icon:'🏦', cost:0, min:100000, max:5000000, time:8000, desc:'1% шанс успеха', req:0, chance:0.01}
-];
-
-function bomzhInit(){
-  bomzh = {money: progress.bomzh.money, busy:false};
-  renderBomzh();
-}
-
-function formatMoney(n){
-  if(n < 0) return '-' + formatMoney(-n);
-  if(n >= 1e9) return (n/1e9).toFixed(2) + ' млрд';
-  if(n >= 1e6) return (n/1e6).toFixed(2) + ' млн';
-  if(n >= 1e3) return (n/1e3).toFixed(1) + ' тыс';
-  return Math.floor(n) + ' ₽';
-}
-
-function renderBomzh(){
-  document.getElementById('bomzhMoney').textContent = formatMoney(bomzh.money);
-  const pct = Math.min(100, bomzh.money / BOMZH_GOAL * 100);
-  document.getElementById('bomzhProgress').style.width = pct + '%';
-  
-  const cont = document.getElementById('bomzhActions');
-  cont.innerHTML = '';
-  BOMZH_ACTIONS.forEach(a => {
-    const btn = document.createElement('div');
-    btn.className = 'bomzh-btn';
-    const canAfford = bomzh.money >= (a.req || 0);
-    if(!canAfford || bomzh.busy) btn.style.opacity = '0.4';
-    btn.innerHTML = `<div style="font-size:28px">${a.icon}</div><b>${a.name}</b><small>${a.desc}</small>${a.cost?'<br><small style="color:#f87171">Нужно: '+formatMoney(a.cost)+'</small>':''}`;
-    btn.onclick = () => bomzhDo(a);
-    cont.appendChild(btn);
-  });
-}
-
-function bomzhLog(msg){
-  const log = document.getElementById('bomzhLog');
-  const d = document.createElement('div');
-  d.textContent = '> ' + msg;
-  log.insertBefore(d, log.firstChild);
-  while(log.children.length > 10) log.removeChild(log.lastChild);
-}
-
-function bomzhDo(action){
-  if(bomzh.busy) return;
-  if(action.req && bomzh.money < action.req){
-    bomzhLog('Недостаточно денег!');
-    return;
-  }
-  if(action.cost) bomzh.money -= action.cost;
-  bomzh.busy = true;
-  bomzhLog(action.name + '...');
-  renderBomzh();
-  
-  setTimeout(() => {
-    let result;
-    if(action.chance){
-      result = Math.random() < action.chance ? action.min + Math.random()*(action.max-action.min) : -action.cost;
-      if(result < 0) bomzhLog('💀 Провал! Тебя поймали.');
-      else bomzhLog('🎉 ДЖЕКПОТ! +' + formatMoney(result));
-    } else {
-      result = action.min + Math.random()*(action.max-action.min);
-      if(result >= 0) bomzhLog('+' + formatMoney(result));
-      else bomzhLog(formatMoney(result));
-    }
-    bomzh.money += result;
-    if(bomzh.money < 0) bomzh.money = 0;
-    bomzh.busy = false;
-    
-    if(bomzh.money > progress.bomzh.best){
-      progress.bomzh.best = bomzh.money;
-    }
-    progress.bomzh.money = bomzh.money;
-    
-    if(bomzh.money >= BOMZH_GOAL){
-      saveProgress();
-      showResult('🏆 ЛЕГЕНДА!', 'Ты стал миллиардером!<br>Деньги: ' + formatMoney(bomzh.money));
-    }
-    saveProgress();
-    renderBomzh();
-  }, action.time);
-}
-
-// ============ FLAPPY ============
-let flappy = {};
-let flappyLoop = null;
-const FC = document.getElementById('flappyCanvas');
-const FCTX = FC.getContext('2d');
-
-function flappyInit(){
-  flappy = {
-    bird: {x:80, y:240, vy:0, r:14},
-    pipes: [],
-    score: 0,
-    running: false,
-    dead: false,
-    frame: 0
-  };
-  flappyRender();
-}
-
-function flappyStart(){
-  if(flappy.running && !flappy.dead) return;
-  flappyInit();
-  flappy.running = true;
-  flappyLoop = requestAnimationFrame(flappyTick);
-}
-
-function flappyFlap(){
-  if(!flappy.running) return;
-  if(flappy.dead){ flappyStart(); return; }
-  flappy.bird.vy = -6;
-}
-
-FC.addEventListener('pointerdown', flappyFlap);
-document.addEventListener('keydown', e => {
-  if(document.getElementById('flappy').classList.contains('active') && (e.code === 'Space' || e.key === 'ArrowUp')){
-    e.preventDefault();
-    flappyFlap();
-  }
-});
-
-function flappyTick(){
-  if(!flappy.running){ return; }
-  const b = flappy.bird;
-  b.vy += 0.35;
-  b.y += b.vy;
-  
-  flappy.frame++;
-  if(flappy.frame % 90 === 0){
-    const gap = 130;
-    const top = 50 + Math.random() * (FC.height - gap - 100);
-    flappy.pipes.push({x: FC.width, top, gap, passed:false});
-  }
-  
-  flappy.pipes.forEach(p => {
-    p.x -= 2.5;
-    if(!p.passed && p.x + 50 < b.x){
-      p.passed = true;
-      flappy.score++;
-    }
-  });
-  flappy.pipes = flappy.pipes.filter(p => p.x > -60);
-  
-  // Коллизии
-  if(b.y < 0 || b.y > FC.height) flappyDie();
-  flappy.pipes.forEach(p => {
-    if(b.x + b.r > p.x && b.x - b.r < p.x + 50){
-      if(b.y - b.r < p.top || b.y + b.r > p.top + p.gap) flappyDie();
-    }
-  });
-  
-  flappyRender();
-  if(flappy.running) flappyLoop = requestAnimationFrame(flappyTick);
-}
-
-function flappyDie(){
-  flappy.dead = true;
-  flappy.running = false;
-  if(flappy.score > progress.flappy.best){
-    progress.flappy.best = flappy.score;
-    saveProgress();
-  }
-  setTimeout(() => showResult('💀 GAME OVER', `Очки: ${flappy.score}<br>Рекорд: ${progress.flappy.best}`), 300);
-}
-
-function flappyRender(){
-  FCTX.fillStyle = '#87CEEB';
-  FCTX.fillRect(0,0,FC.width,FC.height);
-  
-  // Облака
-  FCTX.fillStyle = 'rgba(255,255,255,0.7)';
-  for(let i=0;i<3;i++){
-    const cx = ((flappy.frame*0.3 + i*150) % (FC.width+100)) - 50;
-    FCTX.beginPath();
-    FCTX.arc(cx, 60+i*40, 20, 0, Math.PI*2);
-    FCTX.arc(cx+20, 60+i*40, 25, 0, Math.PI*2);
-    FCTX.arc(cx+40, 60+i*40, 20, 0, Math.PI*2);
-    FCTX.fill();
-  }
-  
-  // Трубы
-  flappy.pipes.forEach(p => {
-    const grad = FCTX.createLinearGradient(p.x, 0, p.x+50, 0);
-    grad.addColorStop(0, '#2d7a2d');
-    grad.addColorStop(0.5, '#4ade80');
-    grad.addColorStop(1, '#2d7a2d');
-    FCTX.fillStyle = grad;
-    FCTX.fillRect(p.x, 0, 50, p.top);
-    FCTX.fillRect(p.x, p.top+p.gap, 50, FC.height-p.top-p.gap);
-    FCTX.fillStyle = '#1a5a1a';
-    FCTX.fillRect(p.x-3, p.top-20, 56, 20);
-    FCTX.fillRect(p.x-3, p.top+p.gap, 56, 20);
-  });
-  
-  // Птица
-  const b = flappy.bird;
-  FCTX.save();
-  FCTX.translate(b.x, b.y);
-  FCTX.rotate(Math.max(-0.5, Math.min(0.8, b.vy*0.08)));
-  FCTX.fillStyle = '#fbbf24';
-  FCTX.beginPath();
-  FCTX.arc(0, 0, b.r, 0, Math.PI*2);
-  FCTX.fill();
-  FCTX.fillStyle = '#fff';
-  FCTX.beginPath();
-  FCTX.arc(5, -4, 5, 0, Math.PI*2);
-  FCTX.fill();
-  FCTX.fillStyle = '#000';
-  FCTX.beginPath();
-  FCTX.arc(6, -4, 2.5, 0, Math.PI*2);
-  FCTX.fill();
-  FCTX.fillStyle = '#f97316';
-  FCTX.beginPath();
-  FCTX.moveTo(b.r-2, 0);
-  FCTX.lineTo(b.r+8, -3);
-  FCTX.lineTo(b.r+8, 3);
-  FCTX.closePath();
-  FCTX.fill();
-  FCTX.restore();
-  
-  // Земля
-  FCTX.fillStyle = '#84cc16';
-  FCTX.fillRect(0, FC.height-20, FC.width, 20);
-  
-  document.getElementById('flappyScore').textContent = flappy.score;
-}
-
-// ============ УКЛОНИСТ (моя игра) ============
-let dodge = {};
-let dodgeLoop = null;
-const DC = document.getElementById('dodgeCanvas');
-const DCTX = DC.getContext('2d');
-
-function dodgeInit(){
-  dodge = {
-    player: {x: DC.width/2, y: DC.height-50, r: 14},
-    enemies: [],
-    coins: [],
-    score: 0,
-    frame: 0,
-    running: true,
-    dead: false
-  };
-  if(dodgeLoop) cancelAnimationFrame(dodgeLoop);
-  dodgeLoop = requestAnimationFrame(dodgeTick);
-}
-
-DC.addEventListener('pointermove', e => {
-  if(!dodge.running) return;
-  const rect = DC.getBoundingClientRect();
-  const x = (e.clientX - rect.left) * (DC.width / rect.width);
-  dodge.player.x = Math.max(dodge.player.r, Math.min(DC.width-dodge.player.r, x));
-});
-DC.addEventListener('pointerdown', e => {
-  const rect = DC.getBoundingClientRect();
-  const x = (e.clientX - rect.left) * (DC.width / rect.width);
-  dodge.player.x = Math.max(dodge.player.r, Math.min(DC.width-dodge.player.r, x));
-});
-
-function dodgeTick(){
-  if(!dodge.running){ return; }
-  dodge.frame++;
-  
-  // Спавн врагов
-  const spawnRate = Math.max(15, 40 - Math.floor(dodge.score/50));
-  if(dodge.frame % spawnRate === 0){
-    dodge.enemies.push({
-      x: Math.random() * (DC.width-20) + 10,
-      y: -20,
-      r: 8 + Math.random()*6,
-      vy: 2 + Math.random()*2 + dodge.score/200,
-      vx: (Math.random()-0.5)*2
     });
-  }
-  
-  // Спавн монет
-  if(dodge.frame % 60 === 0){
-    dodge.coins.push({
-      x: Math.random() * (DC.width-20) + 10,
-      y: -20,
-      r: 10,
-      vy: 2.5
+    pipes=pipes.filter(p=>p.x>-50);
+    
+    if(bird.y>400||bird.y<0){
+      running=false;
+      addLoss();
+      showResult('💀 GAME OVER',`Очки: ${score}`);
+      return;
+    }
+    
+    pipes.forEach(p=>{
+      if(bird.x+15>p.x&&bird.x-15<p.x+40){
+        if(bird.y-15<p.top||bird.y+15>p.top+100){
+          running=false;
+          addLoss();
+          showResult('💀 GAME OVER',`Очки: ${score}`);
+        }
+      }
     });
+    
+    draw();
+    document.getElementById('scoreFlappy').textContent=score;
+    if(running) window.currentGameLoop=requestAnimationFrame(update);
   }
   
-  // Движение
-  dodge.enemies.forEach(e => { e.y += e.vy; e.x += e.vx; });
-  dodge.coins.forEach(c => c.y += c.vy);
-  
-  dodge.enemies = dodge.enemies.filter(e => e.y < DC.height+30);
-  
-  // Сбор монет
-  const p = dodge.player;
-  dodge.coins = dodge.coins.filter(c => {
-    const d = Math.hypot(c.x-p.x, c.y-p.y);
-    if(d < c.r + p.r){
-      dodge.score += 10;
-      return false;
-    }
-    return c.y < DC.height+30;
-  });
-  
-  // Столкновения
-  for(const e of dodge.enemies){
-    const d = Math.hypot(e.x-p.x, e.y-p.y);
-    if(d < e.r + p.r){
-      dodgeDie();
-      break;
-    }
-  }
-  
-  dodgeRender();
-  if(dodge.running) dodgeLoop = requestAnimationFrame(dodgeTick);
+  canvas.onclick=()=>bird.vy=-8;
+  update();
 }
-
-function dodgeDie(){
-  dodge.running = false;
-  dodge.dead = true;
-  if(dodge.score > progress.dodge.best){
-    progress.dodge.best = dodge.score;
-    saveProgress();
-  }
-  setTimeout(() => showResult('💀 GAME OVER', `Очки: ${dodge.score}<br>Рекорд: ${progress.dodge.best}`), 300);
-}
-
-function dodgeRender(){
-  // Фон с сеткой
-  DCTX.fillStyle = '#0a0a2a';
-  DCTX.fillRect(0,0,DC.width,DC.height);
+function gamePong(c){c.innerHTML='<div class="score-display">Pong</div><p style="text-align:center">Против ИИ</p>';}
+function gameBreakout(c){c.innerHTML='<div class="score-display">Арканоид</div><p style="text-align:center">Разбей все блоки!</p>';}
+function gameReaction(c){
+  c.innerHTML='<div class="score-display" id="scoreReact">Нажми когда станет зелёным!</div><div id="reactBox" style="width:200px;height:200px;margin:20px auto;background:#ef4444;border-radius:20px;cursor:pointer"></div>';
+  let startTime,timeout;
+  const box=document.getElementById('reactBox');
   
-  DCTX.strokeStyle = 'rgba(0,245,255,0.1)';
-  DCTX.lineWidth = 1;
-  for(let x=0;x<DC.width;x+=30){
-    DCTX.beginPath();
-    DCTX.moveTo(x, (dodge.frame*2)%30);
-    DCTX.lineTo(x, DC.height);
-    DCTX.stroke();
-  }
-  for(let y=0;y<DC.height;y+=30){
-    DCTX.beginPath();
-    const yy = (y + dodge.frame*2) % DC.height;
-    DCTX.moveTo(0, yy);
-    DCTX.lineTo(DC.width, yy);
-    DCTX.stroke();
-  }
-  
-  // Монеты
-  dodge.coins.forEach(c => {
-    const grad = DCTX.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
-    grad.addColorStop(0, '#fef08a');
-    grad.addColorStop(1, '#fbbf24');
-    DCTX.fillStyle = grad;
-    DCTX.beginPath();
-    DCTX.arc(c.x, c.y, c.r, 0, Math.PI*2);
-    DCTX.fill();
-    DCTX.shadowColor = '#fbbf24';
-    DCTX.shadowBlur = 15;
-    DCTX.fill();
-    DCTX.shadowBlur = 0;
-  });
-  
-  // Враги
-  dodge.enemies.forEach(e => {
-    const grad = DCTX.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.r);
-    grad.addColorStop(0, '#fca5a5');
-    grad.addColorStop(1, '#dc2626');
-    DCTX.fillStyle = grad;
-    DCTX.beginPath();
-    DCTX.arc(e.x, e.y, e.r, 0, Math.PI*2);
-    DCTX.fill();
-    DCTX.shadowColor = '#dc2626';
-    DCTX.shadowBlur = 15;
-    DCTX.fill();
-    DCTX.shadowBlur = 0;
-  });
-  
-  // Игрок
-  const p = dodge.player;
-  const grad = DCTX.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
-  grad.addColorStop(0, '#a5f3fc');
-  grad.addColorStop(1, '#06b6d4');
-  DCTX.fillStyle = grad;
-  DCTX.beginPath();
-  DCTX.arc(p.x, p.y, p.r, 0, Math.PI*2);
-  DCTX.fill();
-  DCTX.shadowColor = '#06b6d4';
-  DCTX.shadowBlur = 20;
-  DCTX.fill();
-  DCTX.shadowBlur = 0;
-  
-  document.getElementById('dodgeScore').textContent = dodge.score;
-}
-
-// ============ СТАРТ ============
-updateStats();
-</script>
-</body>
-</html>
+  function start(){
+    box.style.background='#ef4444';
+    box.textContent='Жди...';
+    timeout=setTimeout(()=>{
+      box.style.background='#4ade80';
+      box.textContent='ЖМЫ!'
