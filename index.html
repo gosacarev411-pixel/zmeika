@@ -3,285 +3,847 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>NEON ARCADE</title>
+<title>🎮 Game Hub</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: 'Segoe UI', Arial, sans-serif; }
-  body { 
-    background: #0a0a1a; color: #fff; min-height: 100vh; overflow-x: hidden; 
-    position: relative;
-  }
-  body::before {
-    content: ''; position: fixed; inset: 0; 
-    background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5, #ffbe0b, #ff006e);
-    background-size: 400% 400%; animation: bgShift 15s ease infinite; opacity: 0.15; z-index: -1;
-  }
-  @keyframes bgShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
-  .screen { display: none; min-height: 100vh; padding: 20px; animation: fadeIn 0.4s ease; }
-  .screen.active { display: flex; flex-direction: column; align-items: center; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #fff;
+  overflow-x: hidden;
+}
 
-  .header { text-align: center; margin-bottom: 30px; margin-top: 20px; }
-  .header h1 { 
-    font-size: 32px; font-weight: 900; letter-spacing: 2px;
-    background: linear-gradient(90deg, #ff006e, #8338ec, #3a86ff, #06ffa5);
-    background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
-    animation: gradShift 3s linear infinite;
-  }
-  @keyframes gradShift { to { background-position: 200% center; } }
+.app {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
 
-  .card { 
-    background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); 
-    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; 
-    padding: 25px; width: 100%; max-width: 400px; text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 20px;
-  }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
 
-  .fortune-btn {
-    background: linear-gradient(135deg, #ff006e, #ffbe0b); border: none; color: #fff;
-    padding: 15px 30px; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 16px;
-    box-shadow: 0 4px 20px rgba(255, 0, 110, 0.4); transition: transform 0.2s; width: 100%;
-  }
-  .fortune-btn:active { transform: scale(0.95); }
-  .fortune-text { margin-top: 15px; font-size: 18px; color: #ffd700; min-height: 50px; font-style: italic; }
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
 
-  .game-btn {
-    background: linear-gradient(135deg, var(--c1), var(--c2)); border: none; color: #fff;
-    padding: 15px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 16px;
-    width: 100%; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s;
-  }
-  .game-btn:active { transform: scale(0.97); }
+.time-counter {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffd93d;
+}
 
-  .back-btn {
-    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff;
-    padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-bottom: 20px;
-    align-self: flex-start;
-  }
+.hero {
+  text-align: center;
+  margin-bottom: 30px;
+}
 
-  .score-display { font-size: 36px; font-weight: bold; margin: 15px 0; color: #06ffa5; text-shadow: 0 0 15px rgba(6,255,165,0.5); }
-  
-  .input-field {
-    width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #8338ec; 
-    background: rgba(0,0,0,0.3); color: #fff; font-size: 20px; text-align: center; margin: 15px 0;
-  }
-  
-  .action-btn {
-    background: linear-gradient(135deg, #3a86ff, #8338ec); border: none; color: #fff;
-    padding: 15px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 18px; width: 100%;
-  }
+.hero h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
 
-  .modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-    display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px;
-  }
-  .modal.open { display: flex; animation: fadeIn 0.3s; }
-  .modal-box {
-    background: linear-gradient(135deg, #1a1a2e, #2d2b55); border: 2px solid #06ffa5;
-    border-radius: 24px; padding: 30px; max-width: 350px; width: 100%; text-align: center;
-  }
+.hero p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.game-card {
+  padding: 25px 15px;
+  border-radius: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-card:active {
+  transform: scale(0.95);
+}
+
+.game-name {
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.footer {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  font-size: 14px;
+}
+
+.back-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.game-container {
+  background: rgba(255,255,255,0.95);
+  border-radius: 20px;
+  padding: 20px;
+  min-height: 500px;
+  color: #333;
+}
+
+canvas {
+  display: block;
+  margin: 0 auto;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.game-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.game-score {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 10px 5px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.memory-card {
+  aspect-ratio: 1;
+  background: #667eea;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.memory-card.flipped {
+  background: #fff;
+  border: 2px solid #667eea;
+}
+
+.memory-card.matched {
+  background: #4ecdc4;
+  opacity: 0.7;
+}
+
+.clicker-btn {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd93d, #ff9a3c);
+  border: none;
+  font-size: 60px;
+  cursor: pointer;
+  margin: 50px auto;
+  display: block;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  transition: all 0.1s;
+}
+
+.clicker-btn:active {
+  transform: scale(0.9);
+}
+
+.reaction-box {
+  width: 100%;
+  height: 300px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.grid-2048 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-width: 320px;
+  margin: 0 auto;
+  background: #bbada0;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.tile-2048 {
+  aspect-ratio: 1;
+  background: #cdc1b4;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #776e65;
+}
+
+.rps-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.rps-btn {
+  font-size: 60px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rps-btn:active {
+  transform: scale(1.2);
+}
+
+.math-input {
+  width: 200px;
+  padding: 15px;
+  font-size: 24px;
+  text-align: center;
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  margin: 20px auto;
+  display: block;
+}
+
+.simon-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  max-width: 300px;
+  margin: 20px auto;
+}
+
+.simon-btn {
+  aspect-ratio: 1;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.simon-btn.active {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.catch-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #ff512f;
+  position: absolute;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.maze-grid {
+  display: grid;
+  gap: 2px;
+  max-width: 300px;
+  margin: 0 auto;
+  background: #333;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.maze-cell {
+  aspect-ratio: 1;
+  background: #fff;
+  border-radius: 3px;
+}
+
+.maze-cell.wall {
+  background: #333;
+}
+
+.maze-cell.player {
+  background: #667eea;
+}
+
+.maze-cell.end {
+  background: #4ecdc4;
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(196, 113, 245, 0.6);
+  cursor: pointer;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
 </style>
 </head>
 <body>
+<div class="app">
+  <header class="header">
+    <div class="logo">🎮 Game Hub</div>
+    <div class="time-counter" id="timeCounter">⏱ 00:00:00</div>
+  </header>
 
-<!-- ГЛАВНЫЙ ЭКРАН -->
-<div id="home" class="screen active">
-  <div class="header">
-    <h1>NEON ARCADE</h1>
-    <p style="color: #888; margin-top: 5px; letter-spacing: 2px;">МИНИМАЛИЗМ И СТИЛЬ</p>
+  <div id="mainMenu">
+    <div class="hero">
+      <h1>Добро пожаловать!</h1>
+      <p>15 игр, чтобы убить время</p>
+    </div>
+
+    <div class="games-grid" id="gamesGrid"></div>
+
+    <footer class="footer">
+      <div class="stats">
+        <div>🏆 Игр сыграно: <span id="gamesPlayed">0</span></div>
+        <div>⭐ Лучший счёт: <span id="bestScore">0</span></div>
+      </div>
+    </footer>
   </div>
 
-  <div class="card">
-    <div style="font-size: 14px; color: #888; margin-bottom: 15px;">✨ ПРЕДСКАЗАНИЕ ДНЯ</div>
-    <button class="fortune-btn" onclick="getFortune()">🔮 Узнать судьбу</button>
-    <div class="fortune-text" id="fortuneText"></div>
-  </div>
-
-  <div class="card" style="text-align: left;">
-    <h3 style="margin-bottom: 15px; color: #06ffa5;">🎮 Игры</h3>
-    <button class="game-btn" style="--c1: #f59e0b; --c2: #fbbf24;" onclick="startGame('clicker')">🍪 Неоновый Кликер</button>
-    <button class="game-btn" style="--c1: #3a86ff; --c2: #8338ec;" onclick="startGame('guess')">🔮 Угадай число (1-100)</button>
-  </div>
-</div>
-
-<!-- ЭКРАН ИГРЫ -->
-<div id="gameScreen" class="screen">
-  <button class="back-btn" onclick="goHome()">← Назад в меню</button>
-  <div class="header">
-    <h1 id="gameTitle" style="font-size: 24px;">Игра</h1>
-    <p style="color: #06ffa5; margin-top: 5px;">Рекорд: <span id="gameBest">0</span></p>
-  </div>
-  <div class="card" id="gameContent" style="width: 100%; max-width: 400px;"></div>
-</div>
-
-<!-- МОДАЛКА -->
-<div class="modal" id="resultModal">
-  <div class="modal-box">
-    <h2 id="resultTitle" style="color: #ffd700; margin-bottom: 15px;">Результат</h2>
-    <p id="resultText" style="color: #ccc; margin-bottom: 20px; line-height: 1.5;"></p>
-    <button class="action-btn" onclick="closeModal()">OK</button>
+  <div id="gameScreen" style="display:none;">
+    <header class="header">
+      <button class="back-btn" onclick="showMenu()">← Назад</button>
+      <div class="time-counter" id="gameTimeCounter">⏱ 00:00:00</div>
+    </header>
+    <div class="game-container" id="gameContainer"></div>
   </div>
 </div>
 
 <script>
-// === ДАННЫЕ ===
-let data = JSON.parse(localStorage.getItem('neon_data') || '{}');
-if (!data.stats) data.stats = {};
-function saveData() { localStorage.setItem('neon_data', JSON.stringify(data)); }
-
-function updateBest(gameId, score) {
-  if (!data.stats[gameId]) data.stats[gameId] = { best: 0 };
-  if (score > data.stats[gameId].best) {
-    data.stats[gameId].best = score;
-    document.getElementById('gameBest').textContent = score;
-    saveData();
-  }
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('#0f0c29');
 }
 
-// === ПРЕДСКАЗАНИЯ ===
-const fortunes = [
-  "Сегодня ты побьёшь свой рекорд! 🏆",
-  "Удача на твоей стороне, действуй смело! 🍀",
-  "Звёзды говорят: попробуй Угадай число! 🔮",
-  "Твоя интуиция сегодня на максимуме! ✨",
-  "Кликер ждёт тебя, кликай и богатей! 🍪",
-  "Сегодня отличный день для побед! 👑",
-  "Не бойся рисковать, фортуна с тобой! 🎲",
-  "Ты станешь легендой этого дня! 🌟"
+const games = [
+  { id: 'snake', name: '🐍 Змейка', color: '#00d26a' },
+  { id: 'tictactoe', name: '⭕ Крестики-нолики', color: '#ff6b6b' },
+  { id: 'memory', name: '🧠 Memory', color: '#4ecdc4' },
+  { id: 'clicker', name: '👆 Кликер', color: '#ffd93d' },
+  { id: 'reaction', name: '⚡ Реакция', color: '#ff9a3c' },
+  { id: '2048', name: '🔢 2048', color: '#ed4264' },
+  { id: 'flappy', name: '🐦 Flappy', color: '#56ab2f' },
+  { id: 'guess', name: '🎯 Угадай число', color: '#8e2de2' },
+  { id: 'rps', name: '✊ КНБ', color: '#f953c6' },
+  { id: 'pong', name: '🏓 Понг', color: '#00c9ff' },
+  { id: 'catch', name: '🎯 Поймай кружок', color: '#ff512f' },
+  { id: 'math', name: '🧮 Быстрая математика', color: '#f093fb' },
+  { id: 'simon', name: '🎵 Simon', color: '#43cea2' },
+  { id: 'maze', name: '🌀 Лабиринт', color: '#36d1dc' },
+  { id: 'bubble', name: '🫧 Пузырьки', color: '#c471f5' }
 ];
 
-function getFortune() {
-  const text = document.getElementById('fortuneText');
-  text.style.opacity = 0;
-  setTimeout(() => {
-    text.textContent = fortunes[Math.floor(Math.random() * fortunes.length)];
-    text.style.opacity = 1;
-    text.style.transition = 'opacity 0.5s';
-  }, 200);
+const grid = document.getElementById('gamesGrid');
+games.forEach(game => {
+  const card = document.createElement('div');
+  card.className = 'game-card';
+  card.style.background = `linear-gradient(135deg, ${game.color}, ${game.color}99)`;
+  card.innerHTML = `<div class="game-name">${game.name}</div>`;
+  card.onclick = () => startGame(game.id);
+  grid.appendChild(card);
+});
+
+let totalSeconds = parseInt(localStorage.getItem('totalTime') || '0');
+let sessionStart = Date.now();
+
+function formatTime(s) {
+  const h = Math.floor(s / 3600).toString().padStart(2, '0');
+  const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+  const sec = Math.floor(s % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${sec}`;
 }
 
-// === УПРАВЛЕНИЕ ЭКРАНАМИ ===
-function startGame(id) {
-  document.getElementById('home').classList.remove('active');
-  document.getElementById('gameScreen').classList.add('active');
+function updateTime() {
+  const current = totalSeconds + Math.floor((Date.now() - sessionStart) / 1000);
+  const timeStr = '⏱ ' + formatTime(current);
+  document.getElementById('timeCounter').textContent = timeStr;
+  const gameCounter = document.getElementById('gameTimeCounter');
+  if (gameCounter) gameCounter.textContent = timeStr;
+}
+
+setInterval(updateTime, 1000);
+updateTime();
+
+function saveTime() {
+  const final = totalSeconds + Math.floor((Date.now() - sessionStart) / 1000);
+  localStorage.setItem('totalTime', final);
+}
+
+window.addEventListener('beforeunload', saveTime);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) saveTime();
+});
+
+document.getElementById('gamesPlayed').textContent = localStorage.getItem('gamesPlayed') || 0;
+document.getElementById('bestScore').textContent = localStorage.getItem('bestScore') || 0;
+
+function startGame(gameId) {
+  localStorage.setItem('gamesPlayed', (+localStorage.getItem('gamesPlayed') + 1));
+  document.getElementById('mainMenu').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+  loadGame(gameId);
+}
+
+function showMenu() {
+  document.getElementById('mainMenu').style.display = 'block';
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('gameContainer').innerHTML = '';
+  document.getElementById('gamesPlayed').textContent = localStorage.getItem('gamesPlayed') || 0;
+  document.getElementById('bestScore').textContent = localStorage.getItem('bestScore') || 0;
+}
+
+function loadGame(id) {
+  const container = document.getElementById('gameContainer');
+  container.innerHTML = '';
   
-  const titles = { clicker: '🍪 Неоновый Кликер', guess: '🔮 Угадай число' };
-  document.getElementById('gameTitle').textContent = titles[id];
-  document.getElementById('gameBest').textContent = data.stats[id]?.best || 0;
-  
-  const content = document.getElementById('gameContent');
-  content.innerHTML = '';
-  window.currentGameId = id;
-
-  if (id === 'clicker') initClicker(content);
-  else if (id === 'guess') initGuess(content);
-}
-
-function goHome() {
-  if (window.gameInterval) clearInterval(window.gameInterval);
-  document.getElementById('gameScreen').classList.remove('active');
-  document.getElementById('home').classList.add('active');
-}
-
-function showResult(title, text) {
-  document.getElementById('resultTitle').textContent = title;
-  document.getElementById('resultText').innerHTML = text;
-  document.getElementById('resultModal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('resultModal').classList.remove('open');
-  if (window.currentGameId === 'guess') initGuess(document.getElementById('gameContent'));
-}
-
-// === ИГРА 1: КЛИКЕР ===
-function initClicker(container) {
-  let cookies = 0;
-  let cps = 0; // кликов в секунду
-  
-  container.innerHTML = `
-    <div class="score-display" id="cScore">0</div>
-    <button id="cookieBtn" style="font-size: 100px; background: none; border: none; cursor: pointer; transition: transform 0.1s; margin: 20px 0;">🍪</button>
-    <div style="color: #888; margin-bottom: 20px;">В секунду: <span id="cCps" style="color: #06ffa5;">0</span></div>
-    <button class="action-btn" id="buyBtn" style="margin-top: 10px;">Купить авто-кликер (Цена: 50)</button>
-  `;
-
-  const btn = document.getElementById('cookieBtn');
-  const buyBtn = document.getElementById('buyBtn');
-  let autoClickerCost = 50;
-
-  btn.addEventListener('click', () => {
-    cookies++;
-    updateBest('clicker', Math.floor(cookies));
-    render();
-    btn.style.transform = 'scale(0.9)';
-    setTimeout(() => btn.style.transform = 'scale(1)', 100);
-  });
-
-  buyBtn.addEventListener('click', () => {
-    if (cookies >= autoClickerCost) {
-      cookies -= autoClickerCost;
-      cps++;
-      autoClickerCost = Math.floor(autoClickerCost * 1.5);
-      render();
-    }
-  });
-
-  function render() {
-    document.getElementById('cScore').textContent = Math.floor(cookies);
-    document.getElementById('cCps').textContent = cps;
-    buyBtn.textContent = `Купить авто-кликер (Цена: ${autoClickerCost})`;
-    buyBtn.style.opacity = cookies >= autoClickerCost ? '1' : '0.5';
+  switch(id) {
+    case 'snake': initSnake(container); break;
+    case 'tictactoe': initTicTacToe(container); break;
+    case 'memory': initMemory(container); break;
+    case 'clicker': initClicker(container); break;
+    case 'reaction': initReaction(container); break;
+    case '2048': init2048(container); break;
+    case 'flappy': initFlappy(container); break;
+    case 'guess': initGuess(container); break;
+    case 'rps': initRPS(container); break;
+    case 'pong': initPong(container); break;
+    case 'catch': initCatch(container); break;
+    case 'math': initMath(container); break;
+    case 'simon': initSimon(container); break;
+    case 'maze': initMaze(container); break;
+    case 'bubble': initBubble(container); break;
   }
-
-  window.gameInterval = setInterval(() => {
-    cookies += cps;
-    updateBest('clicker', Math.floor(cookies));
-    render();
-  }, 1000);
-
-  render();
 }
 
-// === ИГРА 2: УГАДАЙ ЧИСЛО ===
-function initGuess(container) {
-  const target = Math.floor(Math.random() * 100) + 1;
-  let attempts = 0;
-
+// Змейка
+function initSnake(container) {
   container.innerHTML = `
-    <p style="color: #ccc; margin-bottom: 10px;">Я загадал число от 1 до 100.</p>
-    <input type="number" id="gInput" class="input-field" placeholder="Твоё число">
-    <button class="action-btn" id="gBtn">УГАДАТЬ</button>
-    <div id="gHint" style="margin-top: 20px; font-size: 18px; min-height: 30px; color: #ffbe0b;"></div>
-    <div style="margin-top: 10px; color: #888;">Попыток: <span id="gAttempts">0</span></div>
+    <div class="game-title">🐍 Змейка</div>
+    <div class="game-score">Счёт: <span id="snakeScore">0</span></div>
+    <canvas id="snakeCanvas" width="300" height="300"></canvas>
+    <div style="text-align:center;margin-top:15px;">
+      <button class="btn" onclick="startSnake()">Начать</button>
+    </div>
   `;
+}
 
-  const input = document.getElementById('gInput');
-  const btn = document.getElementById('gBtn');
-  const hint = document.getElementById('gHint');
-  const attDisplay = document.getElementById('gAttempts');
-
-  btn.addEventListener('click', () => {
-    const val = parseInt(input.value);
-    if (isNaN(val)) return;
+let snakeGame = null;
+function startSnake() {
+  const canvas = document.getElementById('snakeCanvas');
+  const ctx = canvas.getContext('2d');
+  const size = 15;
+  const cols = canvas.width / size;
+  
+  let snake = [{x: 10, y: 10}];
+  let food = {x: 5, y: 5};
+  let dx = 1, dy = 0;
+  let score = 0;
+  let gameLoop;
+  
+  function draw() {
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    attempts++;
-    attDisplay.textContent = attempts;
-
-    if (val === target) {
-      const score = Math.max(0, 100 - attempts * 5);
-      updateBest('guess', score);
-      showResult('🏆 ПОБЕДА!', `Ты угадал число ${target}!<br>Попыток: ${attempts}<br>Очки: ${score}`);
-    } else if (val < target) {
-      hint.textContent = '📈 Моё число БОЛЬШЕ!';
-      hint.style.color = '#3a86ff';
-    } else {
-      hint.textContent = '📉 Моё число МЕНЬШЕ!';
-      hint.style.color = '#ff006e';
+    ctx.fillStyle = '#ff512f';
+    ctx.fillRect(food.x * size, food.y * size, size - 2, size - 2);
+    
+    snake.forEach((segment, i) => {
+      ctx.fillStyle = i === 0 ? '#00d26a' : '#4ecdc4';
+      ctx.fillRect(segment.x * size, segment.y * size, size - 2, size - 2);
+    });
+  }
+  
+  function update() {
+    const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+    
+    if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= cols ||
+        snake.some(s => s.x === head.x && s.y === head.y)) {
+      clearInterval(gameLoop);
+      alert('Игра окончена! Счёт: ' + score);
+      return;
     }
-    input.value = '';
-    input.focus();
+    
+    snake.unshift(head);
+    
+    if (head.x === food.x && head.y === food.y) {
+      score++;
+      document.getElementById('snakeScore').textContent = score;
+      food = {x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * cols)};
+    } else {
+      snake.pop();
+    }
+    
+    draw();
+  }
+  
+  document.onkeydown = (e) => {
+    if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -1; }
+    if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = 1; }
+    if (e.key === 'ArrowLeft' && dx === 0) { dx = -1; dy = 0; }
+    if (e.key === 'ArrowRight' && dx === 0) { dx = 1; dy = 0; }
+  };
+  
+  canvas.ontouchmove = (e) => {
+    e.preventDefault();
+  };
+  
+  let touchStartX, touchStartY;
+  canvas.ontouchstart = (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  };
+  
+  canvas.ontouchend = (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+    
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > 0 && dx === 0) { dx = 1; dy = 0; }
+      else if (diffX < 0 && dx === 0) { dx = -1; dy = 0; }
+    } else {
+      if (diffY > 0 && dy === 0) { dx = 0; dy = 1; }
+      else if (diffY < 0 && dy === 0) { dx = 0; dy = -1; }
+    }
+  };
+  
+  draw();
+  gameLoop = setInterval(update, 150);
+}
+
+// Крестики-нолики
+function initTicTacToe(container) {
+  container.innerHTML = `
+    <div class="game-title">⭕ Крестики-нолики</div>
+    <div id="tttStatus" style="text-align:center;font-size:20px;margin:20px 0;">Ваш ход (X)</div>
+    <div id="tttBoard" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto;"></div>
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn" onclick="resetTTT()">Заново</button>
+    </div>
+  `;
+  resetTTT();
+}
+
+let tttBoard = [];
+let tttGameOver = false;
+
+function resetTTT() {
+  tttBoard = Array(9).fill('');
+  tttGameOver = false;
+  const board = document.getElementById('tttBoard');
+  board.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.style.cssText = 'aspect-ratio:1;background:#667eea;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:bold;cursor:pointer;';
+    cell.onclick = () => tttMove(i);
+    board.appendChild(cell);
+  }
+  document.getElementById('tttStatus').textContent = 'Ваш ход (X)';
+}
+
+function tttMove(index) {
+  if (tttBoard[index] || tttGameOver) return;
+  
+  tttBoard[index] = 'X';
+  updateTTTBoard();
+  
+  if (checkTTTWin('X')) {
+    document.getElementById('tttStatus').textContent = 'Вы победили! 🎉';
+    tttGameOver = true;
+    return;
+  }
+  
+  if (!tttBoard.includes('')) {
+    document.getElementById('tttStatus').textContent = 'Ничья!';
+    tttGameOver = true;
+    return;
+  }
+  
+  setTimeout(() => {
+    const empty = tttBoard.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+    const aiMove = empty[Math.floor(Math.random() * empty.length)];
+    tttBoard[aiMove] = 'O';
+    updateTTTBoard();
+    
+    if (checkTTTWin('O')) {
+      document.getElementById('tttStatus').textContent = 'Компьютер победил!';
+      tttGameOver = true;
+    } else if (!tttBoard.includes('')) {
+      document.getElementById('tttStatus').textContent = 'Ничья!';
+      tttGameOver = true;
+    }
+  }, 300);
+}
+
+function updateTTTBoard() {
+  const cells = document.getElementById('tttBoard').children;
+  for (let i = 0; i < 9; i++) {
+    cells[i].textContent = tttBoard[i];
+    cells[i].style.color = tttBoard[i] === 'X' ? '#fff' : '#ffd93d';
+  }
+}
+
+function checkTTTWin(player) {
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return wins.some(([a,b,c]) => tttBoard[a] === player && tttBoard[b] === player && tttBoard[c] === player);
+}
+
+// Memory
+function initMemory(container) {
+  const emojis = ['🎮','🎯','🎲','🎪','🎨','🎭','🎵','🎸'];
+  const cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+  
+  container.innerHTML = `
+    <div class="game-title">🧠 Memory</div>
+    <div class="game-score">Ходов: <span id="memoryMoves">0</span></div>
+    <div class="memory-grid" id="memoryGrid"></div>
+  `;
+  
+  const grid = document.getElementById('memoryGrid');
+  let flipped = [];
+  let moves = 0;
+  
+  cards.forEach((emoji, i) => {
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    card.dataset.emoji = emoji;
+    card.dataset.index = i;
+    card.onclick = () => {
+      if (flipped.length === 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      
+      card.classList.add('flipped');
+      card.textContent = emoji;
+      flipped.push(card);
+      
+      if (flipped.length === 2) {
+        moves++;
+        document.getElementById('memoryMoves').textContent = moves;
+        
+        if (flipped[0].dataset.emoji === flipped[1].dataset.emoji) {
+          flipped.forEach(c => c.classList.add('matched'));
+          flipped = [];
+          
+          if (document.querySelectorAll('.matched').length === cards.length) {
+            setTimeout(() => alert('Победа! Ходов: ' + moves), 300);
+          }
+        } else {
+          setTimeout(() => {
+            flipped.forEach(c => {
+              c.classList.remove('flipped');
+              c.textContent = '';
+            });
+            flipped = [];
+          }, 1000);
+        }
+      }
+    };
+    grid.appendChild(card);
   });
 }
-</script>
-</body>
-</html>
+
+// Кликер
+function initClicker(container) {
+  let clicks = parseInt(localStorage.getItem('clickerScore') || '0');
+  
+  container.innerHTML = `
+    <div class="game-title">👆 Кликер</div>
+    <div class="game-score">Кликов: <span id="clickerCount">${clicks}</span></div>
+    <button class="clicker-btn" id="clickerBtn">👆</button>
+    <div style="text-align:center;">
+      <button class="btn" onclick="localStorage.setItem('clickerScore','0');document.getElementById('clickerCount').textContent='0'">Сбросить</button>
+    </div>
+  `;
+  
+  document.getElementById('clickerBtn').onclick = () => {
+    clicks++;
+    localStorage.setItem('clickerScore', clicks);
+    document.getElementById('clickerCount').textContent = clicks;
+  };
+}
+
+// Реакция
+function initReaction(container) {
+  container.innerHTML = `
+    <div class="game-title">⚡ Реакция</div>
+    <div class="game-score">Лучшее время: <span id="reactionBest">${localStorage.getItem('reactionBest') || '-'}</span> мс</div>
+    <div class="reaction-box" id="reactionBox" style="background:#ff6b6b;">
+      Нажмите, когда станет зелёным
+    </div>
+  `;
+  
+  const box = document.getElementById('reactionBox');
+  let startTime, timeout;
+  let waiting = false;
+  
+  box.onclick = () => {
+    if (!waiting) {
+      box.style.background = '#ff6b6b';
+      box.textContent = 'Ждите...';
+      waiting = true;
+      
+      timeout = setTimeout(() => {
+        box.style.background = '#4ecdc4';
+        box.textContent = 'ЖМИТЕ!';
+        startTime = Date.now();
+      }, 1000 + Math.random() * 3000);
+    } else {
+      if (box.style.background === 'rgb(78, 205, 196)') {
+        const reaction = Date.now() - startTime;
+        const best = localStorage.getItem('reactionBest');
+        if (!best || reaction < best) {
+          localStorage.setItem('reactionBest', reaction);
+          document.getElementById('reactionBest').textContent = reaction;
+        }
+        box.style.background = '#667eea';
+        box.textContent = `Ваше время: ${reaction} мс. Нажмите для новой игры`;
+        waiting = false;
+      } else {
+        clearTimeout(timeout);
+        box.style.background = '#ff6b6b';
+        box.textContent = 'Слишком рано! Нажмите для новой игры';
+        waiting = false;
+      }
+    }
+  };
+}
+
+// 2048
+function init2048(container) {
+  container.innerHTML = `
+    <div class="game-title">🔢 2048</div>
+    <div class="game-score">Счёт: <span id="score2048">0</span></div>
+    <div class="grid-2048" id="grid2048"></div>
+    <div style="text-align:center;margin-top:15px;">
+      <button class="btn" onclick="reset2048()">Заново</button>
+    </div>
+  `;
+  reset2048();
+}
+
+let board2048 = [];
+let score2048 = 0;
+
+function reset2048() {
+  board2048 = Array(4).fill(null).map(() => Array(4).fill(0));
+  score2048 = 0;
+  addTile2048();
+  addTile2048();
+  update2048();
+}
+
+function addTile2048() {
+  const empty = [];
+  for (let i = 0; i < 4; i++)
+    for (let j = 0; j < 4; j++)
+      if (board2048[i][j] === 0) empty.push([i, j]);
+  
+  if (empty.length > 0) {
+    const [i, j] = empty[Math.floor(Math.random() * empty.length)];
+    board2048[i][j] = Math.random() < 0.9 ? 2 : 4;
+  }
+}
+
+function update2048() {
+  const grid = document.getElementById('grid2048');
+  grid.innerHTML = '';
+  document.getElementById('score2048').textContent = score2048;
+  
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      const tile = document.createElement('div');
+      tile.className = 'tile-2048';
+      const val = board2048[i][j];
+      if (val > 0) {
+        tile.textContent = val;
+        tile.style.background = getTileColor2048(val);
+        tile.style.color = val > 4 ? '#fff' : '#776e65';
+      }
+      grid.appendChild(tile);
+    }
+  }
+}
+
+function getTileColor2048(val) {
+  const colors = {2:'#eee4da',4:'#ede0c8',8:'#f2b179',16:'#f59563',32:'#f67c5f',64:'#f65e3b',128:'#edcf72',256:'#edcc61',512:'#edc850',1024:'#edc53f',2048:'#
