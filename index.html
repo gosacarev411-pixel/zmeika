@@ -3,310 +3,706 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>CITY 3D — прототип</title>
+<title>Depths of Eternity</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:#000;overflow:hidden;font-family:Arial,sans-serif;touch-action:none;user-select:none}
-canvas#view{display:block;width:100vw;height:100vh}
-#hud{position:fixed;top:10px;left:12px;color:#fff;font-size:14px;text-shadow:0 2px 4px #000;z-index:5;line-height:1.6}
-#hud b{color:#ffd54a}
-#hint{position:fixed;top:50%;left:50%;transform:translateX(-50%);color:#ffd54a;font-size:14px;text-shadow:0 2px 6px #000;z-index:5}
-#map{position:fixed;top:10px;right:10px;width:110px;height:110px;border:2px solid #ffffff66;border-radius:6px;z-index:5;background:#222}
-.stick{position:fixed;bottom:24px;left:24px;width:120px;height:120px;border-radius:50%;background:#ffffff22;border:2px solid #ffffff55;z-index:10}
-.knob{position:absolute;left:37px;top:37px;width:46px;height:46px;border-radius:50%;background:#ffffffaa;pointer-events:none}
-.btn{position:fixed;bottom:26px;width:70px;height:70px;border-radius:50%;background:#ffffff2b;border:2px solid #ffffff66;color:#fff;font-size:13px;font-weight:bold;z-index:10;display:flex;align-items:center;justify-content:center;text-align:center}
-.btn:active{background:#ffffff77}
-#gas{right:24px;bottom:90px;background:#2ecc7155}
-#brake{right:110px;bottom:30px;background:#e74c3c55}
-#seat{right:24px;bottom:12px;width:64px;height:64px;background:#f1c40f66}
-#run{left:160px;bottom:30px;width:60px;height:60px}
-#rotate{display:none;position:fixed;inset:0;background:#111;color:#fff;z-index:9999;align-items:center;justify-content:center;text-align:center;font-size:20px;padding:30px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:#0a0a12;color:#e8e8e8;font-family:'Courier New',monospace;overflow:hidden;touch-action:none}
+#game{display:block;width:100vw;height:100vh;image-rendering:pixelated;image-rendering:crisp-edges}
+#hud{position:fixed;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:flex-start;z-index:10;pointer-events:none;font-size:12px;text-shadow:1px 1px 2px #000}
+.bar{background:#222;border:1px solid #444;border-radius:3px;height:14px;overflow:hidden;margin:2px 0;width:120px}
+.bar>div{height:100%;transition:width .3s}
+.hp>div{background:linear-gradient(90deg,#c23,#e55)}
+.mp>div{background:linear-gradient(90deg,#23c,#55e)}
+.xp>div{background:linear-gradient(90deg,#c83,#ea5)}
+.stat{background:#000a;padding:6px 10px;border-radius:4px;border:1px solid #333}
+.stat b{color:#ffd54a}
+#log{position:fixed;bottom:8px;left:8px;right:8px;max-height:90px;overflow-y:auto;background:#000c;padding:6px 10px;border-radius:4px;border:1px solid #333;font-size:11px;z-index:10;pointer-events:none}
+#log div{opacity:.9;margin:1px 0}
+#log .dmg{color:#f77}
+#log .heal{color:#7f7}
+#log .loot{color:#fd5}
+#log .info{color:#8cf}
+#controls{position:fixed;bottom:110px;right:8px;display:flex;flex-direction:column;gap:6px;z-index:10}
+.btn{width:54px;height:54px;background:#222;border:2px solid #555;border-radius:8px;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn:active{background:#444}
+#dpad{position:fixed;bottom:110px;left:8px;width:150px;height:150px;z-index:10}
+.arrow{position:absolute;width:48px;height:48px;background:#222;border:2px solid #555;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer}
+.arrow:active{background:#444}
+#up{top:0;left:51px}
+#down{bottom:0;left:51px}
+#left{top:51px;left:0}
+#right{top:51px;right:0}
+#inv{position:fixed;inset:0;background:#000e;z-index:20;display:none;align-items:center;justify-content:center;padding:20px}
+#inv.open{display:flex}
+#inv-panel{background:#1a1a22;border:2px solid #555;border-radius:8px;padding:20px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto}
+.inv-item{background:#222;border:1px solid #444;padding:8px;margin:4px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center}
+.inv-item button{background:#444;border:none;color:#fff;padding:4px 10px;border-radius:3px;cursor:pointer}
+.close{background:#c23;border:none;color:#fff;padding:6px 12px;border-radius:4px;cursor:pointer;margin-top:10px}
+#rotate{position:fixed;inset:0;background:#0a0a12;color:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;font-size:18px;text-align:center;padding:30px}
 @media (orientation:portrait){#rotate{display:flex}}
-#load{position:fixed;inset:0;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;z-index:9998;font-size:20px}
+@media (orientation:landscape){#rotate{display:none}}
+#title{position:fixed;inset:0;background:linear-gradient(180deg,#0a0a12,#1a0a1a);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;text-align:center}
+#title h1{font-size:32px;color:#ffd54a;text-shadow:0 0 20px #f80;margin-bottom:10px;letter-spacing:4px}
+#title p{color:#aaa;margin-bottom:30px;font-size:13px}
+#title button{background:#c23;border:none;color:#fff;padding:14px 40px;font-size:18px;border-radius:6px;cursor:pointer;margin:5px;font-family:inherit;letter-spacing:2px}
+#title button:active{background:#e44}
+#death{position:fixed;inset:0;background:#200e;display:none;align-items:center;justify-content:center;z-index:50;flex-direction:column;color:#fff;text-align:center}
+#death h2{color:#f55;font-size:36px;margin-bottom:20px}
+#death button{background:#c23;border:none;color:#fff;padding:12px 30px;font-size:16px;border-radius:4px;cursor:pointer;margin-top:20px;font-family:inherit}
 </style>
 </head>
 <body>
-<div id="rotate">📱 Поверни телефон<br>горизонтально</div>
-<div id="load">Строим город…</div>
-<canvas id="view"></canvas>
-<div id="hud"></div>
-<div id="hint"></div>
-<canvas id="map" width="140" height="140"></canvas>
-<div class="stick" id="stick"><div class="knob" id="knob"></div></div>
-<div class="btn" id="gas">ГАЗ</div>
-<div class="btn" id="brake">ТОРМ</div>
-<div class="btn" id="seat">В<br>МАШИНУ</div>
-<div class="btn" id="run">БЕГ</div>
+<div id="rotate">📱 Поверни телефон горизонтально</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<div id="title">
+  <h1>⚔ DEPTHS ⚔</h1>
+  <h1 style="font-size:20px;margin-top:-10px">OF ETERNITY</h1>
+  <p>Спустись в бесконечное подземелье. Найди сокровища. Или умри.</p>
+  <button onclick="startGame()">НАЧАТЬ ЗАБЕГ</button>
+  <button onclick="continueGame()" id="contBtn" style="background:#555">ПРОДОЛЖИТЬ</button>
+  <p style="margin-top:30px;font-size:11px;color:#666">Золото: <span id="goldDisp">0</span> 🪙</p>
+</div>
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="stat">
+    <div>❤️ <span id="hpTxt">20/20</span></div>
+    <div class="bar hp"><div id="hpBar" style="width:100%"></div></div>
+    <div>💙 <span id="mpTxt">10/10</span></div>
+    <div class="bar mp"><div id="mpBar" style="width:100%"></div></div>
+    <div>⭐ Ур.<span id="lvlTxt">1</span> <span id="xpTxt">0/20</span></div>
+    <div class="bar xp"><div id="xpBar" style="width:0%"></div></div>
+  </div>
+  <div class="stat" style="text-align:right">
+    <div>🏛️ Этаж <b id="floorTxt">1</b></div>
+    <div>⚔️ ATK <span id="atkTxt">5</span></div>
+    <div>🛡️ DEF <span id="defTxt">0</span></div>
+    <div>🪙 <span id="coinTxt">0</span></div>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<div id="dpad">
+  <div class="arrow" id="up">▲</div>
+  <div class="arrow" id="down">▼</div>
+  <div class="arrow" id="left">◀</div>
+  <div class="arrow" id="right">▶</div>
+</div>
+
+<div id="controls">
+  <div class="btn" onclick="openInv()" title="Инвентарь">🎒</div>
+  <div class="btn" onclick="usePotion()" title="Зелье">🧪</div>
+  <div class="btn" onclick="wait()" title="Ждать">⏳</div>
+  <div class="btn" onclick="descend()" title="Спуститься" id="descBtn" style="display:none">⬇️</div>
+</div>
+
+<div id="inv">
+  <div id="inv-panel">
+    <h2 style="color:#ffd54a;margin-bottom:15px">🎒 ИНВЕНТАРЬ</h2>
+    <div id="inv-list"></div>
+    <button class="close" onclick="closeInv()">ЗАКРЫТЬ</button>
+  </div>
+</div>
+
+<div id="death">
+  <h2>💀 ТЫ ПОГИБ 💀</h2>
+  <p id="deathStats"></p>
+  <button onclick="restart()">НАЧАТЬ СНАЧАЛА</button>
+</div>
+
 <script>
-/* ---------- БАЗА ---------- */
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x9ec9e8);
-scene.fog=new THREE.Fog(0x9ec9e8,70,230);
-const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('view'),antialias:false});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
-renderer.setSize(innerWidth,innerHeight);
-const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);
-scene.add(new THREE.AmbientLight(0xffffff,.75));
-const sun=new THREE.DirectionalLight(0xffffff,.7);sun.position.set(60,100,40);scene.add(sun);
+// ============ НАСТРОЙКИ ============
+const TILE=24,MAP_W=40,MAP_H=25;
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+let W,H;
 
-const GRID=6,S=45,HALF=GRID*S/2,ROAD=12;
-const buildings=[],cars=[],npcs=[];
-const rand=(a,b)=>a+Math.random()*(b-a);
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-
-/* ---------- ГОРОД ---------- */
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(HALF*2+60,HALF*2+60),new THREE.MeshLambertMaterial({color:0x3b3f43}));
-ground.rotation.x=-Math.PI/2;scene.add(ground);
-
-const roadMat=new THREE.MeshLambertMaterial({color:0x26292d});
-const lineMat=new THREE.MeshLambertMaterial({color:0xd9c96a});
-for(let k=0;k<=GRID;k++){
-  const p=k*S-HALF;
-  [[0,1],[1,0]].forEach(([rot])=>{
-    const r=new THREE.Mesh(new THREE.PlaneGeometry(ROAD,GRID*S+ROAD),roadMat);
-    r.rotation.x=-Math.PI/2;r.rotation.z=rot*Math.PI/2;r.position.set(rot?p:0,.02,rot?0:p);scene.add(r);
-    const l=new THREE.Mesh(new THREE.PlaneGeometry(.25,GRID*S),lineMat);
-    l.rotation.x=-Math.PI/2;l.rotation.z=rot*Math.PI/2;l.position.set(rot?p:0,.03,rot?0:p);scene.add(l);
-  });
+function resize(){
+  W=innerWidth;H=innerHeight;
+  canvas.width=W;canvas.height=H;
 }
+resize();addEventListener('resize',resize);
 
-// текстура фасада
-const c=document.createElement('canvas');c.width=64;c.height=128;
-const ctx=c.getContext('2d');ctx.fillStyle='#7c8794';ctx.fillRect(0,0,64,128);
-for(let y=8;y<128;y+=16)for(let x=8;x<64;x+=16){ctx.fillStyle=Math.random()>.3?'#ffd98a':'#36414d';ctx.fillRect(x,y,8,9);}
-const facade=new THREE.CanvasTexture(c);
+// ============ СОСТОЯНИЕ ============
+let G={
+  floor:1,
+  map:[],
+  seen:[],
+  player:{x:0,y:0,hp:20,maxHp:20,mp:10,maxMp:10,atk:5,def:0,lvl:1,xp:0,xpNext:20,coins:0},
+  enemies:[],
+  items:[],
+  inventory:[],
+  stairs:{x:0,y:0},
+  turn:0,
+  meta:{gold:0,bestFloor:0,kills:0},
+  dead:false
+};
 
-for(let i=0;i<GRID;i++)for(let j=0;j<GRID;j++){
-  const cx=(i+.5)*S-HALF,cz=(j+.5)*S-HALF;
-  const base=new THREE.Mesh(new THREE.PlaneGeometry(S-ROAD,S-ROAD),new THREE.MeshLambertMaterial({color:0x666d74}));
-  base.rotation.x=-Math.PI/2;base.position.set(cx,.04,cz);scene.add(base);
-  if(Math.random()<.15){ // сквер
-    for(let t=0;t<3;t++)tree(cx+rand(-10,10),cz+rand(-10,10));
-    continue;
+// Загрузка мета-прогресса
+try{
+  const m=JSON.parse(localStorage.getItem('doe_meta'));
+  if(m)G.meta=m;
+}catch(e){}
+
+// ============ ГЕНЕРАЦИЯ ПОДЗЕМЕЛЬЯ ============
+function genFloor(){
+  const map=[];
+  for(let y=0;y<MAP_H;y++){
+    map[y]=[];
+    for(let x=0;x<MAP_W;x++)map[y][x]='#';
   }
-  const w=rand(13,21),d=rand(13,21),h=rand(8,42);
-  const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({map:facade}));
-  b.position.set(cx+rand(-3,3),h/2,cz+rand(-3,3));scene.add(b);
-  buildings.push({minX:b.position.x-w/2,maxX:b.position.x+w/2,minZ:b.position.z-d/2,maxZ:b.position.z+d/2});
-  tree(cx+(S-ROAD)/2-2,cz+(S-ROAD)/2-2);
-}
-function tree(x,z){
-  const t=new THREE.Mesh(new THREE.CylinderGeometry(.35,.45,3,6),new THREE.MeshLambertMaterial({color:0x6b4a2b}));
-  t.position.set(x,1.5,z);scene.add(t);
-  const l=new THREE.Mesh(new THREE.SphereGeometry(1.8,7,6),new THREE.MeshLambertMaterial({color:0x2f7a3a}));
-  l.position.set(x,4,z);scene.add(l);
+  
+  const rooms=[];
+  const numRooms=7+Math.floor(Math.random()*4);
+  
+  for(let i=0;i<200&&rooms.length<numRooms;i++){
+    const w=4+Math.floor(Math.random()*6);
+    const h=4+Math.floor(Math.random()*4);
+    const x=1+Math.floor(Math.random()*(MAP_W-w-2));
+    const y=1+Math.floor(Math.random()*(MAP_H-h-2));
+    
+    let ok=true;
+    for(const r of rooms){
+      if(x<r.x+r.w+1&&x+w+1>r.x&&y<r.y+r.h+1&&y+h+1>r.y){ok=false;break;}
+    }
+    if(!ok)continue;
+    
+    rooms.push({x,y,w,h,cx:Math.floor(x+w/2),cy:Math.floor(y+h/2)});
+    for(let yy=y;yy<y+h;yy++)
+      for(let xx=x;xx<x+w;xx++)map[yy][xx]='.';
+  }
+  
+  // Коридоры
+  for(let i=1;i<rooms.length;i++){
+    const a=rooms[i-1],b=rooms[i];
+    if(Math.random()<.5){
+      carveH(map,a.cx,b.cx,a.cy);
+      carveV(map,a.cy,b.cy,b.cx);
+    }else{
+      carveV(map,a.cy,b.cy,a.cx);
+      carveH(map,a.cx,b.cx,b.cy);
+    }
+  }
+  
+  G.map=map;
+  G.seen=[];
+  for(let y=0;y<MAP_H;y++){
+    G.seen[y]=[];
+    for(let x=0;x<MAP_W;x++)G.seen[y][x]=false;
+  }
+  
+  // Игрок в первой комнате
+  G.player.x=rooms[0].cx;
+  G.player.y=rooms[0].cy;
+  
+  // Лестница в последней
+  G.stairs.x=rooms[rooms.length-1].cx;
+  G.stairs.y=rooms[rooms.length-1].cy;
+  
+  // Враги
+  G.enemies=[];
+  for(let i=1;i<rooms.length;i++){
+    const r=rooms[i];
+    const count=1+Math.floor(Math.random()*3);
+    for(let k=0;k<count;k++){
+      const ex=r.x+1+Math.floor(Math.random()*(r.w-2));
+      const ey=r.y+1+Math.floor(Math.random()*(r.h-2));
+      if(ex===G.stairs.x&&ey===G.stairs.y)continue;
+      G.enemies.push(makeEnemy(ex,ey));
+    }
+  }
+  
+  // Предметы
+  G.items=[];
+  for(let i=0;i<rooms.length;i++){
+    if(Math.random()<.6){
+      const r=rooms[i];
+      const ix=r.x+1+Math.floor(Math.random()*(r.w-2));
+      const iy=r.y+1+Math.floor(Math.random()*(r.h-2));
+      G.items.push(makeItem(ix,iy));
+    }
+  }
+  
+  seeAround(G.player.x,G.player.y);
+  log('Ты входишь на этаж '+G.floor,'info');
 }
 
-/* ---------- ПЕРСОНАЖИ ---------- */
-function person(color){
-  const g=new THREE.Group(),mat=new THREE.MeshLambertMaterial({color});
-  const torso=new THREE.Mesh(new THREE.BoxGeometry(.7,.8,.4),mat);torso.position.y=1.15;g.add(torso);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.28,8,8),new THREE.MeshLambertMaterial({color:0xe0b088}));head.position.y=1.85;g.add(head);
-  const legs=[],arms=[];
-  [-1,1].forEach(s=>{
-    const leg=new THREE.Mesh(new THREE.BoxGeometry(.25,.75,.25),new THREE.MeshLambertMaterial({color:0x2b3550}));
-    leg.position.set(s*.2,.4,0);g.add(leg);legs.push(leg);
-    const arm=new THREE.Mesh(new THREE.BoxGeometry(.2,.7,.2),mat);
-    arm.position.set(s*.47,1.15,0);g.add(arm);arms.push(arm);
-  });
-  g.userData.limbs=[...legs,...arms];scene.add(g);return g;
+function carveH(m,x1,x2,y){
+  for(let x=Math.min(x1,x2);x<=Math.max(x1,x2);x++)if(y>=0&&y<MAP_H&&x>=0&&x<MAP_W)m[y][x]='.';
 }
-const player=person(0x22c55e);player.position.set(0,0,25);scene.add(player);
-
-for(let i=0;i<22;i++){
-  const g=person([0xd94f4f,0x4f8bd9,0xd9b34f,0xb0b0b0][i%4]);
-  const axis=Math.random()<.5?'x':'z',road=(Math.floor(rand(0,GRID+1))*S-HALF);
-  const n={g,axis,road,lane:rand(-3,3),t:rand(-HALF,HALF),dir:Math.random()<.5?1:-1,speed:rand(.9,1.7)};
-  npcs.push(n);
+function carveV(m,y1,y2,x){
+  for(let y=Math.min(y1,y2);y<=Math.max(y1,y2);y++)if(y>=0&&y<MAP_H&&x>=0&&x<MAP_W)m[y][x]='.';
 }
 
-/* ---------- МАШИНЫ ---------- */
-function makeCar(color){
-  const g=new THREE.Group();
-  const body=new THREE.Mesh(new THREE.BoxGeometry(1.9,.8,3.9),new THREE.MeshLambertMaterial({color}));
-  body.position.y=.75;g.add(body);
-  const top=new THREE.Mesh(new THREE.BoxGeometry(1.65,.7,1.9),new THREE.MeshLambertMaterial({color:0x22303c}));
-  top.position.set(0,1.45,-.2);g.add(top);
-  [-1,1].forEach(x=>[-1.25,1.25].forEach(z=>{
-    const w=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.3,10),new THREE.MeshLambertMaterial({color:0x111111}));
-    w.rotation.z=Math.PI/2;w.position.set(x*1,.4,z);g.add(w);
-  }));
-  scene.add(g);return g;
-}
-for(let i=0;i<10;i++){
-  const g=makeCar([0xe74c3c,0x3498db,0xf1c40f,0xecf0f1,0x9b59b6][i%5]);
-  const ai=i>3?{axis:i%2?'x':'z',road:(Math.floor(rand(1,GRID))*S-HALF),lane:Math.random()<.5?3:-3,t:rand(-HALF,HALF),dir:Math.random()<.5?1:-1,speed:rand(5,9)}:null;
-  const c={g,heading:0,speed:0,ai,occupied:false};
-  if(ai)placeAI(c,ai);else{c.g.position.set(3,0,15+i*12);}
-  cars.push(c);
-}
-function aiHeading(a){return a.axis==='z'?(a.dir>0?Math.PI:0):(a.dir>0?-Math.PI/2:Math.PI/2);}
-function placeAI(obj,a){
-  if(a.axis==='z'){obj.g.position.set(a.road+a.lane,0,a.t);}
-  else{obj.g.position.set(a.t,0,a.road+a.lane);}
-  obj.g.rotation.y=obj.heading=aiHeading(a);
+// ============ СУЩНОСТИ ============
+const ENEMY_TYPES=[
+  {name:'Крыса',ch:'r',color:'#c93',hp:4,atk:2,xp:3,coins:[1,3]},
+  {name:'Скелет',ch:'s',color:'#ddd',hp:8,atk:4,xp:6,coins:[2,5]},
+  {name:'Гоблин',ch:'g',color:'#5a5',hp:10,atk:5,xp:8,coins:[3,7]},
+  {name:'Орк',ch:'o',color:'#853',hp:15,atk:7,xp:12,coins:[5,12]},
+  {name:'Тролль',ch:'T',color:'#383',hp:25,atk:10,xp:20,coins:[10,20]},
+  {name:'Демон',ch:'D',color:'#c33',hp:35,atk:14,xp:30,coins:[15,30]},
+];
+
+function makeEnemy(x,y){
+  const tier=Math.min(ENEMY_TYPES.length-1,Math.floor((G.floor-1)/3));
+  const minTier=Math.max(0,tier-1);
+  const t=ENEMY_TYPES[minTier+Math.floor(Math.random()*(tier-minTier+1))];
+  const scale=1+G.floor*0.08;
+  return{
+    x,y,
+    name:t.name,ch:t.ch,color:t.color,
+    hp:Math.floor(t.hp*scale),maxHp:Math.floor(t.hp*scale),
+    atk:Math.floor(t.atk*scale),
+    xp:t.xp,
+    coins:t.coins
+  };
 }
 
-/* ---------- УПРАВЛЕНИЕ ---------- */
-const input={x:0,y:0,gas:false,brake:false,run:false};
-const stick=document.getElementById('stick'),knob=document.getElementById('knob');
-let stickId=null;
-function stickMove(e){
-  const r=stick.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;
-  const len=Math.hypot(dx,dy)||1,f=Math.min(len,42)/len;
-  input.x=dx*f/42;input.y=-dy*f/42;
-  knob.style.transform=`translate(${dx*f}px,${dy*f}px)`;
+const ITEM_TYPES=[
+  {name:'Зелье лечения',ch:'!',color:'#f55',type:'potion',heal:15},
+  {name:'Большое зелье',ch:'!',color:'#f33',type:'potion',heal:35},
+  {name:'Зелье маны',ch:'!',color:'#55f',type:'mana',restore:10},
+  {name:'Меч',ch:')',color:'#ccc',type:'weapon',atk:2},
+  {name:'Длинный меч',ch:')',color:'#ddf',type:'weapon',atk:4},
+  {name:'Топор',ch:')',color:'#c93',type:'weapon',atk:6},
+  {name:'Кольчуга',ch:'[',color:'#aaa',type:'armor',def:2},
+  {name:'Латы',ch:'[',color:'#ccf',type:'armor',def:4},
+  {name:'Золото',ch:'$',color:'#fd5',type:'gold',amount:0},
+];
+
+function makeItem(x,y){
+  const r=Math.random();
+  let t;
+  if(r<.35)t=ITEM_TYPES[0];
+  else if(r<.5)t=ITEM_TYPES[1];
+  else if(r<.6)t=ITEM_TYPES[2];
+  else if(r<.75)t=ITEM_TYPES[3+Math.floor(Math.random()*3)];
+  else if(r<.88)t=ITEM_TYPES[6+Math.floor(Math.random()*2)];
+  else{t={...ITEM_TYPES[8]};t.amount=5+Math.floor(Math.random()*20+G.floor*3);}
+  
+  return{
+    x,y,
+    name:t.name,ch:t.ch,color:t.color,
+    type:t.type,
+    heal:t.heal||0,
+    restore:t.restore||0,
+    atk:t.atk||0,
+    def:t.def||0,
+    amount:t.amount||0
+  };
 }
-stick.addEventListener('pointerdown',e=>{stickId=e.pointerId;stick.setPointerCapture(e.pointerId);stickMove(e);});
-stick.addEventListener('pointermove',e=>{if(e.pointerId===stickId)stickMove(e);});
-function stickEnd(){stickId=null;input.x=input.y=0;knob.style.transform='';}
-stick.addEventListener('pointerup',stickEnd);stick.addEventListener('pointercancel',stickEnd);
 
-function hold(id,key){
-  const el=document.getElementById(id);
-  el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture(e.pointerId);input[key]=true;});
-  ['pointerup','pointercancel'].forEach(ev=>el.addEventListener(ev,()=>input[key]=false));
+// ============ ЛОГИКА ============
+function seeAround(px,py){
+  const R=6;
+  for(let dy=-R;dy<=R;dy++)
+    for(let dx=-R;dx<=R;dx++){
+      if(dx*dx+dy*dy>R*R)continue;
+      const x=px+dx,y=py+dy;
+      if(x<0||x>=MAP_W||y<0||y>=MAP_H)continue;
+      if(hasLOS(px,py,x,y))G.seen[y][x]=true;
+    }
 }
-hold('gas','gas');hold('brake','brake');hold('run','run');
 
-let yaw=0,pitch=.5;
-let lookId=null,lastX=0,lastY=0;
-const view=document.getElementById('view');
-view.addEventListener('pointerdown',e=>{lookId=e.pointerId;lastX=e.clientX;lastY=e.clientY;view.setPointerCapture(e.pointerId);});
-view.addEventListener('pointermove',e=>{
-  if(e.pointerId!==lookId)return;
-  yaw-=(e.clientX-lastX)*.006;pitch=clamp(pitch+(e.clientY-lastY)*.004,.2,1.05);
-  lastX=e.clientX;lastY=e.clientY;
-});
-view.addEventListener('pointerup',()=>lookId=null);
-
-const keys={};
-addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key.toLowerCase()==='e')enterExit();});
-addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-
-/* ---------- ЛОГИКА ---------- */
-let activeCar=null;
-const seatBtn=document.getElementById('seat');
-seatBtn.onclick=enterExit;
-function nearestCar(){
-  let best=null,d=3.6;
-  cars.forEach(c=>{const dd=c.g.position.distanceTo(player.position);if(dd<d){d=dd;best=c;}});
-  return best;
+function hasLOS(x1,y1,x2,y2){
+  const dx=Math.abs(x2-x1),dy=Math.abs(y2-y1);
+  const sx=x1<x2?1:-1,sy=y1<y2?1:-1;
+  let err=dx-dy,x=x1,y=y1;
+  while(true){
+    if(x===x2&&y===y2)return true;
+    if(G.map[y][x]==='#')return false;
+    const e2=2*err;
+    if(e2>-dy){err-=dy;x+=sx;}
+    if(e2<dx){err+=dx;y+=sy;}
+  }
 }
-function enterExit(){
-  if(activeCar){
-    const c=activeCar,r=new THREE.Vector3(Math.cos(c.heading),0,-Math.sin(c.heading));
-    const p=c.g.position.clone().addScaledVector(r,2.6);
-    if(solid(p.x,p.z,.5))p.copy(c.g.position).addScaledVector(r,-2.6);
-    player.position.set(p.x,0,p.z);player.visible=true;
-    c.speed=0;c.occupied=false;activeCar=null;
-    seatBtn.innerHTML='В<br>МАШИНУ';
+
+function canWalk(x,y){
+  if(x<0||x>=MAP_W||y<0||y>=MAP_H)return false;
+  if(G.map[y][x]==='#')return false;
+  if(G.enemies.some(e=>e.x===x&&e.y===y))return false;
+  return true;
+}
+
+function movePlayer(dx,dy){
+  if(G.dead)return;
+  const nx=G.player.x+dx,ny=G.player.y+dy;
+  
+  // Атака врага?
+  const e=G.enemies.find(e=>e.x===nx&&e.y===ny);
+  if(e){attack(e);endTurn();return;}
+  
+  if(!canWalk(nx,ny))return;
+  
+  G.player.x=nx;G.player.y=ny;
+  
+  // Подбор предмета
+  const it=G.items.find(i=>i.x===nx&&i.y===ny);
+  if(it)pickup(it);
+  
+  // Лестница
+  if(nx===G.stairs.x&&ny===G.stairs.y){
+    document.getElementById('descBtn').style.display='flex';
   }else{
-    const c=nearestCar();if(!c)return;
-    c.ai=null;c.speed=0;c.occupied=true;activeCar=c;
-    player.visible=false;seatBtn.innerHTML='ВЫЙТИ';
+    document.getElementById('descBtn').style.display='none';
+  }
+  
+  seeAround(nx,ny);
+  endTurn();
+}
+
+function attack(e){
+  const dmg=Math.max(1,G.player.atk+Math.floor(Math.random()*3)-1);
+  e.hp-=dmg;
+  log(`Ты бьёшь ${e.name} на ${dmg} урона`,'dmg');
+  if(e.hp<=0){
+    log(`${e.name} повержен! +${e.xp} XP`,'loot');
+    G.player.xp+=e.xp;
+    const coins=e.coins[0]+Math.floor(Math.random()*(e.coins[1]-e.coins[0]+1));
+    G.player.coins+=coins;
+    G.meta.kills++;
+    if(coins>0)log(`+${coins} 🪙`,'loot');
+    G.enemies=G.enemies.filter(x=>x!==e);
+    checkLevelUp();
   }
 }
-function solid(x,z,r){
-  for(const b of buildings)if(x>b.minX-r&&x<b.maxX+r&&z>b.minZ-r&&z<b.maxZ+r)return true;
+
+function checkLevelUp(){
+  while(G.player.xp>=G.player.xpNext){
+    G.player.xp-=G.player.xpNext;
+    G.player.lvl++;
+    G.player.xpNext=Math.floor(G.player.xpNext*1.5);
+    G.player.maxHp+=5;
+    G.player.hp=G.player.maxHp;
+    G.player.maxMp+=3;
+    G.player.mp=G.player.maxMp;
+    G.player.atk+=1;
+    log(`⭐ УРОВЕНЬ ${G.player.lvl}! HP+5, ATK+1`,'heal');
+  }
+}
+
+function pickup(it){
+  if(it.type==='gold'){
+    G.player.coins+=it.amount;
+    log(`+${it.amount} 🪙`,'loot');
+  }else{
+    G.inventory.push(it);
+    log(`Подобрал: ${it.name}`,'loot');
+  }
+  G.items=G.items.filter(i=>i!==it);
+}
+
+function usePotion(){
+  const pot=G.inventory.find(i=>i.type==='potion');
+  if(!pot){log('Нет зелий!','info');return;}
+  const heal=Math.min(pot.heal,G.player.maxHp-G.player.hp);
+  G.player.hp+=heal;
+  G.inventory=G.inventory.filter(i=>i!==pot);
+  log(`Выпил ${pot.name}: +${heal} HP`,'heal');
+  endTurn();
+}
+
+function wait(){
+  log('Ты ждёшь...','info');
+  endTurn();
+}
+
+function descend(){
+  G.floor++;
+  if(G.floor>G.meta.bestFloor)G.meta.bestFloor=G.floor;
+  genFloor();
+  document.getElementById('descBtn').style.display='none';
+  saveGame();
+}
+
+function endTurn(){
+  G.turn++;
+  enemiesTurn();
+  updateHUD();
+  if(G.player.hp<=0)die();
+}
+
+function enemiesTurn(){
+  for(const e of G.enemies){
+    const dx=G.player.x-e.x,dy=G.player.y-e.y;
+    const dist=Math.abs(dx)+Math.abs(dy);
+    
+    if(dist===1){
+      const dmg=Math.max(1,e.atk-G.player.def+Math.floor(Math.random()*2));
+      G.player.hp-=dmg;
+      log(`${e.name} бьёт тебя на ${dmg}`,'dmg');
+    }else if(dist<10&&Math.random()<.7){
+      // Движение к игроку
+      let mx=0,my=0;
+      if(Math.abs(dx)>Math.abs(dy))mx=Math.sign(dx);
+      else my=Math.sign(dy);
+      
+      const nx=e.x+mx,ny=e.y+my;
+      if(canWalk(nx,ny)&&!(nx===G.player.x&&ny===G.player.y)){
+        if(!G.enemies.some(o=>o!==e&&o.x===nx&&o.y===ny)){
+          e.x=nx;e.y=ny;
+        }
+      }
+    }
+  }
+}
+
+function die(){
+  G.dead=true;
+  G.meta.gold+=G.player.coins;
+  localStorage.setItem('doe_meta',JSON.stringify(G.meta));
+  localStorage.removeItem('doe_save');
+  document.getElementById('deathStats').innerHTML=
+    `Этаж: ${G.floor}<br>Убито врагов: ${G.meta.kills}<br>Золото собрано: ${G.player.coins} 🪙`;
+  document.getElementById('death').style.display='flex';
+}
+
+function restart(){
+  document.getElementById('death').style.display='none';
+  document.getElementById('title').style.display='flex';
+  document.getElementById('goldDisp').textContent=G.meta.gold;
+}
+
+// ============ ИНВЕНТАРЬ ============
+function openInv(){
+  const list=document.getElementById('inv-list');
+  list.innerHTML='';
+  if(G.inventory.length===0){
+    list.innerHTML='<p style="color:#888">Пусто</p>';
+  }
+  G.inventory.forEach((it,idx)=>{
+    const div=document.createElement('div');
+    div.className='inv-item';
+    let desc='';
+    if(it.type==='potion')desc=`+${it.heal} HP`;
+    else if(it.type==='mana')desc=`+${it.restore} MP`;
+    else if(it.type==='weapon')desc=`+${it.atk} ATK`;
+    else if(it.type==='armor')desc=`+${it.def} DEF`;
+    div.innerHTML=`<span style="color:${it.color}">${it.ch}</span> <span>${it.name} (${desc})</span>`;
+    const btn=document.createElement('button');
+    btn.textContent='ИСПОЛЬЗОВАТЬ';
+    btn.onclick=()=>{
+      if(it.type==='potion'){
+        const heal=Math.min(it.heal,G.player.maxHp-G.player.hp);
+        G.player.hp+=heal;
+        log(`+${heal} HP`,'heal');
+      }else if(it.type==='mana'){
+        const r=Math.min(it.restore,G.player.maxMp-G.player.mp);
+        G.player.mp+=r;
+        log(`+${r} MP`,'heal');
+      }else if(it.type==='weapon'){
+        G.player.atk+=it.atk;
+        log(`ATK +${it.atk}`,'loot');
+      }else if(it.type==='armor'){
+        G.player.def+=it.def;
+        log(`DEF +${it.def}`,'loot');
+      }
+      G.inventory.splice(idx,1);
+      openInv();
+      updateHUD();
+      endTurn();
+    };
+    div.appendChild(btn);
+    list.appendChild(div);
+  });
+  document.getElementById('inv').classList.add('open');
+}
+function closeInv(){document.getElementById('inv').classList.remove('open');}
+
+// ============ HUD ============
+function updateHUD(){
+  document.getElementById('hpTxt').textContent=`${G.player.hp}/${G.player.maxHp}`;
+  document.getElementById('hpBar').style.width=(G.player.hp/G.player.maxHp*100)+'%';
+  document.getElementById('mpTxt').textContent=`${G.player.mp}/${G.player.maxMp}`;
+  document.getElementById('mpBar').style.width=(G.player.mp/G.player.maxMp*100)+'%';
+  document.getElementById('xpTxt').textContent=`${G.player.xp}/${G.player.xpNext}`;
+  document.getElementById('xpBar').style.width=(G.player.xp/G.player.xpNext*100)+'%';
+  document.getElementById('lvlTxt').textContent=G.player.lvl;
+  document.getElementById('floorTxt').textContent=G.floor;
+  document.getElementById('atkTxt').textContent=G.player.atk;
+  document.getElementById('defTxt').textContent=G.player.def;
+  document.getElementById('coinTxt').textContent=G.player.coins;
+}
+
+function log(msg,cls='info'){
+  const l=document.getElementById('log');
+  const d=document.createElement('div');
+  d.className=cls;d.textContent='> '+msg;
+  l.appendChild(d);
+  while(l.children.length>8)l.removeChild(l.firstChild);
+  l.scrollTop=l.scrollHeight;
+}
+
+// ============ РЕНДЕР ============
+function render(){
+  ctx.fillStyle='#0a0a12';
+  ctx.fillRect(0,0,W,H);
+  
+  // Камера следует за игроком
+  const camX=G.player.x-Math.floor(W/TILE/2);
+  const camY=G.player.y-Math.floor(H/TILE/2);
+  
+  for(let y=0;y<MAP_H;y++){
+    for(let x=0;x<MAP_W;x++){
+      const sx=(x-camX)*TILE,sy=(y-camY)*TILE;
+      if(sx<-TILE||sx>W||sy<-TILE||sy>H)continue;
+      
+      if(!G.seen[y][x]){
+        continue;
+      }
+      
+      const visible=hasLOS(G.player.x,G.player.y,x,y);
+      const dim=visible?1:.4;
+      
+      const t=G.map[y][x];
+      if(t==='#'){
+        ctx.fillStyle=`rgb(${Math.floor(60*dim)},${Math.floor(55*dim)},${Math.floor(70*dim)})`;
+        ctx.fillRect(sx,sy,TILE,TILE);
+        ctx.fillStyle=`rgb(${Math.floor(40*dim)},${Math.floor(35*dim)},${Math.floor(50*dim)})`;
+        ctx.fillRect(sx,sy+TILE-3,TILE,3);
+      }else{
+        ctx.fillStyle=`rgb(${Math.floor(35*dim)},${Math.floor(30*dim)},${Math.floor(40*dim)})`;
+        ctx.fillRect(sx,sy,TILE,TILE);
+        if((x+y)%7===0){
+          ctx.fillStyle=`rgb(${Math.floor(45*dim)},${Math.floor(40*dim)},${Math.floor(50*dim)})`;
+          ctx.fillRect(sx+2,sy+2,2,2);
+        }
+      }
+    }
+  }
+  
+  // Лестница
+  if(G.seen[G.stairs.y][G.stairs.x]){
+    const sx=(G.stairs.x-camX)*TILE,sy=(G.stairs.y-camY)*TILE;
+    ctx.fillStyle='#fd5';
+    ctx.fillRect(sx+4,sy+4,TILE-8,TILE-8);
+    ctx.fillStyle='#a82';
+    ctx.fillRect(sx+6,sy+6,TILE-12,TILE-12);
+  }
+  
+  // Предметы
+  for(const it of G.items){
+    if(!G.seen[it.y][it.x])continue;
+    const sx=(it.x-camX)*TILE,sy=(it.y-camY)*TILE;
+    ctx.fillStyle=it.color;
+    ctx.font='bold 18px monospace';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(it.ch,sx+TILE/2,sy+TILE/2);
+  }
+  
+  // Враги
+  for(const e of G.enemies){
+    if(!G.seen[e.y][e.x])continue;
+    const sx=(e.x-camX)*TILE,sy=(e.y-camY)*TILE;
+    ctx.fillStyle=e.color;
+    ctx.font='bold 20px monospace';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(e.ch,sx+TILE/2,sy+TILE/2);
+    // HP bar
+    const hpw=TILE*(e.hp/e.maxHp);
+    ctx.fillStyle='#300';
+    ctx.fillRect(sx+2,sy-3,TILE-4,3);
+    ctx.fillStyle='#f33';
+    ctx.fillRect(sx+2,sy-3,hpw-4,3);
+  }
+  
+  // Игрок
+  const px=(G.player.x-camX)*TILE,py=(G.player.y-camY)*TILE;
+  ctx.fillStyle='#4f4';
+  ctx.font='bold 22px monospace';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('@',px+TILE/2,py+TILE/2);
+}
+
+// ============ УПРАВЛЕНИЕ ============
+document.getElementById('up').onclick=()=>movePlayer(0,-1);
+document.getElementById('down').onclick=()=>movePlayer(0,1);
+document.getElementById('left').onclick=()=>movePlayer(-1,0);
+document.getElementById('right').onclick=()=>movePlayer(1,0);
+
+addEventListener('keydown',e=>{
+  if(G.dead)return;
+  const k=e.key;
+  if(k==='ArrowUp'||k==='w')movePlayer(0,-1);
+  else if(k==='ArrowDown'||k==='s')movePlayer(0,1);
+  else if(k==='ArrowLeft'||k==='a')movePlayer(-1,0);
+  else if(k==='ArrowRight'||k==='d')movePlayer(1,0);
+  else if(k==='i')openInv();
+  else if(k==='q')usePotion();
+  else if(k===' '){e.preventDefault();wait();}
+  else if(k==='>'||k==='.')descend();
+});
+
+// Тап по клетке
+canvas.addEventListener('click',e=>{
+  if(G.dead)return;
+  const r=canvas.getBoundingClientRect();
+  const cx=e.clientX-r.left,cy=e.clientY-r.top;
+  const camX=G.player.x-Math.floor(W/TILE/2);
+  const camY=G.player.y-Math.floor(H/TILE/2);
+  const tx=Math.floor(cx/TILE)+camX;
+  const ty=Math.floor(cy/TILE)+camY;
+  const dx=tx-G.player.x,dy=ty-G.player.y;
+  if(Math.abs(dx)+Math.abs(dy)===1)movePlayer(dx,dy);
+});
+
+// ============ СОХРАНЕНИЕ ============
+function saveGame(){
+  localStorage.setItem('doe_save',JSON.stringify(G));
+}
+function loadGame(){
+  const s=localStorage.getItem('doe_save');
+  if(s){
+    G=JSON.parse(s);
+    return true;
+  }
   return false;
 }
-function move(obj,dx,dz,r){
-  const p=obj.position||obj;
-  let x=(p.x||0)+dx,z=(p.z||0)+dz;
-  if(!solid(x,p.z,r))p.x=clamp(x,-HALF+3,HALF-3);
-  if(!solid(p.x,z,r))p.z=clamp(z,-HALF+3,HALF-3);
+
+// ============ СТАРТ ============
+function startGame(){
+  document.getElementById('title').style.display='none';
+  G={
+    floor:1,
+    map:[],seen:[],
+    player:{x:0,y:0,hp:20,maxHp:20,mp:10,maxMp:10,atk:5,def:0,lvl:1,xp:0,xpNext:20,coins:0},
+    enemies:[],items:[],inventory:[],
+    stairs:{x:0,y:0},
+    turn:0,
+    meta:G.meta,
+    dead:false
+  };
+  genFloor();
+  updateHUD();
 }
 
-let speedKmh=0,camYaw=yaw;
-const hud=document.getElementById('hud'),hint=document.getElementById('hint');
-const mc=document.getElementById('map').getContext('2d');
-let t=0;
-
-function tick(dt){
-  t+=dt;
-  let ix=input.x+(keys.d?1:0)-(keys.a?1:0),iy=input.y+(keys.w?1:0)-(keys.s?1:0);
-  ix=clamp(ix,-1,1);iy=clamp(iy,-1,1);
-
-  if(activeCar){
-    const c=activeCar;
-    if(input.gas||keys.w)c.speed=Math.min(c.speed+9*dt,26);
-    else if(input.brake||keys.s)c.speed=Math.max(c.speed-14*dt,-9);
-    else c.speed*=Math.pow(.35,dt);
-    if(Math.abs(c.speed)<.05)c.speed=0;
-    c.heading-=ix*1.9*dt*clamp(c.speed/8,-1,1);
-    const nx=c.g.position.x-Math.sin(c.heading)*c.speed*dt;
-    const nz=c.g.position.z-Math.cos(c.heading)*c.speed*dt;
-    if(!solid(nx,nz,1.5)){c.g.position.x=clamp(nx,-HALF+3,HALF-3);c.g.position.z=clamp(nz,-HALF+3,HALF-3);}
-    else c.speed*=-.25;
-    c.g.rotation.y=c.heading;
-    speedKmh=Math.abs(c.speed*3.6);
+function continueGame(){
+  if(loadGame()){
+    document.getElementById('title').style.display='none';
+    updateHUD();
   }else{
-    camYaw+=(yaw-camYaw)*.2;
-    const fw=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
-    const rt=new THREE.Vector3(Math.cos(camYaw),0,-Math.sin(camYaw));
-    const sp=(input.run||keys.shift)?7:3.6;
-    const dx=(rt.x*ix+fw.x*iy)*sp*dt,dz=(rt.z*ix+fw.z*iy)*sp*dt;
-    move(player,dx,dz,.45);
-    if(Math.abs(ix)+Math.abs(iy)>.1){
-      player.rotation.y=Math.atan2(dx,dz)+Math.PI;
-      player.userData.limbs.forEach((l,i)=>l.rotation.x=Math.sin(t*10+i*Math.PI)*.6);
-    }
-    speedKmh=0;
+    alert('Нет сохранения');
   }
-
-  // NPC
-  npcs.forEach(n=>{
-    n.t+=n.dir*n.speed*dt;
-    if(n.t>HALF+8)n.t=-HALF-8;if(n.t<-HALF-8)n.t=HALF+8;
-    if(n.axis==='z'){n.g.position.set(n.road+n.lane,0,n.t);n.g.rotation.y=n.dir>0?Math.PI:0;}
-    else{n.g.position.set(n.t,0,n.road+n.lane);n.g.rotation.y=n.dir>0?-Math.PI/2:Math.PI/2;}
-    n.g.userData.limbs.forEach((l,i)=>l.rotation.x=Math.sin(t*6+i*Math.PI)*.5);
-  });
-  // трафик
-  cars.forEach(c=>{
-    if(!c.ai||c.occupied)return;
-    const a=c.ai;a.t+=a.dir*a.speed*dt;
-    if(a.t>HALF+10)a.t=-HALF-10;if(a.t<-HALF-10)a.t=HALF+10;
-    placeAI(c,a);
-  });
-
-  // камера
-  const target=activeCar?activeCar.g.position:player.position;
-  const dist=activeCar?13:7;
-  const hh=dist*Math.sin(pitch),hr=dist*Math.cos(pitch);
-  camera.position.lerp(new THREE.Vector3(target.x+Math.sin(camYaw)*hh*.0+Math.sin(yaw)*hr,target.y+hh,target.z+Math.cos(yaw)*hr),.15);
-  camera.lookAt(target.x,target.y+1.4,target.z);
-
-  const near=!activeCar&&nearestCar();
-  hint.textContent=near?'Рядом машина — жми «В МАШИНУ」':'';
-  hud.innerHTML=activeCar?'🚗 <b>За рулём</b><br>'+Math.round(speedKmh)+' км/ч':'🚶 <b>Пешком</b>';
-
-  // миникарта
-  const k=140/(HALF*2+20);
-  mc.fillStyle='#222';mc.fillRect(0,0,140,140);
-  mc.fillStyle='#555';
-  for(let i=0;i<=GRID;i++){const p=(i*S-HALF+HALF+10)*k;mc.fillRect(p-2,0,4,140);mc.fillRect(0,p-2,140,4);}
-  mc.fillStyle='#888';
-  buildings.forEach(b=>mc.fillRect((b.minX+HALF+10)*k,(b.minZ+HALF+10)*k,(b.maxX-b.minX)*k,(b.maxZ-b.minZ)*k));
-  mc.fillStyle='#ffd54a';
-  cars.forEach(c=>mc.fillRect((c.g.position.x+HALF+10)*k-1.5,(c.g.position.z+HALF+10)*k-1.5,3,3));
-  mc.fillStyle='#2ecc71';
-  const pp=activeCar?activeCar.g.position:player.position;
-  mc.beginPath();mc.arc((pp.x+HALF+10)*k,(pp.z+HALF+10)*k,3.5,0,7);mc.fill();
 }
 
-let last=performance.now();
-function loop(now){
+// Инициализация
+document.getElementById('goldDisp').textContent=G.meta.gold;
+if(!localStorage.getItem('doe_save')){
+  document.getElementById('contBtn').style.display='none';
+}
+
+// Главный цикл
+function loop(){
+  render();
   requestAnimationFrame(loop);
-  const dt=Math.min((now-last)/1000,.05);last=now;
-  tick(dt);renderer.render(scene,camera);
 }
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-document.getElementById('load').style.display='none';
-requestAnimationFrame(loop);
+loop();
 </script>
 </body>
 </html>
