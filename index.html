@@ -25,7 +25,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .bottom-bar{background:rgba(10,10,26,0.95);backdrop-filter:blur(10px);padding:12px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:8px;z-index:10}
 .action-btn{flex:1;padding:12px 8px;border:none;border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .action-btn:active{transform:scale(0.95);background:rgba(255,255,255,0.2)}
-.action-btn.active{background:linear-gradient(135deg,#4ecdc4,#44a3aa);box-shadow:0 4px 15px rgba(78,205,196,0.4)}
 .action-icon{font-size:20px}
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;align-items:flex-end;z-index:100}
 .modal.show{display:flex}
@@ -48,8 +47,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .negotiation-btn.peace{background:linear-gradient(135deg,#4ecdc4,#44a3aa)}
 .negotiation-btn.alliance{background:linear-gradient(135deg,#ffd93d,#ff9a3c)}
 .negotiation-btn.trade{background:linear-gradient(135deg,#a8edea,#fed6e3);color:#000}
-.notification{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(10,10,26,0.95);backdrop-filter:blur(10px);padding:12px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);font-size:14px;font-weight:600;z-index:200;animation:fadeIn 0.3s}
+.notification{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(10,10,26,0.95);backdrop-filter:blur(10px);padding:12px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);font-size:14px;font-weight:600;z-index:200;animation:fadeIn 0.3s;max-width:90%;text-align:center}
 @keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.menu-item{padding:16px;background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:10px;cursor:pointer;font-size:15px;font-weight:600;display:flex;align-items:center;gap:12px}
+.menu-item:active{background:rgba(255,255,255,0.1)}
+.army-unit{display:flex;justify-content:space-between;align-items:center;padding:14px;background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:10px}
+.army-unit-info{display:flex;align-items:center;gap:10px}
+.army-unit-icon{font-size:28px}
+.hire-btn{padding:8px 16px;background:linear-gradient(135deg,#4ecdc4,#44a3aa);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer}
+.hire-btn:active{transform:scale(0.95)}
+.hire-btn:disabled{opacity:0.4}
 </style>
 </head>
 <body>
@@ -121,11 +128,114 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<div class="modal" id="menuModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">☰ Меню</div>
+      <button class="close-btn" onclick="closeModal('menuModal')">×</button>
+    </div>
+    <div class="menu-item" onclick="manualSave()">💾 Сохранить игру</div>
+    <div class="menu-item" onclick="resetGame()">🔄 Новая игра</div>
+    <div class="menu-item" onclick="showStats()">📊 Статистика</div>
+    <div class="menu-item" onclick="showAbout()">ℹ️ Об игре</div>
+  </div>
+</div>
+
+<div class="modal" id="armyModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">⚔️ Армия</div>
+      <button class="close-btn" onclick="closeModal('armyModal')">×</button>
+    </div>
+    <div style="margin-bottom:15px;opacity:0.7;font-size:13px">Нанимай юнитов за кристаллы 💎</div>
+    <div class="army-unit">
+      <div class="army-unit-info">
+        <div class="army-unit-icon">🗡️</div>
+        <div>
+          <div style="font-weight:700">Пехотинец</div>
+          <div style="font-size:12px;opacity:0.7">Сила: 1 · Цена: 10 💎</div>
+        </div>
+      </div>
+      <button class="hire-btn" onclick="hireUnit(1,10)">+1</button>
+    </div>
+    <div class="army-unit">
+      <div class="army-unit-info">
+        <div class="army-unit-icon">🏹</div>
+        <div>
+          <div style="font-weight:700">Лучник</div>
+          <div style="font-size:12px;opacity:0.7">Сила: 2 · Цена: 25 💎</div>
+        </div>
+      </div>
+      <button class="hire-btn" onclick="hireUnit(2,25)">+1</button>
+    </div>
+    <div class="army-unit">
+      <div class="army-unit-info">
+        <div class="army-unit-icon">🐴</div>
+        <div>
+          <div style="font-weight:700">Всадник</div>
+          <div style="font-size:12px;opacity:0.7">Сила: 5 · Цена: 60 💎</div>
+        </div>
+      </div>
+      <button class="hire-btn" onclick="hireUnit(5,60)">+1</button>
+    </div>
+    <div class="army-unit">
+      <div class="army-unit-info">
+        <div class="army-unit-icon">🐉</div>
+        <div>
+          <div style="font-weight:700">Дракон</div>
+          <div style="font-size:12px;opacity:0.7">Сила: 20 · Цена: 250 💎</div>
+        </div>
+      </div>
+      <button class="hire-btn" onclick="hireUnit(20,250)">+1</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="buildModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">🏗 Строительство</div>
+      <button class="close-btn" onclick="closeModal('buildModal')">×</button>
+    </div>
+    <div style="margin-bottom:15px;opacity:0.7;font-size:13px">Тапни на свою клетку, чтобы построить здание</div>
+    <div class="army-unit">
+      <div class="army-unit-info">
+        <div class="army-unit-icon">⛏️</div>
+        <div>
+          <div style="font-weight:700">Шахта</div>
+          <div style="font-size:12px;opacity:0.7">+5 💎/мин · Цена: 50 💎</div>
+        </div>
+      </div>
+      <button class="hire-btn" onclick="setBuildMode('mine',50)">Строить</button>
+    </div>
+    <div class="army-unit">
+      <div class="army-unit-info">
+        <div class="army-unit-icon">🏭</div>
+        <div>
+          <div style="font-weight:700">Фабрика</div>
+          <div style="font-size:12px;opacity:0.7">+3 ⚡/мин · Цена: 40 💎</div>
+        </div>
+      </div>
+      <button class="hire-btn" onclick="setBuildMode('factory',40)">Строить</button>
+    </div>
+    <div class="army-unit">
+      <div class="army-unit-info">
+        <div class="army-unit-icon">🛡️</div>
+        <div>
+          <div style="font-weight:700">Башня</div>
+          <div style="font-size:12px;opacity:0.7">+10 защиты · Цена: 80 💎</div>
+        </div>
+      </div>
+      <button class="hire-btn" onclick="setBuildMode('tower',80)">Строить</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#0a0a1a'); }
 
-const MAP_SIZE = 500;
+const MAP_SIZE = 100; // Уменьшил до 100 для стабильности, можно вернуть 500
 const CELL_SIZE = 40;
 const KINGDOMS_COUNT = 10;
 
@@ -140,19 +250,24 @@ const kingdomNames = [
   'Чёрный Легион', 'Коричневое Королевство', 'Розовая Империя'
 ];
 
-let gameState = {
-  map: [],
-  kingdoms: [],
-  player: { id: 0, crystals: 100, energy: 50, army: 10 },
-  camera: { x: MAP_SIZE / 2, y: MAP_SIZE / 2, zoom: 1 },
-  time: 0,
-  relations: {}
-};
-
+let gameState = null;
 let canvas, ctx, miniMapCanvas, miniMapCtx;
-let isDragging = false, lastTouch = null;
+let touchStart = null, touchMoved = false;
 let selectedCell = null;
 let negotiationTarget = null;
+let buildMode = null, buildCost = 0;
+
+function getDefaultState() {
+  return {
+    map: [],
+    kingdoms: [],
+    player: { crystals: 100, energy: 50, army: 10, armyPower: 10 },
+    camera: { x: 0, y: 0, zoom: 1 },
+    time: parseInt(localStorage.getItem('gameTime') || '0'),
+    relations: {},
+    playerStart: { x: 0, y: 0 }
+  };
+}
 
 function init() {
   canvas = document.getElementById('gameCanvas');
@@ -161,27 +276,36 @@ function init() {
   miniMapCtx = miniMapCanvas.getContext('2d');
   
   resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('resize', () => { resizeCanvas(); render(); });
   
-  loadGame() || generateWorld();
+  if (!loadGame()) {
+    gameState = getDefaultState();
+    generateWorld();
+  }
   
   setupControls();
   updateUI();
   render();
   
-  setInterval(gameLoop, 1000);
+  setInterval(gameLoop, 3000);
   setInterval(saveGame, 20000);
   setInterval(updateTime, 1000);
 }
 
 function resizeCanvas() {
   const container = canvas.parentElement;
-  canvas.width = container.clientWidth * window.devicePixelRatio;
-  canvas.height = container.clientHeight * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = container.clientWidth * dpr;
+  canvas.height = container.clientHeight * dpr;
+  canvas.style.width = container.clientWidth + 'px';
+  canvas.style.height = container.clientHeight + 'px';
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
   
-  miniMapCanvas.width = 100;
-  miniMapCanvas.height = 100;
+  miniMapCanvas.width = 100 * dpr;
+  miniMapCanvas.height = 100 * dpr;
+  miniMapCtx.setTransform(1, 0, 0, 1, 0, 0);
+  miniMapCtx.scale(dpr, dpr);
 }
 
 function generateWorld() {
@@ -195,120 +319,243 @@ function generateWorld() {
       color: kingdomColors[i],
       territory: 0,
       aggression: Math.random(),
-      economy: Math.random(),
+      economy: Math.random() * 0.5 + 0.3,
       diplomacy: Math.random()
     });
   }
   
+  // Размещаем королевства равномерно по карте
+  const positions = [];
+  const gridSize = Math.ceil(Math.sqrt(KINGDOMS_COUNT + 1));
+  const cellW = MAP_SIZE / gridSize;
+  const cellH = MAP_SIZE / gridSize;
+  
   for (let i = 0; i <= KINGDOMS_COUNT; i++) {
-    const x = Math.floor(Math.random() * (MAP_SIZE - 10)) + 5;
-    const y = Math.floor(Math.random() * (MAP_SIZE - 10)) + 5;
-    const size = i === 0 ? 3 : Math.floor(Math.random() * 3) + 2;
+    const gx = i % gridSize;
+    const gy = Math.floor(i / gridSize);
+    const x = Math.floor(cellW * gx + cellW / 2 + (Math.random() - 0.5) * cellW * 0.5);
+    const y = Math.floor(cellH * gy + cellH / 2 + (Math.random() - 0.5) * cellH * 0.5);
+    positions.push({ x: Math.max(5, Math.min(MAP_SIZE - 5, x)), y: Math.max(5, Math.min(MAP_SIZE - 5, y)) });
+  }
+  
+  // Создаём территории
+  for (let i = 0; i <= KINGDOMS_COUNT; i++) {
+    const { x, y } = positions[i];
+    const size = i === 0 ? 1 : Math.floor(Math.random() * 2) + 1; // Игрок 3x3, ИИ 2-3 клетки в радиусе
     
     for (let dx = -size; dx <= size; dx++) {
       for (let dy = -size; dy <= size; dy++) {
         const nx = x + dx, ny = y + dy;
         if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
-          if (Math.abs(dx) + Math.abs(dy) <= size + 1) {
-            gameState.map[ny][nx] = { owner: i, building: null, army: i === 0 ? 10 : Math.floor(Math.random() * 20) + 5 };
+          if (Math.abs(dx) + Math.abs(dy) <= size + 1 && !gameState.map[ny][nx]) {
+            gameState.map[ny][nx] = { 
+              owner: i, 
+              building: null, 
+              army: i === 0 ? 10 : Math.floor(Math.random() * 15) + 5,
+              defense: 0
+            };
             gameState.kingdoms[i].territory++;
           }
         }
       }
     }
-  }
-  
-  for (let i = 1; i <= KINGDOMS_COUNT; i++) {
-    for (let j = 0; j <= KINGDOMS_COUNT; j++) {
-      if (i !== j) {
-        const key = `${i}-${j}`;
-        gameState.relations[key] = Math.random() > 0.5 ? 'neutral' : 'hostile';
-      }
+    
+    if (i === 0) {
+      gameState.playerStart = { x, y };
     }
   }
   
-  gameState.camera.x = MAP_SIZE / 2;
-  gameState.camera.y = MAP_SIZE / 2;
+  // Инициализируем отношения
+  for (let i = 0; i <= KINGDOMS_COUNT; i++) {
+    for (let j = i + 1; j <= KINGDOMS_COUNT; j++) {
+      const key = `${i}-${j}`;
+      const r = Math.random();
+      gameState.relations[key] = r < 0.3 ? 'hostile' : r < 0.7 ? 'neutral' : 'friendly';
+    }
+  }
+  
+  // Камера на игроке
+  gameState.camera.x = gameState.playerStart.x;
+  gameState.camera.y = gameState.playerStart.y;
+  gameState.camera.zoom = 1;
 }
 
 function setupControls() {
-  canvas.addEventListener('touchstart', handleTouchStart);
-  canvas.addEventListener('touchmove', handleTouchMove);
-  canvas.addEventListener('touchend', handleTouchEnd);
+  canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+  canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+  canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
   canvas.addEventListener('click', handleClick);
+  
+  // Мини-карта
+  miniMapCanvas.parentElement.addEventListener('click', handleMiniMapClick);
 }
 
 function handleTouchStart(e) {
+  e.preventDefault();
   if (e.touches.length === 1) {
-    isDragging = true;
-    lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
+    touchMoved = false;
   }
 }
 
 function handleTouchMove(e) {
-  if (isDragging && e.touches.length === 1) {
-    const dx = e.touches[0].clientX - lastTouch.x;
-    const dy = e.touches[0].clientY - lastTouch.y;
-    gameState.camera.x -= dx / (CELL_SIZE * gameState.camera.zoom);
-    gameState.camera.y -= dy / (CELL_SIZE * gameState.camera.zoom);
-    lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    render();
-  }
-}
-
-function handleTouchEnd() {
-  isDragging = false;
-}
-
-function handleClick(e) {
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  
-  const cellX = Math.floor(x / (CELL_SIZE * gameState.camera.zoom) + gameState.camera.x - canvas.clientWidth / (2 * CELL_SIZE * gameState.camera.zoom));
-  const cellY = Math.floor(y / (CELL_SIZE * gameState.camera.zoom) + gameState.camera.y - canvas.clientHeight / (2 * CELL_SIZE * gameState.camera.zoom));
-  
-  if (cellX >= 0 && cellX < MAP_SIZE && cellY >= 0 && cellY < MAP_SIZE) {
-    const cell = gameState.map[cellY][cellX];
-    if (cell) {
-      if (cell.owner === 0) {
-        showNotification('Это твоя территория');
-      } else {
-        negotiationTarget = cell.owner;
-        document.getElementById('negotiationTitle').textContent = `Переговоры с ${gameState.kingdoms[cell.owner].name}`;
-        document.getElementById('negotiationModal').classList.add('show');
-      }
+  e.preventDefault();
+  if (touchStart && e.touches.length === 1) {
+    const dx = e.touches[0].clientX - touchStart.x;
+    const dy = e.touches[0].clientY - touchStart.y;
+    
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      touchMoved = true;
+    }
+    
+    if (touchMoved) {
+      gameState.camera.x -= dx / (CELL_SIZE * gameState.camera.zoom);
+      gameState.camera.y -= dy / (CELL_SIZE * gameState.camera.zoom);
+      touchStart.x = e.touches[0].clientX;
+      touchStart.y = e.touches[0].clientY;
+      render();
     }
   }
 }
 
+function handleTouchEnd(e) {
+  touchStart = null;
+}
+
+function handleClick(e) {
+  if (touchMoved) { touchMoved = false; return; }
+  
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const viewW = rect.width;
+  const viewH = rect.height;
+  const cellScreenSize = CELL_SIZE * gameState.camera.zoom;
+  
+  const worldX = (x - viewW / 2) / cellScreenSize + gameState.camera.x;
+  const worldY = (y - viewH / 2) / cellScreenSize + gameState.camera.y;
+  
+  const cellX = Math.floor(worldX);
+  const cellY = Math.floor(worldY);
+  
+  if (cellX < 0 || cellX >= MAP_SIZE || cellY < 0 || cellY >= MAP_SIZE) return;
+  
+  const cell = gameState.map[cellY][cellX];
+  
+  // Режим строительства
+  if (buildMode) {
+    if (cell && cell.owner === 0 && !cell.building) {
+      if (gameState.player.crystals >= buildCost) {
+        gameState.player.crystals -= buildCost;
+        cell.building = buildMode;
+        if (buildMode === 'tower') cell.defense = 10;
+        showNotification(`🏗 Построено: ${buildMode}`);
+        buildMode = null;
+        updateUI();
+        render();
+      } else {
+        showNotification('Недостаточно кристаллов 💎');
+      }
+    } else {
+      showNotification('Выбери свою пустую клетку');
+    }
+    return;
+  }
+  
+  if (!cell) {
+    showNotification('Пустая клетка');
+    return;
+  }
+  
+  if (cell.owner === 0) {
+    showNotification(`👑 Твоя территория · Армия: ${cell.army}${cell.building ? ' · ' + cell.building : ''}`);
+  } else {
+    // Проверка соседства
+    const isNeighbor = isAdjacentToPlayer(cellX, cellY);
+    if (!isNeighbor) {
+      showNotification('Слишком далеко! Нужна соседняя клетка');
+      return;
+    }
+    
+    negotiationTarget = { owner: cell.owner, x: cellX, y: cellY };
+    document.getElementById('negotiationTitle').textContent = `${gameState.kingdoms[cell.owner].name}`;
+    document.getElementById('negotiationModal').classList.add('show');
+  }
+}
+
+function isAdjacentToPlayer(x, y) {
+  const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+  for (const [dx, dy] of dirs) {
+    const nx = x + dx, ny = y + dy;
+    if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
+      const c = gameState.map[ny][nx];
+      if (c && c.owner === 0) return true;
+    }
+  }
+  return false;
+}
+
+function handleMiniMapClick(e) {
+  const rect = miniMapCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  gameState.camera.x = (x / rect.width) * MAP_SIZE;
+  gameState.camera.y = (y / rect.height) * MAP_SIZE;
+  render();
+}
+
 function render() {
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  
+  // Фон с сеткой
   ctx.fillStyle = '#0a0a1a';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, w, h);
   
-  const viewWidth = canvas.clientWidth / (CELL_SIZE * gameState.camera.zoom);
-  const viewHeight = canvas.clientHeight / (CELL_SIZE * gameState.camera.zoom);
-  const startX = Math.max(0, Math.floor(gameState.camera.x - viewWidth / 2));
-  const startY = Math.max(0, Math.floor(gameState.camera.y - viewHeight / 2));
-  const endX = Math.min(MAP_SIZE, Math.ceil(gameState.camera.x + viewWidth / 2));
-  const endY = Math.min(MAP_SIZE, Math.ceil(gameState.camera.y + viewHeight / 2));
+  const cellScreenSize = CELL_SIZE * gameState.camera.zoom;
+  const viewW = w / cellScreenSize;
+  const viewH = h / cellScreenSize;
   
+  const startX = Math.max(0, Math.floor(gameState.camera.x - viewW / 2) - 1);
+  const startY = Math.max(0, Math.floor(gameState.camera.y - viewH / 2) - 1);
+  const endX = Math.min(MAP_SIZE, Math.ceil(gameState.camera.x + viewW / 2) + 1);
+  const endY = Math.min(MAP_SIZE, Math.ceil(gameState.camera.y + viewH / 2) + 1);
+  
+  // Рисуем клетки
   for (let y = startY; y < endY; y++) {
     for (let x = startX; x < endX; x++) {
+      const screenX = (x - gameState.camera.x) * cellScreenSize + w / 2;
+      const screenY = (y - gameState.camera.y) * cellScreenSize + h / 2;
+      
       const cell = gameState.map[y][x];
+      
       if (cell) {
-        const screenX = (x - gameState.camera.x + viewWidth / 2) * CELL_SIZE * gameState.camera.zoom;
-        const screenY = (y - gameState.camera.y + viewHeight / 2) * CELL_SIZE * gameState.camera.zoom;
-        
         ctx.fillStyle = gameState.kingdoms[cell.owner].color;
-        ctx.fillRect(screenX, screenY, CELL_SIZE * gameState.camera.zoom - 1, CELL_SIZE * gameState.camera.zoom - 1);
+        ctx.fillRect(screenX, screenY, cellScreenSize - 1, cellScreenSize - 1);
         
-        if (gameState.camera.zoom > 0.5) {
+        // Здание
+        if (cell.building && gameState.camera.zoom > 0.6) {
           ctx.fillStyle = '#fff';
-          ctx.font = `${10 * gameState.camera.zoom}px Arial`;
+          ctx.font = `${Math.floor(cellScreenSize * 0.5)}px Arial`;
           ctx.textAlign = 'center';
-          ctx.fillText(cell.army, screenX + CELL_SIZE * gameState.camera.zoom / 2, screenY + CELL_SIZE * gameState.camera.zoom / 2 + 3);
+          ctx.textBaseline = 'middle';
+          const icon = cell.building === 'mine' ? '⛏️' : cell.building === 'factory' ? '🏭' : '🛡️';
+          ctx.fillText(icon, screenX + cellScreenSize / 2, screenY + cellScreenSize / 2);
         }
+        
+        // Армия (если нет здания)
+        if (!cell.building && gameState.camera.zoom > 0.5) {
+          ctx.fillStyle = '#fff';
+          ctx.font = `bold ${Math.floor(cellScreenSize * 0.4)}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(cell.army, screenX + cellScreenSize / 2, screenY + cellScreenSize / 2);
+        }
+      } else {
+        // Пустая клетка — тёмная с точкой
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(screenX, screenY, cellScreenSize - 1, cellScreenSize - 1);
       }
     }
   }
@@ -317,43 +564,52 @@ function render() {
 }
 
 function renderMiniMap() {
+  const w = 100, h = 100;
   miniMapCtx.fillStyle = '#0a0a1a';
-  miniMapCtx.fillRect(0, 0, 100, 100);
+  miniMapCtx.fillRect(0, 0, w, h);
   
-  const scale = 100 / MAP_SIZE;
-  for (let y = 0; y < MAP_SIZE; y += 5) {
-    for (let x = 0; x < MAP_SIZE; x += 5) {
+  const scale = w / MAP_SIZE;
+  const step = Math.max(1, Math.floor(MAP_SIZE / 100));
+  
+  for (let y = 0; y < MAP_SIZE; y += step) {
+    for (let x = 0; x < MAP_SIZE; x += step) {
       const cell = gameState.map[y][x];
       if (cell) {
         miniMapCtx.fillStyle = gameState.kingdoms[cell.owner].color;
-        miniMapCtx.fillRect(x * scale, y * scale, 5 * scale, 5 * scale);
+        miniMapCtx.fillRect(x * scale, y * scale, scale * step, scale * step);
       }
     }
   }
   
-  const viewWidth = canvas.clientWidth / (CELL_SIZE * gameState.camera.zoom);
-  const viewHeight = canvas.clientHeight / (CELL_SIZE * gameState.camera.zoom);
+  // Рамка видимой области
+  const viewW = canvas.clientWidth / (CELL_SIZE * gameState.camera.zoom);
+  const viewH = canvas.clientHeight / (CELL_SIZE * gameState.camera.zoom);
   miniMapCtx.strokeStyle = '#fff';
-  miniMapCtx.lineWidth = 2;
+  miniMapCtx.lineWidth = 1;
   miniMapCtx.strokeRect(
-    (gameState.camera.x - viewWidth / 2) * scale,
-    (gameState.camera.y - viewHeight / 2) * scale,
-    viewWidth * scale,
-    viewHeight * scale
+    (gameState.camera.x - viewW / 2) * scale,
+    (gameState.camera.y - viewH / 2) * scale,
+    viewW * scale,
+    viewH * scale
   );
 }
 
 function gameLoop() {
+  // Пассивный доход от зданий
+  for (let y = 0; y < MAP_SIZE; y++) {
+    for (let x = 0; x < MAP_SIZE; x++) {
+      const cell = gameState.map[y][x];
+      if (cell && cell.owner === 0 && cell.building) {
+        if (cell.building === 'mine') gameState.player.crystals += 5;
+        if (cell.building === 'factory') gameState.player.energy += 3;
+      }
+    }
+  }
+  
+  // ИИ ходы
   for (let i = 1; i <= KINGDOMS_COUNT; i++) {
     aiTurn(i);
   }
-  
-  gameState.kingdoms.forEach((k, i) => {
-    if (i > 0) {
-      gameState.player.crystals += Math.floor(k.territory * 0.1 * k.economy);
-      gameState.player.energy += Math.floor(k.territory * 0.05 * k.economy);
-    }
-  });
   
   updateUI();
   render();
@@ -361,28 +617,26 @@ function gameLoop() {
 
 function aiTurn(kingdomId) {
   const kingdom = gameState.kingdoms[kingdomId];
+  if (kingdom.territory === 0) return;
   
-  if (Math.random() < kingdom.aggression * 0.1) {
-    for (let y = 0; y < MAP_SIZE; y++) {
-      for (let x = 0; x < MAP_SIZE; x++) {
-        const cell = gameState.map[y][x];
-        if (cell && cell.owner === kingdomId) {
-          const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
-          const dir = dirs[Math.floor(Math.random() * 4)];
-          const nx = x + dir[0], ny = y + dir[1];
-          
+  // Шанс расширения зависит от агрессии
+  if (Math.random() > kingdom.aggression * 0.3) return;
+  
+  // Находим случайную свою клетку на границе
+  const borderCells = [];
+  for (let y = 0; y < MAP_SIZE; y++) {
+    for (let x = 0; x < MAP_SIZE; x++) {
+      const cell = gameState.map[y][x];
+      if (cell && cell.owner === kingdomId) {
+        const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+        for (const [dx, dy] of dirs) {
+          const nx = x + dx, ny = y + dy;
           if (nx >= 0 && nx < MAP_SIZE && ny >= 0 && ny < MAP_SIZE) {
             const target = gameState.map[ny][nx];
             if (target && target.owner !== kingdomId) {
-              if (cell.army > target.army * 1.2) {
-                const key = `${kingdomId}-${target.owner}`;
-                if (gameState.relations[key] !== 'alliance') {
-                  cell.army -= Math.floor(target.army * 0.5);
-                  target.owner = kingdomId;
-                  target.army = Math.floor(cell.army * 0.5);
-                  kingdom.territory++;
-                  gameState.kingdoms[target.owner].territory--;
-                }
+              const key = kingdomId < target.owner ? `${kingdomId}-${target.owner}` : `${target.owner}-${kingdomId}`;
+              if (gameState.relations[key] !== 'alliance') {
+                borderCells.push({ x, y, tx: nx, ty: ny, target });
               }
             }
           }
@@ -390,49 +644,77 @@ function aiTurn(kingdomId) {
       }
     }
   }
+  
+  if (borderCells.length === 0) return;
+  
+  const attack = borderCells[Math.floor(Math.random() * borderCells.length)];
+  const source = gameState.map[attack.y][attack.x];
+  
+  // Атакуем только если сильнее
+  if (source.army > attack.target.army * 1.3) {
+    const loss = Math.floor(attack.target.army * 0.6);
+    source.army -= loss;
+    
+    // Если это игрок — уменьшаем его армию
+    if (attack.target.owner === 0) {
+      gameState.player.army = Math.max(0, gameState.player.army - loss);
+    } else {
+      gameState.kingdoms[attack.target.owner].territory--;
+    }
+    
+    attack.target.owner = kingdomId;
+    attack.target.army = Math.floor(source.army * 0.5);
+    attack.target.building = null;
+    attack.target.defense = 0;
+    kingdom.territory++;
+    
+    if (attack.target.owner === 0 || source.army <= 0) {
+      // Логика для атаки на игрока
+    }
+  }
 }
 
 function negotiate(action) {
   if (!negotiationTarget) return;
   
-  const key = `0-${negotiationTarget}`;
-  const target = gameState.kingdoms[negotiationTarget];
+  const targetId = negotiationTarget.owner;
+  const target = gameState.kingdoms[targetId];
+  const key = 0 < targetId ? `0-${targetId}` : `${targetId}-0`;
+  const rel = gameState.relations[key] || 'neutral';
   
-  let success = false;
   let message = '';
   
   switch(action) {
     case 'war':
       gameState.relations[key] = 'hostile';
-      message = `Ты объявил войну ${target.name}`;
-      success = true;
+      message = `⚔️ Война с ${target.name}!`;
+      // Автоматическая атака
+      performAttack(negotiationTarget.x, negotiationTarget.y);
       break;
     case 'peace':
-      if (target.diplomacy > 0.3) {
+      if (target.diplomacy > 0.4 || rel === 'hostile') {
         gameState.relations[key] = 'neutral';
-        message = `${target.name} согласился на мир`;
-        success = true;
+        message = `🕊 ${target.name} согласился на мир`;
       } else {
-        message = `${target.name} отказался от мира`;
+        message = `❌ ${target.name} отказался от мира`;
       }
       break;
     case 'alliance':
-      if (target.diplomacy > 0.6) {
+      if (target.diplomacy > 0.6 && rel !== 'hostile') {
         gameState.relations[key] = 'alliance';
-        message = `${target.name} вступил в союз с тобой`;
-        success = true;
+        message = `🤝 Союз с ${target.name}!`;
       } else {
-        message = `${target.name} отказался от союза`;
+        message = `❌ ${target.name} отказался от союза`;
       }
       break;
     case 'trade':
       if (gameState.player.crystals >= 50) {
         gameState.player.crystals -= 50;
         gameState.player.army += 10;
-        message = 'Ты обменял 50 кристаллов на 10 юнитов';
-        success = true;
+        gameState.player.armyPower += 10;
+        message = `💰 Куплено 10 юнитов за 50 💎`;
       } else {
-        message = 'Недостаточно кристаллов';
+        message = `❌ Нужно 50 💎`;
       }
       break;
   }
@@ -441,11 +723,45 @@ function negotiate(action) {
   closeModal('negotiationModal');
   negotiationTarget = null;
   updateUI();
+  render();
+}
+
+function performAttack(tx, ty) {
+  const target = gameState.map[ty][tx];
+  if (!target) return;
+  
+  const myPower = gameState.player.army;
+  const enemyPower = target.army + (target.defense || 0);
+  
+  if (myPower > enemyPower) {
+    const loss = Math.floor(enemyPower * 0.5);
+    gameState.player.army -= loss;
+    gameState.player.armyPower -= loss;
+    
+    const oldOwner = target.owner;
+    gameState.kingdoms[oldOwner].territory--;
+    target.owner = 0;
+    target.army = Math.floor(myPower * 0.5);
+    target.building = null;
+    target.defense = 0;
+    gameState.kingdoms[0].territory++;
+    
+    showNotification(`🎉 Победа! Потери: ${loss} юнитов`);
+  } else {
+    const loss = Math.floor(myPower * 0.8);
+    gameState.player.army -= loss;
+    gameState.player.armyPower -= loss;
+    target.army -= Math.floor(enemyPower * 0.3);
+    showNotification(`💀 Поражение! Потери: ${loss} юнитов`);
+  }
+  
+  updateUI();
+  render();
 }
 
 function openLeaderboard() {
   const list = document.getElementById('leaderboardList');
-  const sorted = [...gameState.kingdoms].sort((a, b) => b.territory - a.territory);
+  const sorted = [...gameState.kingdoms].filter(k => k.territory > 0).sort((a, b) => b.territory - a.territory);
   
   list.innerHTML = sorted.map((k, i) => `
     <div class="leaderboard-item ${k.id === 0 ? 'you' : ''}">
@@ -461,20 +777,84 @@ function openLeaderboard() {
   document.getElementById('leaderboardModal').classList.add('show');
 }
 
-function openBuild() { showNotification('Строительство (в разработке)'); }
-function openArmy() { showNotification('Армия (в разработке)'); }
-function openMenu() { showNotification('Меню (в разработке)'); }
+function openBuild() {
+  document.getElementById('buildModal').classList.add('show');
+}
+
+function openArmy() {
+  document.getElementById('armyModal').classList.add('show');
+}
+
+function openMenu() {
+  document.getElementById('menuModal').classList.add('show');
+}
 
 function closeModal(id) {
   document.getElementById(id).classList.remove('show');
 }
 
+function setBuildMode(type, cost) {
+  if (gameState.player.crystals < cost) {
+    showNotification('Недостаточно кристаллов 💎');
+    return;
+  }
+  buildMode = type;
+  buildCost = cost;
+  closeModal('buildModal');
+  showNotification(`🏗 Выбери свою клетку для ${type}`);
+}
+
+function hireUnit(power, cost) {
+  if (gameState.player.crystals < cost) {
+    showNotification('Недостаточно кристаллов 💎');
+    return;
+  }
+  gameState.player.crystals -= cost;
+  gameState.player.army += 1;
+  gameState.player.armyPower += power;
+  showNotification(`✅ Юнит нанят! Сила: +${power}`);
+  updateUI();
+}
+
+function manualSave() {
+  saveGame();
+  showNotification('💾 Игра сохранена!');
+  closeModal('menuModal');
+}
+
+function resetGame() {
+  if (confirm('Начать новую игру? Прогресс будет потерян!')) {
+    localStorage.removeItem('neonConquestSave');
+    localStorage.removeItem('gameTime');
+    gameState = getDefaultState();
+    generateWorld();
+    updateUI();
+    render();
+    closeModal('menuModal');
+    showNotification('🔄 Новая игра начата!');
+  }
+}
+
+function showStats() {
+  const k = gameState.kingdoms[0];
+  alert(`📊 Статистика:\n\n🗺 Территория: ${k.territory} клеток\n💎 Кристаллы: ${gameState.player.crystals}\n⚡ Энергия: ${gameState.player.energy}\n👥 Армия: ${gameState.player.army}\n⚔️ Сила: ${gameState.player.armyPower}\n⏱ Время: ${Math.floor(gameState.time/60)} мин`);
+  closeModal('menuModal');
+}
+
+function showAbout() {
+  alert('🎮 Neon Conquest\n\nЗахватывай территории, строй здания, нанимай армию и побеждай 10 соперников!\n\n• Тап по своей клетке — инфо\n• Тап по соседней вражеской — переговоры/атака\n• Свайп — движение камеры\n• Мини-карта — быстрая навигация');
+  closeModal('menuModal');
+}
+
 function showNotification(text) {
+  const existing = document.querySelector('.notification');
+  if (existing) existing.remove();
+  
   const notif = document.createElement('div');
   notif.className = 'notification';
   notif.textContent = text;
   document.body.appendChild(notif);
-  setTimeout(() => notif.remove(), 3000);
+  setTimeout(() => notif.remove(), 2500);
 }
 
 function updateUI() {
@@ -490,18 +870,26 @@ function updateTime() {
   const m = Math.floor((gameState.time % 3600) / 60).toString().padStart(2, '0');
   const s = (gameState.time % 60).toString().padStart(2, '0');
   document.getElementById('timeCounter').textContent = `⏱ ${h}:${m}:${s}`;
-  localStorage.setItem('gameTime', gameState.time);
 }
 
 function saveGame() {
-  localStorage.setItem('neonConquestSave', JSON.stringify(gameState));
+  try {
+    localStorage.setItem('neonConquestSave', JSON.stringify(gameState));
+    localStorage.setItem('gameTime', gameState.time);
+  } catch(e) {
+    console.error('Save error:', e);
+  }
 }
 
 function loadGame() {
-  const save = localStorage.getItem('neonConquestSave');
-  if (save) {
-    gameState = JSON.parse(save);
-    return true;
+  try {
+    const save = localStorage.getItem('neonConquestSave');
+    if (save) {
+      gameState = JSON.parse(save);
+      return true;
+    }
+  } catch(e) {
+    console.error('Load error:', e);
   }
   return false;
 }
