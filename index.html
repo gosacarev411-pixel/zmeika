@@ -5,1053 +5,650 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Шашки Online</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; user-select:none; -webkit-tap-highlight-color:transparent; }
-body { background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%); min-height:100vh; color:#fff; display:flex; flex-direction:column; }
-.header { background:rgba(0,0,0,0.3); backdrop-filter:blur(10px); padding:12px 20px; text-align:center; border-bottom:2px solid #ffd700; }
-.header h1 { font-size:26px; color:#ffd700; text-shadow:0 0 10px rgba(255,215,0,0.5); }
-.stats { display:flex; justify-content:center; gap:15px; margin-top:8px; flex-wrap:wrap; }
-.stat { background:rgba(255,215,0,0.1); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,215,0,0.3); font-size:13px; }
-.stat span { color:#ffd700; font-weight:bold; }
-.container { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; gap:15px; }
-.menu-screen { width:100%; max-width:400px; display:flex; flex-direction:column; gap:12px; }
-.menu-btn { padding:18px 24px; background:linear-gradient(135deg,#ffd700,#ff8c00); border:none; border-radius:12px; color:#000; font-weight:bold; font-size:16px; cursor:pointer; transition:all 0.3s; box-shadow:0 4px 15px rgba(255,215,0,0.3); display:flex; align-items:center; gap:12px; justify-content:center; }
-.menu-btn:hover { transform:translateY(-2px); }
-.menu-btn.secondary { background:rgba(255,255,255,0.1); color:#fff; border:2px solid rgba(255,255,255,0.3); }
-.menu-btn .icon { font-size:24px; }
-.board-wrapper { background:rgba(0,0,0,0.3); padding:10px; border-radius:15px; box-shadow:0 10px 40px rgba(0,0,0,0.5); width:100%; max-width:560px; }
-.board { display:grid; grid-template-columns:repeat(8,1fr); gap:0; border-radius:10px; overflow:hidden; width:100%; aspect-ratio:1; }
-.cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; }
-.cell.light { background:#f0d9b5; }
-.cell.dark { background:#b58863; }
-.cell.selected { background:#7fc97f !important; }
-.cell.valid { background:#fff700 !important; }
-.cell.valid::after { content:''; width:30%; height:30%; background:rgba(0,0,0,0.3); border-radius:50%; }
-.piece { width:85%; height:85%; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; box-shadow:0 4px 8px rgba(0,0,0,0.4); position:relative; }
-.piece.white { background:linear-gradient(135deg,#fff,#e0e0e0); border:3px solid #999; }
-.piece.black { background:linear-gradient(135deg,#444,#111); border:3px solid #666; color:#fff; }
-.piece.king::before { content:'♔'; position:absolute; font-size:clamp(16px, 5vw, 28px); color:#ffd700; }
-.piece.must-capture { animation:pulse 0.8s infinite; box-shadow:0 0 20px #ff0000; }
-@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
-.info-panel { background:rgba(0,0,0,0.3); padding:12px 30px; border-radius:15px; text-align:center; font-size:18px; font-weight:bold; min-width:250px; }
-.info-panel.white-turn { border:2px solid #fff; }
-.info-panel.black-turn { border:2px solid #444; }
-.info-panel.waiting { border:2px solid #ffd700; animation:blink 1.5s infinite; }
-@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
-.room-code { background:rgba(255,215,0,0.2); border:2px solid #ffd700; padding:15px 25px; border-radius:12px; text-align:center; margin:15px 0; }
-.room-code-label { font-size:12px; opacity:0.7; margin-bottom:5px; }
-.room-code-value { font-size:32px; font-weight:bold; color:#ffd700; letter-spacing:5px; font-family:monospace; }
-.controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-.btn { padding:12px 24px; background:linear-gradient(135deg,#ffd700,#ff8c00); border:none; border-radius:10px; color:#000; font-weight:bold; font-size:14px; cursor:pointer; }
-.btn.secondary { background:rgba(255,255,255,0.1); color:#fff; border:2px solid rgba(255,255,255,0.3); }
-.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center; padding:20px; }
-.modal.active { display:flex; }
-.modal-content { background:linear-gradient(135deg,#1e3c72,#2a5298); border-radius:20px; padding:30px; max-width:400px; width:100%; text-align:center; border:3px solid #ffd700; }
-.modal h2 { font-size:28px; margin-bottom:15px; color:#ffd700; }
-.modal p { margin-bottom:20px; font-size:16px; }
-.modal input { width:100%; padding:12px; margin:10px 0; border-radius:10px; border:2px solid #ffd700; background:rgba(0,0,0,0.5); color:#fff; font-size:16px; text-align:center; letter-spacing:3px; font-family:monospace; }
-.searching { text-align:center; padding:30px; }
-.searching .spinner { width:60px; height:60px; border:4px solid rgba(255,215,0,0.3); border-top-color:#ffd700; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 20px; }
-@keyframes spin { to { transform:rotate(360deg); } }
-.online-badge { background:rgba(0,255,136,0.2); color:#00ff88; padding:4px 12px; border-radius:10px; font-size:11px; margin-left:10px; }
-.offline-badge { background:rgba(255,100,100,0.2); color:#ff6464; padding:4px 12px; border-radius:10px; font-size:11px; margin-left:10px; }
-@media (max-width:600px) {
-    .header h1 { font-size:22px; }
-    .board-wrapper { max-width:95vw; }
-    .btn, .menu-btn { padding:10px 18px; font-size:13px; }
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,sans-serif;user-select:none}
+body{background:linear-gradient(135deg,#1e3c72,#2a5298);min-height:100vh;color:#fff;display:flex;flex-direction:column}
+.header{background:rgba(0,0,0,0.3);padding:12px 20px;text-align:center;border-bottom:2px solid #ffd700}
+.header h1{font-size:26px;color:#ffd700}
+.stats{display:flex;justify-content:center;gap:15px;margin-top:8px;flex-wrap:wrap}
+.stat{background:rgba(255,215,0,0.1);padding:6px 14px;border-radius:20px;border:1px solid rgba(255,215,0,0.3);font-size:13px}
+.stat span{color:#ffd700;font-weight:bold}
+.container{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;gap:15px}
+.menu-screen{width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
+.menu-btn{padding:18px 24px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:12px;color:#000;font-weight:bold;font-size:16px;cursor:pointer;box-shadow:0 4px 15px rgba(255,215,0,0.3);display:flex;align-items:center;gap:12px;justify-content:center}
+.menu-btn.secondary{background:rgba(255,255,255,0.1);color:#fff;border:2px solid rgba(255,255,255,0.3)}
+.board-wrapper{background:rgba(0,0,0,0.3);padding:10px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,0.5);width:100%;max-width:560px}
+.board{display:grid;grid-template-columns:repeat(8,1fr);gap:0;border-radius:10px;overflow:hidden;width:100%;aspect-ratio:1}
+.cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.cell.light{background:#f0d9b5}
+.cell.dark{background:#b58863}
+.cell.selected{background:#7fc97f !important}
+.cell.valid{background:#fff700 !important}
+.cell.valid::after{content:'';width:30%;height:30%;background:rgba(0,0,0,0.3);border-radius:50%}
+.piece{width:85%;height:85%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 4px 8px rgba(0,0,0,0.4);position:relative}
+.piece.white{background:linear-gradient(135deg,#fff,#e0e0e0);border:3px solid #999}
+.piece.black{background:linear-gradient(135deg,#444,#111);border:3px solid #666;color:#fff}
+.piece.king::before{content:'♔';position:absolute;font-size:clamp(16px,5vw,28px);color:#ffd700}
+.piece.must-capture{animation:pulse 0.8s infinite;box-shadow:0 0 20px #ff0000}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.info-panel{background:rgba(0,0,0,0.3);padding:12px 30px;border-radius:15px;text-align:center;font-size:18px;font-weight:bold;min-width:250px}
+.info-panel.white-turn{border:2px solid #fff}
+.info-panel.black-turn{border:2px solid #444}
+.info-panel.waiting{border:2px solid #ffd700;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.5}}
+.room-code{background:rgba(255,215,0,0.2);border:2px solid #ffd700;padding:15px 25px;border-radius:12px;text-align:center;margin:15px 0}
+.room-code-label{font-size:12px;opacity:0.7;margin-bottom:5px}
+.room-code-value{font-size:32px;font-weight:bold;color:#ffd700;letter-spacing:5px;font-family:monospace}
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn{padding:12px 24px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:10px;color:#000;font-weight:bold;font-size:14px;cursor:pointer}
+.btn.secondary{background:rgba(255,255,255,0.1);color:#fff;border:2px solid rgba(255,255,255,0.3)}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal.active{display:flex}
+.modal-content{background:linear-gradient(135deg,#1e3c72,#2a5298);border-radius:20px;padding:30px;max-width:400px;width:100%;text-align:center;border:3px solid #ffd700}
+.modal h2{font-size:28px;margin-bottom:15px;color:#ffd700}
+.modal p{margin-bottom:20px;font-size:16px}
+.modal input{width:100%;padding:12px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:16px;text-align:center;letter-spacing:3px;font-family:monospace}
+.searching{text-align:center;padding:30px}
+.searching .spinner{width:60px;height:60px;border:4px solid rgba(255,215,0,0.3);border-top-color:#ffd700;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.online-badge{background:rgba(0,255,136,0.2);color:#00ff88;padding:4px 12px;border-radius:10px;font-size:11px;margin-left:10px}
+.offline-badge{background:rgba(255,100,100,0.2);color:#ff6464;padding:4px 12px;border-radius:10px;font-size:11px;margin-left:10px}
+@media(max-width:600px){.header h1{font-size:22px}.board-wrapper{max-width:95vw}.btn,.menu-btn{padding:10px 18px;font-size:13px}}
 </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>️ Шашки Online <span id="onlineBadge" class="offline-badge">ОФФЛАЙН</span></h1>
-    <div class="stats">
-        <div class="stat">Победы: <span id="wins">0</span></div>
-        <div class="stat">Поражения: <span id="losses">0</span></div>
-    </div>
+<h1>♟️ Шашки Online <span id="onlineBadge" class="offline-badge">ОФФЛАЙН</span></h1>
+<div class="stats">
+<div class="stat">Победы: <span id="wins">0</span></div>
+<div class="stat">Поражения: <span id="losses">0</span></div>
+</div>
 </div>
 
-<div class="container" id="mainContainer">
-    <div class="menu-screen" id="menuScreen">
-        <button class="menu-btn" onclick="startAIGame()"><span class="icon"></span> Играть с ИИ</button>
-        <button class="menu-btn" onclick="createRoom()"><span class="icon"></span> Создать комнату</button>
-        <button class="menu-btn" onclick="showScreen('join')"><span class="icon"></span> Присоединиться по коду</button>
-        <button class="menu-btn" onclick="quickMatch()"><span class="icon"></span> Быстрая игра</button>
-    </div>
+<div class="container">
+<div class="menu-screen" id="menuScreen">
+<button class="menu-btn" onclick="startAIGame()">🤖 Играть с ИИ</button>
+<button class="menu-btn" onclick="createRoom()">👥 Создать комнату</button>
+<button class="menu-btn" onclick="showJoinScreen()">🔗 Присоединиться по коду</button>
+<button class="menu-btn" onclick="quickMatch()">⚡ Быстрая игра</button>
+</div>
 
-    <div class="menu-screen" id="createRoomScreen" style="display:none;">
-        <h2 style="text-align:center; color:#ffd700;">Создать комнату</h2>
-        <p style="text-align:center; opacity:0.8;">Отправь этот код другу:</p>
-        <div class="room-code">
-            <div class="room-code-label">КОД КОМНАТЫ</div>
-            <div class="room-code-value" id="roomCodeDisplay">------</div>
-        </div>
-        <button class="menu-btn" onclick="copyRoomCode()"> Скопировать код</button>
-        <p style="text-align:center; opacity:0.7;" id="waitingText">Ожидание второго игрока...</p>
-        <button class="menu-btn secondary" onclick="cancelRoom()">Отмена</button>
-    </div>
+<div class="menu-screen" id="createRoomScreen" style="display:none">
+<h2 style="text-align:center;color:#ffd700">Создать комнату</h2>
+<p style="text-align:center;opacity:0.8">Отправь этот код другу:</p>
+<div class="room-code">
+<div class="room-code-label">КОД КОМНАТЫ</div>
+<div class="room-code-value" id="roomCodeDisplay">------</div>
+</div>
+<button class="menu-btn" onclick="copyRoomCode()">📋 Скопировать код</button>
+<p style="text-align:center;opacity:0.7">Ожидание второго игрока...</p>
+<button class="menu-btn secondary" onclick="cancelRoom()">Отмена</button>
+</div>
 
-    <div class="menu-screen" id="joinScreen" style="display:none;">
-        <h2 style="text-align:center; color:#ffd700;">Присоединиться</h2>
-        <p style="text-align:center; opacity:0.8;">Введи код комнаты:</p>
-        <input type="text" id="joinCodeInput" placeholder="------" maxlength="6">
-        <button class="menu-btn" onclick="joinRoom()">Присоединиться</button>
-        <button class="menu-btn secondary" onclick="showScreen('menu')">Назад</button>
-    </div>
+<div class="menu-screen" id="joinScreen" style="display:none">
+<h2 style="text-align:center;color:#ffd700">Присоединиться</h2>
+<p style="text-align:center;opacity:0.8">Введи код комнаты:</p>
+<input type="text" id="joinCodeInput" placeholder="------" maxlength="6">
+<button class="menu-btn" onclick="joinRoom()">Присоединиться</button>
+<button class="menu-btn secondary" onclick="showMenu()">Назад</button>
+</div>
 
-    <div class="menu-screen" id="searchingScreen" style="display:none;">
-        <div class="searching">
-            <div class="spinner"></div>
-            <h2 style="color:#ffd700;">Поиск соперника...</h2>
-            <p style="opacity:0.8;">Ищем игрока</p>
-        </div>
-        <button class="menu-btn secondary" onclick="cancelSearch()">Отмена</button>
-    </div>
+<div class="menu-screen" id="searchingScreen" style="display:none">
+<div class="searching">
+<div class="spinner"></div>
+<h2 style="color:#ffd700">Поиск соперника...</h2>
+<p style="opacity:0.8">Ищем игрока</p>
+</div>
+<button class="menu-btn secondary" onclick="cancelSearch()">Отмена</button>
+</div>
 
-    <div id="gameScreen" style="display:none; width:100%; max-width:560px;">
-        <div class="board-wrapper">
-            <div class="board" id="board"></div>
-        </div>
-        <div class="info-panel" id="infoPanel">Твой ход</div>
-        <div class="controls">
-            <button class="btn secondary" onclick="surrender()">Сдаться</button>
-            <button class="btn secondary" onclick="leaveGame()">Выйти</button>
-        </div>
-    </div>
+<div id="gameScreen" style="display:none;width:100%;max-width:560px">
+<div class="board-wrapper">
+<div class="board" id="board"></div>
+</div>
+<div class="info-panel" id="infoPanel">Твой ход</div>
+<div class="controls">
+<button class="btn secondary" onclick="surrender()">Сдаться</button>
+<button class="btn secondary" onclick="leaveGame()">Выйти</button>
+</div>
+</div>
 </div>
 
 <div class="modal" id="modal">
-    <div class="modal-content">
-        <h2 id="modalTitle">Победа!</h2>
-        <p id="modalText"></p>
-        <button class="btn" onclick="closeModal()" style="width:100%;">OK</button>
-    </div>
+<div class="modal-content">
+<h2 id="modalTitle">Победа!</h2>
+<p id="modalText"></p>
+<button class="btn" onclick="closeModal()" style="width:100%">OK</button>
+</div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script>
-const SIZE = 8;
-let board = [];
-let currentPlayer = 'white';
-let selected = null;
-let gameOver = false;
-let myColor = 'white';
-let isOnline = false;
-let roomId = null;
-let roomRef = null;
-let gameMode = 'ai';
-let aiDifficulty = 'medium';
-let stats = { wins: 0, losses: 0 };
-let firebaseReady = false;
-let db = null;
+const SIZE=8;
+let board=[],currentPlayer='white',selected=null,gameOver=false,myColor='white',isOnline=false,roomId=null,roomRef=null,gameMode='ai',aiDifficulty='medium',stats={wins:0,losses:0},firebaseReady=false,db=null;
 
-const saved = localStorage.getItem('checkersStats');
-if (saved) { try { stats = JSON.parse(saved); } catch(e) {} }
+const saved=localStorage.getItem('checkersStats');
+if(saved){try{stats=JSON.parse(saved)}catch(e){}}
 
-function initFirebase() {
-    return new Promise((resolve) => {
-        const script1 = document.createElement('script');
-        script1.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js';
-        script1.onload = () => {
-            const script2 = document.createElement('script');
-            script2.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js';
-            script2.onload = () => {
-                try {
-                    const firebaseConfig = {
-                        apiKey: "AIzaSyAzSOfIQgBZCWgUIbmelgScYUkASQnEuUY",
-                        authDomain: "checkers-online-e69c7.firebaseapp.com",
-                        databaseURL: "https://checkers-online-e69c7-default-rtdb.firebaseio.com",
-                        projectId: "checkers-online-e69c7",
-                        storageBucket: "checkers-online-e69c7.firebasestorage.app",
-                        messagingSenderId: "1096047488420",
-                        appId: "1:1096047488420:web:ca70692d2259244dabe531"
-                    };
-                    firebase.initializeApp(firebaseConfig);
-                    db = firebase.database();
-                    firebaseReady = true;
-                    document.getElementById('onlineBadge').textContent = 'ОНЛАЙН';
-                    document.getElementById('onlineBadge').className = 'online-badge';
-                    console.log('✅ Firebase подключен');
-                } catch(e) {
-                    console.error('❌ Firebase ошибка:', e);
-                }
-                resolve();
-            };
-            script2.onerror = () => {
-                document.getElementById('onlineBadge').textContent = 'НЕТ FB';
-                resolve();
-            };
-            document.head.appendChild(script2);
-        };
-        script1.onerror = () => {
-            document.getElementById('onlineBadge').textContent = 'НЕТ FB';
-            resolve();
-        };
-        document.head.appendChild(script1);
-    });
-}
-
-function showScreen(screen) {
-    document.getElementById('menuScreen').style.display = 'none';
-    document.getElementById('createRoomScreen').style.display = 'none';
-    document.getElementById('joinScreen').style.display = 'none';
-    document.getElementById('searchingScreen').style.display = 'none';
-    document.getElementById('gameScreen').style.display = 'none';
-    if (screen === 'menu') document.getElementById('menuScreen').style.display = 'flex';
-    else if (screen === 'join') document.getElementById('joinScreen').style.display = 'flex';
-}
-
-function updateStats() { 
-    const w = document.getElementById('wins');
-    const l = document.getElementById('losses');
-    if (w) w.textContent = stats.wins;
-    if (l) l.textContent = stats.losses;
-}
-
-function saveStats() { localStorage.setItem('checkersStats', JSON.stringify(stats)); }
-
-function showModal(title, text) {
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('modalText').textContent = text;
-    document.getElementById('modal').classList.add('active');
-}
-
-function closeModal() { 
-    document.getElementById('modal').classList.remove('active'); 
-    if (gameOver) showScreen('menu'); 
-}
-
-function initBoard() {
-    board = [];
-    for (let r = 0; r < SIZE; r++) {
-        board[r] = [];
-        for (let c = 0; c < SIZE; c++) {
-            if ((r + c) % 2 === 1) {
-                if (r < 3) board[r][c] = { color: 'black', king: false };
-                else if (r > 4) board[r][c] = { color: 'white', king: false };
-                else board[r][c] = null;
-            } else board[r][c] = null;
-        }
-    }
-}
-
-function boardToData() {
-    return board.map(row => row.map(cell => cell ? { color: cell.color, king: cell.king } : null));
-}
-
-function dataToBoard(data) {
-    if (!data) return [];
-    return data.map(row => row.map(cell => cell ? { color: cell.color, king: cell.king } : null));
-}
-
-function generateRoomCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-    return code;
-}
-
-function render() {
-    const boardEl = document.getElementById('board');
-    if (!boardEl) return;
-    boardEl.innerHTML = '';
-    
-    const validMoves = selected ? getValidMoves(selected.r, selected.c) : [];
-    const allCaptures = getAllCaptures(currentPlayer);
-    
-    for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-            const cell = document.createElement('div');
-            cell.className = `cell ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
-            if (selected && selected.r === r && selected.c === c) cell.classList.add('selected');
-            if (validMoves.some(m => m.r === r && m.c === c)) cell.classList.add('valid');
-            
-            const piece = board[r] && board[r][c];
-            if (piece) {
-                const pieceEl = document.createElement('div');
-                pieceEl.className = `piece ${piece.color} ${piece.king ? 'king' : ''}`;
-                if (allCaptures.some(m => m.fromR === r && m.fromC === c)) pieceEl.classList.add('must-capture');
-                cell.appendChild(pieceEl);
-            }
-            
-            cell.onclick = () => handleCellClick(r, c);
-            boardEl.appendChild(cell);
-        }
-    }
-    updateInfo();
-}
-
-function updateInfo() {
-    const panel = document.getElementById('infoPanel');
-    if (!panel) return;
-    if (gameOver) { 
-        panel.textContent = 'Игра окончена'; 
-        panel.className = 'info-panel'; 
-    } else if (isOnline) {
-        if (currentPlayer === myColor) { 
-            panel.textContent = 'Твой ход!'; 
-            panel.className = 'info-panel white-turn'; 
-        } else { 
-            panel.textContent = 'Ход соперника...'; 
-            panel.className = 'info-panel waiting'; 
-        }
-    } else {
-        panel.textContent = currentPlayer === 'white' ? 'Твой ход (белые)' : 'Ход ИИ (чёрные)';
-        panel.className = `info-panel ${currentPlayer}-turn`;
-    }
-}
-
-function handleCellClick(r, c) {
-    if (gameOver) return;
-    if (isOnline && currentPlayer !== myColor) return;
-    if (!isOnline && currentPlayer !== 'white') return;
-    
-    const piece = board[r] && board[r][c];
-    const allCaptures = getAllCaptures(currentPlayer);
-    
-    if (selected) {
-        const moves = getValidMoves(selected.r, selected.c);
-        const move = moves.find(m => m.r === r && m.c === c);
-        if (move) { executeMove(selected.r, selected.c, move); return; }
-        
-        if (piece && piece.color === currentPlayer) {
-            if (allCaptures.length > 0 && !allCaptures.some(m => m.fromR === r && m.fromC === c)) return;
-            selected = { r, c }; 
-            render();
-        } else { 
-            selected = null; 
-            render(); 
-        }
-    } else if (piece && piece.color === currentPlayer) {
-        if (allCaptures.length > 0 && !allCaptures.some(m => m.fromR === r && m.fromC === c)) return;
-        selected = { r, c }; 
-        render();
-    }
-}
-
-function executeMove(fromR, fromC, move) {
-    if (!board[move.r] || !board[fromR]) {
-        console.error('Ошибка доски:', { move, fromR, fromC });
-        return;
-    }
-    
-    const piece = board[fromR][fromC];
-    if (!piece) return;
-    
-    board[move.r][move.c] = piece;
-    board[fromR][fromC] = null;
-    move.captures.forEach(cap => { 
-        if (board[cap.r]) board[cap.r][cap.c] = null; 
-    });
-    
-    if ((piece.color === 'white' && move.r === 0) || (piece.color === 'black' && move.r === SIZE - 1)) {
-        piece.king = true;
-    }
-    
-    if (move.captures.length > 0 && !gameOver) {
-        const furtherCaptures = getCapturesFrom(move.r, move.c);
-        if (furtherCaptures.length > 0) { 
-            selected = { r: move.r, c: move.c }; 
-            render(); 
-            return; 
-        }
-    }
-    
-    selected = null;
-    
-    if (!gameOver) {
-        currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
-        if (isOnline && roomRef) {
-            roomRef.update({ 
-                board: boardToData(), 
-                currentPlayer: currentPlayer 
-            }).catch(err => console.error('Ошибка обновления:', err));
-        }
-        render();
-        checkGameOver();
-        
-        if (!gameOver && !isOnline && currentPlayer === 'black') {
-            setTimeout(aiTurn, 600);
-        }
-    }
-}
-
-function getValidMoves(r, c) {
-    const piece = board[r] && board[r][c];
-    if (!piece) return [];
-    
-    const captures = getCapturesFrom(r, c);
-    if (captures.length > 0) return captures;
-    
-    const moves = [];
-    const directions = piece.king ? [[-1,-1],[-1,1],[1,-1],[1,1]] : 
-                      piece.color === 'white' ? [[-1,-1],[-1,1]] : [[1,-1],[1,1]];
-    
-    directions.forEach(([dr, dc]) => {
-        if (piece.king) {
-            for (let i = 1; i < SIZE; i++) {
-                const nr = r + dr * i, nc = c + dc * i;
-                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) break;
-                if (board[nr] && board[nr][nc]) break;
-                moves.push({ r: nr, c: nc, captures: [] });
-            }
-        } else {
-            const nr = r + dr, nc = c + dc;
-            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && (!board[nr] || !board[nr][nc])) {
-                moves.push({ r: nr, c: nc, captures: [] });
-            }
-        }
-    });
-    
-    return moves;
-}
-
-function getCapturesFrom(r, c) {
-    const piece = board[r] && board[r][c];
-    if (!piece) return [];
-    
-    const captures = [];
-    const directions = [[-1,-1],[-1,1],[1,-1],[1,1]];
-    
-    directions.forEach(([dr, dc]) => {
-        if (piece.king) {
-            let foundEnemy = false, enemyR, enemyC;
-            for (let i = 1; i < SIZE; i++) {
-                const nr = r + dr * i, nc = c + dc * i;
-                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) break;
-                if (board[nr] && board[nr][nc]) {
-                    if (foundEnemy) break;
-                    if (board[nr][nc].color !== piece.color) { 
-                        foundEnemy = true; 
-                        enemyR = nr; 
-                        enemyC = nc; 
-                    } else break;
-                } else if (foundEnemy) {
-                    captures.push({ r: nr, c: nc, captures: [{ r: enemyR, c: enemyC }] });
-                }
-            }
-        } else {
-            const midR = r + dr, midC = c + dc, landR = r + dr * 2, landC = c + dc * 2;
-            if (landR >= 0 && landR < SIZE && landC >= 0 && landC < SIZE) {
-                const midPiece = board[midR] && board[midR][midC];
-                if (midPiece && midPiece.color !== piece.color && (!board[landR] || !board[landR][landC])) {
-                    captures.push({ r: landR, c: landC, captures: [{ r: midR, c: midC }] });
-                }
-            }
-        }
-    });
-    
-    return captures;
-}
-
-function getAllCaptures(color) {
-    const captures = [];
-    for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-            if (board[r] && board[r][c] && board[r][c].color === color) {
-                const caps = getCapturesFrom(r, c);
-                caps.forEach(cap => { 
-                    captures.push({ fromR: r, fromC: c, toR: cap.r, toC: cap.c, captures: cap.captures }); 
-                });
-            }
-        }
-    }
-    return captures;
-}
-
-function hasValidMoves(color) {
-    for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-            if (board[r] && board[r][c] && board[r][c].color === color) {
-                if (getValidMoves(r, c).length > 0) return true;
-            }
-        }
-    }
-    return false;
-}
-
-function checkGameOver() {
-    const whiteHasMoves = hasValidMoves('white');
-    const blackHasMoves = hasValidMoves('black');
-    
-    if (!whiteHasMoves || !blackHasMoves) {
-        gameOver = true;
-        if (!whiteHasMoves && !blackHasMoves) { 
-            showModal('Ничья!', 'У обоих игроков нет ходов.'); 
-        } else if (!whiteHasMoves) {
-            if (isOnline) { 
-                if (myColor === 'black') { stats.wins++; showModal('Победа!', 'Соперник сдался!'); } 
-                else { stats.losses++; showModal('Поражение', 'У тебя нет ходов.'); } 
-            } else { 
-                stats.losses++; 
-                showModal('Поражение', 'У тебя нет ходов. ИИ победил!'); 
-            }
-        } else {
-            if (isOnline) { 
-                if (myColor === 'white') { stats.wins++; showModal('Победа!', 'Соперник сдался!'); } 
-                else { stats.losses++; showModal('Поражение', 'У соперника нет ходов.'); } 
-            } else { 
-                stats.wins++; 
-                showModal('Победа!', 'У ИИ нет ходов. Ты выиграл!'); 
-            }
-        }
-        updateStats(); 
-        saveStats();
-        if (isOnline && roomRef) {
-            const winner = !whiteHasMoves ? 'black' : 'white';
-            roomRef.update({ status: 'finished', winner: winner });
-        }
-    }
-}
-
-function handleGameEnd(winner) {
-    if (gameOver) return;
-    gameOver = true;
-    if (winner === myColor) { 
-        stats.wins++; 
-        showModal('Победа!', 'Ты выиграл!'); 
-    } else if (winner) { 
-        stats.losses++; 
-        showModal('Поражение', 'Соперник победил.'); 
-    } else { 
-        showModal('Ничья!', 'Игра закончилась вничью.'); 
-    }
-    updateStats(); 
-    saveStats();
-}
-
-function surrender() {
-    if (!confirm('Ты уверен, что хочешь сдаться?')) return;
-    gameOver = true;
-    stats.losses++;
-    updateStats(); 
-    saveStats();
-    if (isOnline && roomRef) {
-        const winner = currentPlayer === 'white' ? 'black' : 'white';
-        roomRef.update({ status: 'finished', winner: winner });
-    }
-    showModal('Сдача', 'Ты сдался. Поражение.');
-}
-
-function leaveGame() {
-    if (isOnline && roomRef) {
-        const winner = currentPlayer === 'white' ? 'black' : 'white';
-        roomRef.update({ status: 'finished', winner: winner });
-        roomRef.off();
-    }
-    showScreen('menu');
-}
-
-function aiTurn() {
-    if (gameOver) return;
-    if (!hasValidMoves('black')) { checkGameOver(); return; }
-    
-    const allCaptures = getAllCaptures('black');
-    let moves = [];
-    
-    if (allCaptures.length > 0) {
-        moves = allCaptures.map(m => ({ 
-            fromR: m.fromR, fromC: m.fromC, 
-            toR: m.toR, toC: m.toC, 
-            captures: m.captures 
-        }));
-    } else {
-        for (let r = 0; r < SIZE; r++) {
-            for (let c = 0; c < SIZE; c++) {
-                if (board[r] && board[r][c] && board[r][c].color === 'black') {
-                    const validMoves = getValidMoves(r, c);
-                    validMoves.forEach(m => { 
-                        moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c, captures: m.captures }); 
-                    });
-                }
-            }
-        }
-    }
-    
-    if (moves.length === 0) { checkGameOver(); return; }
-    
-    let bestMove;
-    if (aiDifficulty === 'easy') {
-        bestMove = moves[Math.floor(Math.random() * moves.length)];
-    } else if (aiDifficulty === 'medium') {
-        bestMove = moves.reduce((best, move) => { 
-            const score = evaluateMove(move); 
-            return score > best.score ? { move, score } : best; 
-        }, { move: moves[0], score: -Infinity }).move;
-    } else {
-        bestMove = findBestMove(3);
-    }
-    
-    if (bestMove) {
-        const piece = board[bestMove.fromR][bestMove.fromC];
-        board[bestMove.toR][bestMove.toC] = piece;
-        board[bestMove.fromR][bestMove.fromC] = null;
-        bestMove.captures.forEach(cap => { board[cap.r][cap.c] = null; });
-        if (bestMove.toR === SIZE - 1) piece.king = true;
-        
-        if (!gameOver) { 
-            currentPlayer = 'white'; 
-            render(); 
-            checkGameOver(); 
-        }
-    }
-}
-
-function evaluateMove(move) {
-    let score = 0;
-    if (move.captures.length > 0) score += 10 * move.captures.length;
-    if (move.toR === SIZE - 1) score += 5;
-    score += Math.random() * 3;
-    return score;
-}
-
-function findBestMove(depth) {
-    let bestMove = null, bestScore = -Infinity;
-    const allCaptures = getAllCaptures('black');
-    let moves = [];
-    
-    if (allCaptures.length > 0) {
-        moves = allCaptures.map(m => ({ fromR: m.fromR, fromC: m.fromC, toR: m.toR, toC: m.toC, captures: m.captures }));
-    } else {
-        for (let r = 0; r < SIZE; r++) {
-            for (let c = 0; c < SIZE; c++) {
-                if (board[r] && board[r][c] && board[r][c].color === 'black') {
-                    const validMoves = getValidMoves(r, c);
-                    validMoves.forEach(m => { moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c, captures: m.captures }); });
-                }
-            }
-        }
-    }
-    
-    moves.forEach(move => {
-        const boardCopy = JSON.parse(JSON.stringify(board));
-        const piece = board[move.fromR][move.fromC];
-        board[move.toR][move.toC] = piece;
-        board[move.fromR][move.fromC] = null;
-        move.captures.forEach(cap => { board[cap.r][cap.c] = null; });
-        if (move.toR === SIZE - 1) piece.king = true;
-        
-        const score = minimax(depth - 1, false, -Infinity, Infinity);
-        board = boardCopy;
-        if (score > bestScore) { bestScore = score; bestMove = move; }
-    });
-    
-    return bestMove;
-}
-
-function minimax(depth, isMaximizing, alpha, beta) {
-    if (depth === 0) return evaluateBoard();
-    
-    const color = isMaximizing ? 'black' : 'white';
-    const allCaptures = getAllCaptures(color);
-    let moves = [];
-    
-    if (allCaptures.length > 0) {
-        moves = allCaptures.map(m => ({ fromR: m.fromR, fromC: m.fromC, toR: m.toR, toC: m.toC, captures: m.captures }));
-    } else {
-        for (let r = 0; r < SIZE; r++) {
-            for (let c = 0; c < SIZE; c++) {
-                if (board[r] && board[r][c] && board[r][c].color === color) {
-                    const validMoves = getValidMoves(r, c);
-                    validMoves.forEach(m => { moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c, captures: m.captures }); });
-                }
-            }
-        }
-    }
-    
-    if (moves.length === 0) return isMaximizing ? -100 : 100;
-    
-    if (isMaximizing) {
-        let maxEval = -Infinity;
-        for (const move of moves) {
-            const boardCopy = JSON.parse(JSON.stringify(board));
-            const piece = board[move.fromR][move.fromC];
-            board[move.toR][move.toC] = piece;
-            board[move.fromR][move.fromC] = null;
-            move.captures.forEach(cap => { board[cap.r][cap.c] = null; });
-            if (move.toR === SIZE - 1) piece.king = true;
-            const eval_ = minimax(depth - 1, false, alpha, beta);
-            board = boardCopy;
-            maxEval = Math.max(maxEval, eval_);
-            alpha = Math.max(alpha, eval_);
-            if (beta <= alpha) break;
-        }
-        return maxEval;
-    } else {
-        let minEval = Infinity;
-        for (const move of moves) {
-            const boardCopy = JSON.parse(JSON.stringify(board));
-            const piece = board[move.fromR][move.fromC];
-            board[move.toR][move.toC] = piece;
-            board[move.fromR][move.fromC] = null;
-            move.captures.forEach(cap => { board[cap.r][cap.c] = null; });
-            if (move.toR === 0) piece.king = true;
-            const eval_ = minimax(depth - 1, true, alpha, beta);
-            board = boardCopy;
-            minEval = Math.min(minEval, eval_);
-            beta = Math.min(beta, eval_);
-            if (beta <= alpha) break;
-        }
-        return minEval;
-    }
-}
-
-function evaluateBoard() {
-    let score = 0;
-    for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-            const piece = board[r] && board[r][c];
-            if (piece) { 
-                const value = piece.king ? 3 : 1; 
-                score += piece.color === 'black' ? value : -value; 
-            }
-        }
-    }
-    return score;
-}
-
-function startAIGame() {
-    gameMode = 'ai';
-    isOnline = false;
-    initBoard();
-    currentPlayer = 'white';
-    myColor = 'white';
-    selected = null;
-    gameOver = false;
-    document.getElementById('menuScreen').style.display = 'none';
-    document.getElementById('gameScreen').style.display = 'block';
-    render();
-}
-
-function createRoom() {
-    if (!firebaseReady) {
-        alert('Firebase не подключен. Проверь интернет.');
-        return;
-    }
-    
-    roomId = generateRoomCode();
-    roomRef = db.ref('rooms/' + roomId);
-    initBoard();
-    
-    roomRef.set({
-        status: 'waiting',
-        creator: 'player1',
-        board: boardToData(),
-        currentPlayer: 'white',
-        createdAt: Date.now(),
-        player1Color: 'white',
-        player2Color: 'black'
-    }).then(() => {
-        console.log('✅ Комната создана:', roomId);
-        document.getElementById('roomCodeDisplay').textContent = roomId;
-        document.getElementById('menuScreen').style.display = 'none';
-        document.getElementById('createRoomScreen').style.display = 'flex';
-        
-        roomRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-            
-            console.log('📡 Данные комнаты:', data.status);
-            
-            if (data.status === 'playing' && !isOnline) {
-                console.log('✅ Второй игрок присоединился');
-                isOnline = true;
-                myColor = 'white';
-                gameMode = 'online';
-                if (data.board) {
-                    board = dataToBoard(data.board);
-                    currentPlayer = data.currentPlayer || 'white';
-                }
-                gameOver = false;
-                document.getElementById('createRoomScreen').style.display = 'none';
-                document.getElementById('gameScreen').style.display = 'block';
-                render();
-            }
-            if (data.status === 'finished') handleGameEnd(data.winner);
-        });
-    }).catch(err => {
-        console.error('❌ Ошибка создания комнаты:', err);
-        alert('Не удалось создать комнату. Попробуй еще раз.');
-    });
-}
-
-function copyRoomCode() {
-    navigator.clipboard.writeText(roomId).then(() => alert('Код скопирован! Отправь его другу'));
-}
-
-function cancelRoom() {
-    if (roomRef) roomRef.remove();
-    showScreen('menu');
-}
-
-function joinRoom() {
-    if (!firebaseReady) {
-        alert('Firebase не подключен.');
-        return;
-    }
-    
-    const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
-    if (code.length !== 6) { alert('Введи 6-значный код'); return; }
-    
-    console.log('🔍 Поиск комнаты:', code);
-    roomRef = db.ref('rooms/' + code);
-    
-    roomRef.once('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) { 
-            alert('Комната не найдена. Проверь код.'); 
-            return; 
-        }
-        if (data.status !== 'waiting') { 
-            alert('Комната уже занята или игра началась.'); 
-            return; 
-        }
-        
-        console.log('✅ Комната найдена, присоединяемся...');
-        roomId = code;
-        isOnline = true;
-        myColor = 'black';
-        gameMode = 'online';
-        
-        roomRef.update({ 
-            status: 'playing',
-            player2: 'player2',
-            joinedAt: Date.now()
-        }).then(() => {
-            console.log('✅ Присоединились к комнате');
-            
-            if (data.board) {
-                board = dataToBoard(data.board);
-                currentPlayer = data.currentPlayer || 'white';
-            }
-            gameOver = false;
-            
-            document.getElementById('joinScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'block';
-            render();
-            
-            roomRef.on('value', (snap) => {
-                const d = snap.val();
-                if (!d) return;
-                
-                if (d.board && d.currentPlayer !== currentPlayer && !gameOver) {
-                    board = dataToBoard(d.board);
-                    currentPlayer = d.currentPlayer;
-                    render();
-                }
-                
-                if (d.status === 'finished') handleGameEnd(d.winner);
-            });
-        }).catch(err => {
-            console.error(' Ошибка присоединения:', err);
-            alert('Не удалось присоединиться. Попробуй еще раз.');
-        });
-    }).catch(err => {
-        console.error('❌ Ошибка поиска комнаты:', err);
-        alert('Ошибка подключения к Firebase.');
-    });
-}
-
-function quickMatch() {
-    if (!firebaseReady) {
-        alert('Firebase не подключен. Быстрая игра недоступна.');
-        return;
-    }
-    
-    document.getElementById('menuScreen').style.display = 'none';
-    document.getElementById('searchingScreen').style.display = 'flex';
-    
-    const queueRef = db.ref('quickQueue');
-    const myId = 'player_' + Date.now();
-    let gameStarted = false;
-    let checkInterval = null;
-    
-    function tryJoinExisting() {
-        if (gameStarted) return;
-        
-        queueRef.once('value', (snapshot) => {
-            if (gameStarted) return;
-            const players = snapshot.val();
-            
-            if (players) {
-                const waitingPlayers = Object.keys(players).filter(id => 
-                    id !== myId && players[id].status === 'waiting'
-                );
-                
-                if (waitingPlayers.length > 0) {
-                    const opponentId = waitingPlayers[0];
-                    const opponentData = players[opponentId];
-                    
-                    console.log('✅ Соперник найден:', opponentId);
-                    gameStarted = true;
-                    if (checkInterval) clearInterval(checkInterval);
-                    
-                    queueRef.child(opponentId).remove();
-                    queueRef.child(myId).remove();
-                    
-                    const roomId = opponentData.roomId;
-                    console.log('🎮 Присоединяемся к комнате:', roomId);
-                    
-                    joinQuickRoom(roomId, 'black');
-                    return;
-                }
-            }
-            
-            console.log(' Становимся в очередь...');
-            const myRoomId = 'quick_' + myId;
-            
-            queueRef.child(myId).set({ 
-                status: 'waiting',
-                timestamp: Date.now(),
-                roomId: myRoomId
-            }).then(() => {
-                createQuickRoom(myRoomId, 'white');
-            });
-        });
-    }
-    
-    function createQuickRoom(roomId, color) {
-        if (gameStarted) return;
-        
-        roomRef = db.ref('rooms/' + roomId);
-        initBoard();
-        
-        isOnline = true;
-        myColor = color;
-        gameMode = 'online';
-        gameOver = false;
-        currentPlayer = 'white';
-        
-        roomRef.set({ 
-            status: 'waiting',
-            board: boardToData(), 
-            currentPlayer: 'white',
-            player1: myId,
-            player1Color: 'white',
-            player2Color: 'black',
-            createdAt: Date.now()
-        }).then(() => {
-            console.log('✅ Комната создана, ждем соперника...');
-            
-            roomRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data || gameStarted) return;
-                
-                if (data.status === 'playing' && data.player2) {
-                    console.log('✅ Соперник присоединился!');
-                    gameStarted = true;
-                    if (checkInterval) clearInterval(checkInterval);
-                    queueRef.child(myId).remove();
-                    
-                    if (data.board) {
-                        board = dataToBoard(data.board);
-                        currentPlayer = data.currentPlayer || 'white';
-                    }
-                    
-                    document.getElementById('searchingScreen').style.display = 'none';
-                    document.getElementById('gameScreen').style.display = 'block';
-                    render();
-                    
-                    roomRef.on('value', (snap) => {
-                        const d = snap.val();
-                        if (!d) return;
-                        if (d.board && d.currentPlayer !== currentPlayer && !gameOver) {
-                            board = dataToBoard(d.board);
-                            currentPlayer = d.currentPlayer;
-                            render();
-                        }
-                        if (d.status === 'finished') handleGameEnd(d.winner);
-                    });
-                }
-            });
-        }).catch(err => {
-            console.error('❌ Ошибка:', err);
-            alert('Не удалось создать игру.');
-            showScreen('menu');
-        });
-    }
-    
-    function joinQuickRoom(roomId, color) {
-        roomRef = db.ref('rooms/' + roomId);
-        
-        roomRef.once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) {
-                alert('Комната не найдена');
-                showScreen('menu');
-                return;
-            }
-            
-            initBoard();
-            isOnline = true;
-            myColor = color;
-            gameMode = 'online';
-            gameOver = false;
-            currentPlayer = 'white';
-            
-            roomRef.update({
-                status: 'playing',
-                player2: myId
-            }).then(() => {
-                console.log('✅ Присоединились к комнате');
-                
-                if (data.board) {
-                    board = dataToBoard(data.board);
-                    currentPlayer = data.currentPlayer || 'white';
-                }
-                
-                document.getElementById('searchingScreen').style.display = 'none';
-                document.getElementById('gameScreen').style.display = 'block';
-                render();
-                
-                roomRef.on('value', (snap) => {
-                    const d = snap.val();
-                    if (!d) return;
-                    if (d.board && d.currentPlayer !== currentPlayer && !gameOver) {
-                        board = dataToBoard(d.board);
-                        currentPlayer = d.currentPlayer;
-                        render();
-                    }
-                    if (d.status === 'finished') handleGameEnd(d.winner);
-                });
-            }).catch(err => {
-                console.error('❌ Ошибка:', err);
-                alert('Не удалось присоединиться.');
-                showScreen('menu');
-            });
-        });
-    }
-    
-    tryJoinExisting();
-    
-    checkInterval = setInterval(() => {
-        if (gameStarted) {
-            clearInterval(checkInterval);
-            return;
-        }
-        tryJoinExisting();
-    }, 3000);
-    
-    setTimeout(() => {
-        if (!gameStarted) {
-            gameStarted = true;
-            clearInterval(checkInterval);
-            queueRef.child(myId).remove();
-            if (roomRef) roomRef.remove();
-            alert('Не удалось найти соперника за 30 секунд.');
-            showScreen('menu');
-        }
-    }, 30000);
-}
-
-function cancelSearch() {
-    if (firebaseReady) db.ref('quickQueue').remove();
-    showScreen('menu');
-}
-
-initFirebase().then(() => {
-    updateStats();
-    showScreen('menu');
+firebase.initializeApp({
+apiKey:"AIzaSyAzSOfIQgBZCWgUIbmelgScYUkASQnEuUY",
+authDomain:"checkers-online-e69c7.firebaseapp.com",
+databaseURL:"https://checkers-online-e69c7-default-rtdb.firebaseio.com",
+projectId:"checkers-online-e69c7",
+storageBucket:"checkers-online-e69c7.firebasestorage.app",
+messagingSenderId:"1096047488420",
+appId:"1:1096047488420:web:ca70692d2259244dabe531"
 });
+db=firebase.database();
+firebaseReady=true;
+document.getElementById('onlineBadge').textContent='ОНЛАЙН';
+document.getElementById('onlineBadge').className='online-badge';
+console.log('✅ Firebase подключен');
+
+function showMenu(){
+document.getElementById('menuScreen').style.display='flex';
+document.getElementById('createRoomScreen').style.display='none';
+document.getElementById('joinScreen').style.display='none';
+document.getElementById('searchingScreen').style.display='none';
+document.getElementById('gameScreen').style.display='none';
+}
+
+function showJoinScreen(){
+document.getElementById('menuScreen').style.display='none';
+document.getElementById('createRoomScreen').style.display='none';
+document.getElementById('searchingScreen').style.display='none';
+document.getElementById('gameScreen').style.display='none';
+document.getElementById('joinScreen').style.display='flex';
+}
+
+function updateStats(){
+const w=document.getElementById('wins');
+const l=document.getElementById('losses');
+if(w)w.textContent=stats.wins;
+if(l)l.textContent=stats.losses;
+}
+
+function saveStats(){localStorage.setItem('checkersStats',JSON.stringify(stats))}
+
+function showModal(title,text){
+document.getElementById('modalTitle').textContent=title;
+document.getElementById('modalText').textContent=text;
+document.getElementById('modal').classList.add('active');
+}
+
+function closeModal(){
+document.getElementById('modal').classList.remove('active');
+if(gameOver)showMenu();
+}
+
+function initBoard(){
+board=[];
+for(let r=0;r<SIZE;r++){
+board[r]=[];
+for(let c=0;c<SIZE;c++){
+if((r+c)%2===1){
+if(r<3)board[r][c]={color:'black',king:false};
+else if(r>4)board[r][c]={color:'white',king:false};
+else board[r][c]=null;
+}else board[r][c]=null;
+}
+}
+}
+
+function boardToData(){return board.map(row=>row.map(cell=>cell?{color:cell.color,king:cell.king}:null))}
+
+function dataToBoard(data){
+if(!data)return[];
+return data.map(row=>row.map(cell=>cell?{color:cell.color,king:cell.king}:null));
+}
+
+function generateRoomCode(){
+const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+let code='';
+for(let i=0;i<6;i++)code+=chars[Math.floor(Math.random()*chars.length)];
+return code;
+}
+
+function render(){
+const boardEl=document.getElementById('board');
+if(!boardEl)return;
+boardEl.innerHTML='';
+const validMoves=selected?getValidMoves(selected.r,selected.c):[];
+const allCaptures=getAllCaptures(currentPlayer);
+for(let r=0;r<SIZE;r++){
+for(let c=0;c<SIZE;c++){
+const cell=document.createElement('div');
+cell.className='cell '+((r+c)%2===0?'light':'dark');
+if(selected&&selected.r===r&&selected.c===c)cell.classList.add('selected');
+if(validMoves.some(m=>m.r===r&&m.c===c))cell.classList.add('valid');
+const piece=board[r]&&board[r][c];
+if(piece){
+const pieceEl=document.createElement('div');
+pieceEl.className='piece '+piece.color+(piece.king?' king':'');
+if(allCaptures.some(m=>m.fromR===r&&m.fromC===c))pieceEl.classList.add('must-capture');
+cell.appendChild(pieceEl);
+}
+cell.onclick=(()=>{const rr=r,cc=c;return()=>handleCellClick(rr,cc)})();
+boardEl.appendChild(cell);
+}
+}
+updateInfo();
+}
+
+function updateInfo(){
+const panel=document.getElementById('infoPanel');
+if(!panel)return;
+if(gameOver){panel.textContent='Игра окончена';panel.className='info-panel'}
+else if(isOnline){
+if(currentPlayer===myColor){panel.textContent='Твой ход!';panel.className='info-panel white-turn'}
+else{panel.textContent='Ход соперника...';panel.className='info-panel waiting'}
+}else{
+panel.textContent=currentPlayer==='white'?'Твой ход (белые)':'Ход ИИ (чёрные)';
+panel.className='info-panel '+(currentPlayer==='white'?'white-turn':'black-turn');
+}
+}
+
+function handleCellClick(r,c){
+if(gameOver)return;
+if(isOnline&&currentPlayer!==myColor)return;
+if(!isOnline&&currentPlayer!=='white')return;
+const piece=board[r]&&board[r][c];
+const allCaptures=getAllCaptures(currentPlayer);
+if(selected){
+const moves=getValidMoves(selected.r,selected.c);
+const move=moves.find(m=>m.r===r&&m.c===c);
+if(move){executeMove(selected.r,selected.c,move);return}
+if(piece&&piece.color===currentPlayer){
+if(allCaptures.length>0&&!allCaptures.some(m=>m.fromR===r&&m.fromC===c))return;
+selected={r,c};render();
+}else{selected=null;render()}
+}else if(piece&&piece.color===currentPlayer){
+if(allCaptures.length>0&&!allCaptures.some(m=>m.fromR===r&&m.fromC===c))return;
+selected={r,c};render();
+}
+}
+
+function executeMove(fromR,fromC,move){
+if(!board[move.r]||!board[fromR]){console.error('Ошибка доски');return}
+const piece=board[fromR][fromC];
+if(!piece)return;
+board[move.r][move.c]=piece;
+board[fromR][fromC]=null;
+move.captures.forEach(cap=>{if(board[cap.r])board[cap.r][cap.c]=null});
+if((piece.color==='white'&&move.r===0)||(piece.color==='black'&&move.r===SIZE-1))piece.king=true;
+if(move.captures.length>0&&!gameOver){
+const further=getCapturesFrom(move.r,move.c);
+if(further.length>0){selected={r:move.r,c:move.c};render();return}
+}
+selected=null;
+if(!gameOver){
+currentPlayer=currentPlayer==='white'?'black':'white';
+if(isOnline&&roomRef){
+roomRef.update({board:boardToData(),currentPlayer:currentPlayer}).catch(e=>console.error(e));
+}
+render();
+checkGameOver();
+if(!gameOver&&!isOnline&&currentPlayer==='black')setTimeout(aiTurn,600);
+}
+}
+
+function getValidMoves(r,c){
+const piece=board[r]&&board[r][c];
+if(!piece)return[];
+const captures=getCapturesFrom(r,c);
+if(captures.length>0)return captures;
+const moves=[];
+const directions=piece.king?[[-1,-1],[-1,1],[1,-1],[1,1]]:piece.color==='white'?[[-1,-1],[-1,1]]:[[1,-1],[1,1]];
+directions.forEach(([dr,dc])=>{
+if(piece.king){
+for(let i=1;i<SIZE;i++){
+const nr=r+dr*i,nc=c+dc*i;
+if(nr<0||nr>=SIZE||nc<0||nc>=SIZE)break;
+if(board[nr]&&board[nr][nc])break;
+moves.push({r:nr,c:nc,captures:[]});
+}
+}else{
+const nr=r+dr,nc=c+dc;
+if(nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&(!board[nr]||!board[nr][nc]))moves.push({r:nr,c:nc,captures:[]});
+}
+});
+return moves;
+}
+
+function getCapturesFrom(r,c){
+const piece=board[r]&&board[r][c];
+if(!piece)return[];
+const captures=[];
+const directions=[[-1,-1],[-1,1],[1,-1],[1,1]];
+directions.forEach(([dr,dc])=>{
+if(piece.king){
+let found=false,er,ec;
+for(let i=1;i<SIZE;i++){
+const nr=r+dr*i,nc=c+dc*i;
+if(nr<0||nr>=SIZE||nc<0||nc>=SIZE)break;
+if(board[nr]&&board[nr][nc]){
+if(found)break;
+if(board[nr][nc].color!==piece.color){found=true;er=nr;ec=nc}
+else break;
+}else if(found)captures.push({r:nr,c:nc,captures:[{r:er,c:ec}]});
+}
+}else{
+const midR=r+dr,midC=c+dc,landR=r+dr*2,landC=c+dc*2;
+if(landR>=0&&landR<SIZE&&landC>=0&&landC<SIZE){
+const mid=board[midR]&&board[midR][midC];
+if(mid&&mid.color!==piece.color&&(!board[landR]||!board[landR][landC]))captures.push({r:landR,c:landC,captures:[{r:midR,c:midC}]});
+}
+}
+});
+return captures;
+}
+
+function getAllCaptures(color){
+const captures=[];
+for(let r=0;r<SIZE;r++){
+for(let c=0;c<SIZE;c++){
+if(board[r]&&board[r][c]&&board[r][c].color===color){
+const caps=getCapturesFrom(r,c);
+caps.forEach(cap=>captures.push({fromR:r,fromC:c,toR:cap.r,toC:cap.c,captures:cap.captures}));
+}
+}
+}
+return captures;
+}
+
+function hasValidMoves(color){
+for(let r=0;r<SIZE;r++){
+for(let c=0;c<SIZE;c++){
+if(board[r]&&board[r][c]&&board[r][c].color===color){
+if(getValidMoves(r,c).length>0)return true;
+}
+}
+}
+return false;
+}
+
+function checkGameOver(){
+const w=hasValidMoves('white'),b=hasValidMoves('black');
+if(!w||!b){
+gameOver=true;
+if(!w&&!b)showModal('Ничья!','У обоих нет ходов');
+else if(!w){
+if(isOnline){if(myColor==='black'){stats.wins++;showModal('Победа!','Соперник сдался!')}else{stats.losses++;showModal('Поражение','У тебя нет ходов')}}
+else{stats.losses++;showModal('Поражение','У тебя нет ходов. ИИ победил!')}
+}else{
+if(isOnline){if(myColor==='white'){stats.wins++;showModal('Победа!','Соперник сдался!')}else{stats.losses++;showModal('Поражение','У соперника нет ходов')}}
+else{stats.wins++;showModal('Победа!','У ИИ нет ходов. Ты выиграл!')}
+}
+updateStats();saveStats();
+if(isOnline&&roomRef){
+const winner=!w?'black':'white';
+roomRef.update({status:'finished',winner:winner});
+}
+}
+}
+
+function handleGameEnd(winner){
+if(gameOver)return;
+gameOver=true;
+if(winner===myColor){stats.wins++;showModal('Победа!','Ты выиграл!')}
+else if(winner){stats.losses++;showModal('Поражение','Соперник победил')}
+else showModal('Ничья!','Игра закончилась вничью');
+updateStats();saveStats();
+}
+
+function surrender(){
+if(!confirm('Ты уверен?'))return;
+gameOver=true;stats.losses++;updateStats();saveStats();
+if(isOnline&&roomRef){
+const winner=currentPlayer==='white'?'black':'white';
+roomRef.update({status:'finished',winner:winner});
+}
+showModal('Сдача','Ты сдался. Поражение.');
+}
+
+function leaveGame(){
+if(isOnline&&roomRef){
+const winner=currentPlayer==='white'?'black':'white';
+roomRef.update({status:'finished',winner:winner});
+roomRef.off();
+}
+showMenu();
+}
+
+function aiTurn(){
+if(gameOver)return;
+if(!hasValidMoves('black')){checkGameOver();return}
+const all=getAllCaptures('black');
+let moves=[];
+if(all.length>0)moves=all.map(m=>({fromR:m.fromR,fromC:m.fromC,toR:m.toR,toC:m.toC,captures:m.captures}));
+else{
+for(let r=0;r<SIZE;r++){
+for(let c=0;c<SIZE;c++){
+if(board[r]&&board[r][c]&&board[r][c].color==='black'){
+const vm=getValidMoves(r,c);
+vm.forEach(m=>moves.push({fromR:r,fromC:c,toR:m.r,toC:m.c,captures:m.captures}));
+}
+}
+}
+}
+if(moves.length===0){checkGameOver();return}
+let best=moves[Math.floor(Math.random()*moves.length)];
+let bestScore=-Infinity;
+moves.forEach(move=>{
+let score=0;
+if(move.captures.length>0)score+=10*move.captures.length;
+if(move.toR===SIZE-1)score+=5;
+score+=Math.random()*3;
+if(score>bestScore){bestScore=score;best=move}
+});
+if(best){
+const piece=board[best.fromR][best.fromC];
+board[best.toR][best.toC]=piece;
+board[best.fromR][best.fromC]=null;
+best.captures.forEach(cap=>{if(board[cap.r])board[cap.r][cap.c]=null});
+if(best.toR===SIZE-1)piece.king=true;
+if(!gameOver){currentPlayer='white';render();checkGameOver()}
+}
+}
+
+function startAIGame(){
+gameMode='ai';isOnline=false;
+initBoard();currentPlayer='white';myColor='white';selected=null;gameOver=false;
+document.getElementById('menuScreen').style.display='none';
+document.getElementById('gameScreen').style.display='block';
+render();
+}
+
+function createRoom(){
+if(!firebaseReady){alert('Firebase не подключен');return}
+roomId=generateRoomCode();
+roomRef=db.ref('rooms/'+roomId);
+initBoard();
+roomRef.set({
+status:'waiting',creator:'player1',board:boardToData(),currentPlayer:'white',
+createdAt:Date.now(),player1Color:'white',player2Color:'black'
+}).then(()=>{
+console.log('✅ Комната создана:',roomId);
+document.getElementById('roomCodeDisplay').textContent=roomId;
+document.getElementById('menuScreen').style.display='none';
+document.getElementById('createRoomScreen').style.display='flex';
+roomRef.on('value',snapshot=>{
+const data=snapshot.val();
+if(!data)return;
+if(data.status==='playing'&&!isOnline){
+console.log('✅ Второй игрок присоединился');
+isOnline=true;myColor='white';gameMode='online';
+if(data.board){board=dataToBoard(data.board);currentPlayer=data.currentPlayer||'white'}
+gameOver=false;
+document.getElementById('createRoomScreen').style.display='none';
+document.getElementById('gameScreen').style.display='block';
+render();
+}
+if(data.status==='finished')handleGameEnd(data.winner);
+});
+}).catch(err=>{console.error(err);alert('Не удалось создать комнату')});
+}
+
+function copyRoomCode(){
+navigator.clipboard.writeText(roomId).then(()=>alert('Код скопирован!'));
+}
+
+function cancelRoom(){
+if(roomRef)roomRef.remove();
+showMenu();
+}
+
+function joinRoom(){
+if(!firebaseReady){alert('Firebase не подключен');return}
+const code=document.getElementById('joinCodeInput').value.trim().toUpperCase();
+if(code.length!==6){alert('Введи 6-значный код');return}
+roomRef=db.ref('rooms/'+code);
+roomRef.once('value',snapshot=>{
+const data=snapshot.val();
+if(!data){alert('Комната не найдена');return}
+if(data.status!=='waiting'){alert('Комната уже занята');return}
+console.log('✅ Присоединяемся к комнате');
+roomId=code;isOnline=true;myColor='black';gameMode='online';
+roomRef.update({status:'playing',player2:'player2',joinedAt:Date.now()}).then(()=>{
+if(data.board){board=dataToBoard(data.board);currentPlayer=data.currentPlayer||'white'}
+gameOver=false;
+document.getElementById('joinScreen').style.display='none';
+document.getElementById('gameScreen').style.display='block';
+render();
+roomRef.on('value',snap=>{
+const d=snap.val();
+if(!d)return;
+if(d.board&&d.currentPlayer!==currentPlayer&&!gameOver){
+board=dataToBoard(d.board);currentPlayer=d.currentPlayer;render();
+}
+if(d.status==='finished')handleGameEnd(d.winner);
+});
+}).catch(err=>{console.error(err);alert('Не удалось присоединиться')});
+}).catch(err=>{console.error(err);alert('Ошибка подключения')});
+}
+
+let quickSearchInterval=null;
+let quickGameStarted=false;
+
+function quickMatch(){
+if(!firebaseReady){alert('Firebase не подключен');return}
+document.getElementById('menuScreen').style.display='none';
+document.getElementById('searchingScreen').style.display='flex';
+
+const queueRef=db.ref('quickQueue');
+const myId='player_'+Date.now();
+quickGameStarted=false;
+
+function tryFind(){
+if(quickGameStarted)return;
+queueRef.once('value',snap=>{
+if(quickGameStarted)return;
+const players=snap.val();
+if(players){
+const waiting=Object.keys(players).filter(id=>id!==myId&&players[id].status==='waiting');
+if(waiting.length>0){
+const oppId=waiting[0];
+const oppData=players[oppId];
+console.log('✅ Соперник найден:',oppId);
+quickGameStarted=true;
+if(quickSearchInterval)clearInterval(quickSearchInterval);
+queueRef.child(oppId).remove();
+queueRef.child(myId).remove();
+joinQuickRoom(oppData.roomId,'black');
+return;
+}
+}
+console.log('⏳ Становимся в очередь...');
+const myRoomId='quick_'+myId;
+queueRef.child(myId).set({status:'waiting',timestamp:Date.now(),roomId:myRoomId}).then(()=>{
+createQuickRoom(myRoomId,'white',myId);
+});
+});
+}
+
+function createQuickRoom(roomId,color,playerId){
+if(quickGameStarted)return;
+roomRef=db.ref('rooms/'+roomId);
+initBoard();
+isOnline=true;myColor=color;gameMode='online';gameOver=false;currentPlayer='white';
+roomRef.set({
+status:'waiting',board:boardToData(),currentPlayer:'white',
+player1:playerId,player1Color:'white',player2Color:'black',createdAt:Date.now()
+}).then(()=>{
+console.log('✅ Ждем соперника...');
+roomRef.on('value',snap=>{
+const data=snap.val();
+if(!data||quickGameStarted)return;
+if(data.status==='playing'&&data.player2){
+console.log('✅ Соперник присоединился!');
+quickGameStarted=true;
+if(quickSearchInterval)clearInterval(quickSearchInterval);
+queueRef.child(playerId).remove();
+if(data.board){board=dataToBoard(data.board);currentPlayer=data.currentPlayer||'white'}
+document.getElementById('searchingScreen').style.display='none';
+document.getElementById('gameScreen').style.display='block';
+render();
+roomRef.on('value',s=>{
+const d=s.val();
+if(!d)return;
+if(d.board&&d.currentPlayer!==currentPlayer&&!gameOver){
+board=dataToBoard(d.board);currentPlayer=d.currentPlayer;render();
+}
+if(d.status==='finished')handleGameEnd(d.winner);
+});
+}
+});
+}).catch(err=>{console.error(err);alert('Ошибка');showMenu()});
+}
+
+function joinQuickRoom(roomId,color){
+roomRef=db.ref('rooms/'+roomId);
+roomRef.once('value',snap=>{
+const data=snap.val();
+if(!data){alert('Комната не найдена');showMenu();return}
+initBoard();isOnline=true;myColor=color;gameMode='online';gameOver=false;currentPlayer='white';
+roomRef.update({status:'playing',player2:myId}).then(()=>{
+console.log('✅ Присоединились');
+if(data.board){board=dataToBoard(data.board);currentPlayer=data.currentPlayer||'white'}
+document.getElementById('searchingScreen').style.display='none';
+document.getElementById('gameScreen').style.display='block';
+render();
+roomRef.on('value',snap=>{
+const d=snap.val();
+if(!d)return;
+if(d.board&&d.currentPlayer!==currentPlayer&&!gameOver){
+board=dataToBoard(d.board);currentPlayer=d.currentPlayer;render();
+}
+if(d.status==='finished')handleGameEnd(d.winner);
+});
+}).catch(err=>{console.error(err);alert('Ошибка');showMenu()});
+});
+}
+
+tryFind();
+quickSearchInterval=setInterval(()=>{if(!quickGameStarted)tryFind()},3000);
+setTimeout(()=>{
+if(!quickGameStarted){
+quickGameStarted=true;
+if(quickSearchInterval)clearInterval(quickSearchInterval);
+queueRef.child(myId).remove();
+if(roomRef)roomRef.remove();
+alert('Не удалось найти соперника за 30 секунд');
+showMenu();
+}
+},30000);
+}
+
+function cancelSearch(){
+if(firebaseReady)db.ref('quickQueue').remove();
+quickGameStarted=true;
+if(quickSearchInterval)clearInterval(quickSearchInterval);
+showMenu();
+}
+
+updateStats();
+showMenu();
 </script>
 </body>
 </html>
