@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Шашки Online</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; user-select:none; -webkit-tap-highlight-color:transparent; }
+body { background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%); min-height:100vh; color:#fff; display:flex; flex-direction:column; }
+.header { background:rgba(0,0,0,0.3); backdrop-filter:blur(10px); padding:12px 20px; text-align:center; border-bottom:2px solid #ffd700; }
+.header h1 { font-size:26px; color:#ffd700; text-shadow:0 0 10px rgba(255,215,0,0.5); }
+.stats { display:flex; justify-content:center; gap:15px; margin-top:8px; flex-wrap:wrap; }
+.stat { background:rgba(255,215,0,0.1); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,215,0,0.3); font-size:13px; }
+.stat span { color:#ffd700; font-weight:bold; }
+.container { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; gap:15px; }
+.menu-screen { width:100%; max-width:400px; display:flex; flex-direction:column; gap:12px; }
+.menu-btn { padding:18px 24px; background:linear-gradient(135deg,#ffd700,#ff8c00); border:none; border-radius:12px; color:#000; font-weight:bold; font-size:16px; cursor:pointer; transition:all 0.3s; box-shadow:0 4px 15px rgba(255,215,0,0.3); display:flex; align-items:center; gap:12px; justify-content:center; }
+.menu-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,215,0,0.5); }
+.menu-btn.secondary { background:rgba(255,255,255,0.1); color:#fff; border:2px solid rgba(255,255,255,0.3); box-shadow:none; }
+.menu-btn .icon { font-size:24px; }
+.board-wrapper { background:rgba(0,0,0,0.3); padding:10px; border-radius:15px; box-shadow:0 10px 40px rgba(0,0,0,0.5); width:100%; max-width:560px; }
+.board { display:grid; grid-template-columns:repeat(8,1fr); gap:0; border-radius:10px; overflow:hidden; width:100%; aspect-ratio:1; }
+.cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; transition:all 0.2s; }
+.cell.light { background:#f0d9b5; }
+.cell.dark { background:#b58863; }
+.cell.selected { background:#7fc97f !important; box-shadow:inset 0 0 15px rgba(0,0,0,0.5); }
+.cell.valid { background:#fff700 !important; box-shadow:inset 0 0 15px rgba(0,0,0,0.3); }
+.cell.valid::after { content:''; width:30%; height:30%; background:rgba(0,0,0,0.3); border-radius:50%; }
+.piece { width:85%; height:85%; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; transition:all 0.3s; box-shadow:0 4px 8px rgba(0,0,0,0.4), inset 0 -3px 6px rgba(0,0,0,0.2); position:relative; }
+.piece.white { background:linear-gradient(135deg,#fff 0%,#e0e0e0 100%); border:3px solid #999; }
+.piece.black { background:linear-gradient(135deg,#444 0%,#111 100%); border:3px solid #666; color:#fff; }
+.piece.king::before { content:'♔'; position:absolute; font-size:clamp(16px, 5vw, 28px); color:#ffd700; text-shadow:0 0 5px #000; }
+.piece.must-capture { animation:pulse 0.8s infinite; box-shadow:0 0 20px #ff0000; }
+@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+.info-panel { background:rgba(0,0,0,0.3); padding:12px 30px; border-radius:15px; text-align:center; font-size:18px; font-weight:bold; min-width:250px; }
+.info-panel.white-turn { border:2px solid #fff; box-shadow:0 0 20px rgba(255,255,255,0.3); }
+.info-panel.black-turn { border:2px solid #444; box-shadow:0 0 20px rgba(0,0,0,0.5); }
+.info-panel.waiting { border:2px solid #ffd700; animation:blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+.room-code { background:rgba(255,215,0,0.2); border:2px solid #ffd700; padding:15px 25px; border-radius:12px; text-align:center; margin:15px 0; }
+.room-code-label { font-size:12px; opacity:0.7; margin-bottom:5px; }
+.room-code-value { font-size:32px; font-weight:bold; color:#ffd700; letter-spacing:5px; font-family:monospace; }
+.controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+.btn { padding:12px 24px; background:linear-gradient(135deg,#ffd700,#ff8c00); border:none; border-radius:10px; color:#000; font-weight:bold; font-size:14px; cursor:pointer; transition:all 0.3s; }
+.btn:hover { transform:translateY(-2px); }
+.btn.secondary { background:rgba(255,255,255,0.1); color:#fff; border:2px solid rgba(255,255,255,0.3); }
+.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); }
+.modal.active { display:flex; }
+.modal-content { background:linear-gradient(135deg,#1e3c72,#2a5298); border-radius:20px; padding:30px; max-width:400px; width:100%; text-align:center; border:3px solid #ffd700; box-shadow:0 0 50px rgba(255,215,0,0.3); }
+.modal h2 { font-size:28px; margin-bottom:15px; color:#ffd700; }
+.modal p { margin-bottom:20px; font-size:16px; line-height:1.5; }
+.modal input { width:100%; padding:12px; margin:10px 0; border-radius:10px; border:2px solid #ffd700; background:rgba(0,0,0,0.5); color:#fff; font-size:16px; text-align:center; letter-spacing:3px; font-family:monospace; }
+.searching { text-align:center; padding:30px; }
+.searching .spinner { width:60px; height:60px; border:4px solid rgba(255,215,0,0.3); border-top-color:#ffd700; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 20px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@media (max-width:600px) {
+    .header h1 { font-size:22px; }
+    .stats { gap:8px; }
+    .stat { padding:5px 10px; font-size:11px; }
+    .board-wrapper { max-width:95vw; padding:8px; }
+    .info-panel { font-size:16px; padding:10px 20px; }
+    .btn, .menu-btn { padding:10px 18px; font-size:13px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>♟️ Шашки Online</h1>
+    <div class="stats">
+        <div class="stat">Победы: <span id="wins">0</span></div>
+        <div class="stat">Поражения: <span id="losses">0</span></div>
+    </div>
+</div>
+
+<div class="container" id="mainContainer">
+    <div class="menu-screen" id="menuScreen">
+        <button class="menu-btn" onclick="startAIGame()"><span class="icon">🤖</span> Играть с ИИ</button>
+        <button class="menu-btn" onclick="createRoom()"><span class="icon">👥</span> Создать комнату</button>
+        <button class="menu-btn" onclick="showScreen('join')"><span class="icon"></span> Присоединиться по коду</button>
+        <button class="menu-btn" onclick="quickMatch()"><span class="icon">⚡</span> Быстрая игра</button>
+    </div>
+
+    <div class="menu-screen" id="createRoomScreen" style="display:none;">
+        <h2 style="text-align:center; color:#ffd700; margin-bottom:10px;">Создать комнату</h2>
+        <p style="text-align:center; opacity:0.8; margin-bottom:20px;">Отправь этот код другу:</p>
+        <div class="room-code">
+            <div class="room-code-label">КОД КОМНАТЫ</div>
+            <div class="room-code-value" id="roomCodeDisplay">------</div>
+        </div>
+        <button class="menu-btn" onclick="copyRoomCode()">📋 Скопировать код</button>
+        <p style="text-align:center; opacity:0.7; font-size:14px;" id="waitingText">Ожидание второго игрока...</p>
+        <button class="menu-btn secondary" onclick="cancelRoom()">Отмена</button>
+    </div>
+
+    <div class="menu-screen" id="joinScreen" style="display:none;">
+        <h2 style="text-align:center; color:#ffd700; margin-bottom:10px;">Присоединиться</h2>
+        <p style="text-align:center; opacity:0.8; margin-bottom:20px;">Введи код комнаты:</p>
+        <input type="text" id="joinCodeInput" placeholder="------" maxlength="6" style="width:100%; padding:15px; font-size:24px; text-align:center; letter-spacing:5px; border-radius:12px; border:2px solid #ffd700; background:rgba(0,0,0,0.5); color:#fff; font-family:monospace;">
+        <button class="menu-btn" onclick="joinRoom()">Присоединиться</button>
+        <button class="menu-btn secondary" onclick="showScreen('menu')">Назад</button>
+    </div>
+
+    <div class="menu-screen" id="searchingScreen" style="display:none;">
+        <div class="searching">
+            <div class="spinner"></div>
+            <h2 style="color:#ffd700; margin-bottom:10px;">Поиск соперника...</h2>
+            <p style="opacity:0.8;" id="searchStatus">Ищем игрока</p>
+        </div>
+        <button class="menu-btn secondary" onclick="cancelSearch()">Отмена</button>
+    </div>
+
+    <div id="gameScreen" style="display:none; width:100%; max-width:560px;">
+        <div class="board-wrapper">
+            <div class="board" id="board"></div>
+        </div>
+        <div class="info-panel" id="infoPanel">Твой ход</div>
+        <div class="controls">
+            <button class="btn secondary" onclick="surrender()">Сдаться</button>
+            <button class="btn secondary" onclick="leaveGame()">Выйти</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Победа!</h2>
+        <p id="modalText"></p>
+        <button class="btn" onclick="closeModal()" style="width:100%;">OK</button>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+// ====== ТВОЙ FIREBASE CONFIG (уже вставлен) ======
+const firebaseConfig = {
+    apiKey: "AIzaSyAzSOfIQgBZCWgUIbmelgScYUkASQnEuUY",
+    authDomain: "checkers-online-e69c7.firebaseapp.com",
+    databaseURL: "https://checkers-online-e69c7-default-rtdb.firebaseio.com",
+    projectId: "checkers-online-e69c7",
+    storageBucket: "checkers-online-e69c7.firebasestorage.app",
+    messagingSenderId: "1096047488420",
+    appId: "1:1096047488420:web:ca70692d2259244dabe531"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const SIZE = 8;
+let board = [];
+let currentPlayer = 'white';
+let selected = null;
+let gameOver = false;
+let myColor = 'white';
+let isOnline = false;
+let roomId = null;
+let roomRef = null;
+let gameMode = 'ai';
+let aiDifficulty = 'medium';
+let stats = { wins: 0, losses: 0 };
+
+const saved = localStorage.getItem('checkersStats');
+if (saved) stats = JSON.parse(saved);
+updateStats();
+
+function showScreen(screen) {
+    document.getElementById('menuScreen').style.display = 'none';
+    document.getElementById('createRoomScreen').style.display = 'none';
+    document.getElementById('joinScreen').style.display = 'none';
+    document.getElementById('searchingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'none';
+    if (screen === 'menu') document.getElementById('menuScreen').style.display = 'flex';
+    else if (screen === 'join') document.getElementById('joinScreen').style.display = 'flex';
+}
+
+function startAIGame() {
+    gameMode = 'ai';
+    isOnline = false;
+    initBoard();
+    currentPlayer = 'white';
+    myColor = 'white';
+    selected = null;
+    gameOver = false;
+    document.getElementById('menuScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'block';
+    render();
+}
+
+function createRoom() {
+    roomId = generateRoomCode();
+    roomRef = db.ref('rooms/' + roomId);
+    initBoard();
+    roomRef.set({
+        status: 'waiting',
+        creator: 'player1',
+        board: boardToData(),
+        currentPlayer: 'white',
+        createdAt: Date.now()
+    });
+    document.getElementById('roomCodeDisplay').textContent = roomId;
+    document.getElementById('menuScreen').style.display = 'none';
+    document.getElementById('createRoomScreen').style.display = 'flex';
+    roomRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+        if (data.status === 'playing' && !isOnline) {
+            isOnline = true;
+            myColor = 'white';
+            gameMode = 'online';
+            board = dataToBoard(data.board);
+            currentPlayer = data.currentPlayer;
+            gameOver = false;
+            document.getElementById('createRoomScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            render();
+        }
+        if (data.status === 'finished') handleGameEnd(data.winner);
+    });
+}
+
+function copyRoomCode() {
+    navigator.clipboard.writeText(roomId).then(() => alert('Код скопирован! Отправь его другу'));
+}
+
+function cancelRoom() {
+    if (roomRef) roomRef.remove();
+    showScreen('menu');
+}
+
+function joinRoom() {
+    const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+    if (code.length !== 6) { alert('Введи 6-значный код'); return; }
+    roomRef = db.ref('rooms/' + code);
+    roomRef.once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) { alert('Комната не найдена'); return; }
+        if (data.status !== 'waiting') { alert('Комната уже занята'); return; }
+        roomId = code;
+        isOnline = true;
+        myColor = 'black';
+        gameMode = 'online';
+        roomRef.update({ status: 'playing', player2: 'player2' });
+        board = dataToBoard(data.board);
+        currentPlayer = data.currentPlayer;
+        gameOver = false;
+        document.getElementById('joinScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
+        render();
+        roomRef.on('value', (snapshot) => {
+            const d = snapshot.val();
+            if (!d) return;
+            if (d.currentPlayer !== currentPlayer && !gameOver) {
+                board = dataToBoard(d.board);
+                currentPlayer = d.currentPlayer;
+                render();
+            }
+            if (d.status === 'finished') handleGameEnd(d.winner);
+        });
+    });
+}
+
+function quickMatch() {
+    document.getElementById('menuScreen').style.display = 'none';
+    document.getElementById('searchingScreen').style.display = 'flex';
+    const searchRef = db.ref('quickMatch');
+    const myId = 'player_' + Date.now();
+    searchRef.child(myId).set({ timestamp: Date.now(), status: 'searching' });
+    searchRef.once('value', (snapshot) => {
+        const players = snapshot.val();
+        if (!players) return;
+        const waitingPlayers = Object.keys(players).filter(id => id !== myId && players[id].status === 'searching');
+        if (waitingPlayers.length > 0) {
+            startQuickGame(myId, waitingPlayers[0], searchRef);
+        } else {
+            searchRef.child(myId).on('value', (snap) => {
+                const data = snap.val();
+                if (data && data.status === 'matched') startQuickGame(myId, data.opponent, searchRef);
+            });
+            setTimeout(() => {
+                searchRef.child(myId).remove();
+                if (document.getElementById('searchingScreen').style.display !== 'none') {
+                    alert('Не удалось найти соперника. Попробуй позже.');
+                    showScreen('menu');
+                }
+            }, 30000);
+        }
+    });
+}
+
+function startQuickGame(myId, opponentId, searchRef) {
+    searchRef.child(myId).update({ status: 'matched', opponent: opponentId });
+    searchRef.child(opponentId).update({ status: 'matched', opponent: myId });
+    roomId = 'quick_' + Date.now();
+    roomRef = db.ref('rooms/' + roomId);
+    initBoard();
+    isOnline = true;
+    myColor = Math.random() < 0.5 ? 'white' : 'black';
+    gameMode = 'online';
+    gameOver = false;
+    roomRef.set({ status: 'playing', board: boardToData(), currentPlayer: 'white', player1: myId, player2: opponentId });
+    document.getElementById('searchingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'block';
+    render();
+    roomRef.on('value', (snapshot) => {
+        const d = snapshot.val();
+        if (!d) return;
+        if (d.currentPlayer !== currentPlayer && !gameOver) {
+            board = dataToBoard(d.board);
+            currentPlayer = d.currentPlayer;
+            render();
+        }
+        if (d.status === 'finished') handleGameEnd(d.winner);
+    });
+}
+
+function cancelSearch() {
+    db.ref('quickMatch').remove();
+    showScreen('menu');
+}
+
+function boardToData() {
+    return board.map(row => row.map(cell => cell ? { color: cell.color, king: cell.king } : null));
+}
+function dataToBoard(data) {
+    return data.map(row => row.map(cell => cell ? { color: cell.color, king: cell.king } : null));
+}
+function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+}
+
+function initBoard() {
+    board = [];
+    for (let r = 0; r < SIZE; r++) {
+        board[r] = [];
+        for (let c = 0; c < SIZE; c++) {
+            if ((r + c) % 2 === 1) {
+                if (r < 3) board[r][c] = { color: 'black', king: false };
+                else if (r > 4) board[r][c] = { color: 'white', king: false };
+                else board[r][c] = null;
+            } else board[r][c] = null;
+        }
+    }
+}
+
+function render() {
+    const boardEl = document.getElementById('board');
+    boardEl.innerHTML = '';
+    const validMoves = selected ? getValidMoves(selected.r, selected.c) : [];
+    const allCaptures = getAllCaptures(currentPlayer);
+    for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+            const cell = document.createElement('div');
+            cell.className = `cell ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+            if (selected && selected.r === r && selected.c === c) cell.classList.add('selected');
+            if (validMoves.some(m => m.r === r && m.c === c)) cell.classList.add('valid');
+            const piece = board[r][c];
+            if (piece) {
+                const pieceEl = document.createElement('div');
+                pieceEl.className = `piece ${piece.color} ${piece.king ? 'king' : ''}`;
+                if (allCaptures.some(m => m.fromR === r && m.fromC === c)) pieceEl.classList.add('must-capture');
+                cell.appendChild(pieceEl);
+            }
+            cell.onclick = () => handleCellClick(r, c);
+            boardEl.appendChild(cell);
+        }
+    }
+    updateInfo();
+}
+
+function updateInfo() {
+    const panel = document.getElementById('infoPanel');
+    if (gameOver) { panel.textContent = 'Игра окончена'; panel.className = 'info-panel'; }
+    else if (isOnline) {
+        if (currentPlayer === myColor) { panel.textContent = 'Твой ход!'; panel.className = 'info-panel white-turn'; }
+        else { panel.textContent = 'Ход соперника...'; panel.className = 'info-panel waiting'; }
+    } else {
+        panel.textContent = currentPlayer === 'white' ? 'Твой ход (белые)' : 'Ход ИИ (чёрные)';
+        panel.className = `info-panel ${currentPlayer}-turn`;
+    }
+}
+
+function handleCellClick(r, c) {
+    if (gameOver) return;
+    if (isOnline && currentPlayer !== myColor) return;
+    if (!isOnline && currentPlayer !== 'white') return;
+    const piece = board[r][c];
+    const allCaptures = getAllCaptures(currentPlayer);
+    if (selected) {
+        const moves = getValidMoves(selected.r, selected.c);
+        const move = moves.find(m => m.r === r && m.c === c);
+        if (move) { executeMove(selected.r, selected.c, move); return; }
+        if (piece && piece.color === currentPlayer) {
+            if (allCaptures.length > 0 && !allCaptures.some(m => m.fromR === r && m.fromC === c)) return;
+            selected = { r, c }; render();
+        } else { selected = null; render(); }
+    } else if (piece && piece.color === currentPlayer) {
+        if (allCaptures.length > 0 && !allCaptures.some(m => m.fromR === r && m.fromC === c)) return;
+        selected = { r, c }; render();
+    }
+}
+
+function executeMove(fromR, fromC, move) {
+    const piece = board[fromR][fromC];
+    board[move.r][move.c] = piece;
+    board[fromR][fromC] = null;
+    move.captures.forEach(cap => { board[cap.r][cap.c] = null; });
+    if ((piece.color === 'white' && move.r === 0) || (piece.color === 'black' && move.r === SIZE - 1)) piece.king = true;
+    if (move.captures.length > 0 && !gameOver) {
+        const furtherCaptures = getCapturesFrom(move.r, move.c);
+        if (furtherCaptures.length > 0) { selected = { r: move.r, c: move.c }; render(); return; }
+    }
+    selected = null;
+    if (!gameOver) {
+        currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+        if (isOnline) roomRef.update({ board: boardToData(), currentPlayer: currentPlayer });
+        render();
+        checkGameOver();
+        if (!gameOver && !isOnline && currentPlayer === 'black') setTimeout(aiTurn, 600);
+    }
+}
+
+function getValidMoves(r, c) {
+    const piece = board[r][c];
+    if (!piece) return [];
+    const captures = getCapturesFrom(r, c);
+    if (captures.length > 0) return captures;
+    const moves = [];
+    const directions = piece.king ? [[-1,-1],[-1,1],[1,-1],[1,1]] : piece.color === 'white' ? [[-1,-1],[-1,1]] : [[1,-1],[1,1]];
+    directions.forEach(([dr, dc]) => {
+        if (piece.king) {
+            for (let i = 1; i < SIZE; i++) {
+                const nr = r + dr * i, nc = c + dc * i;
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) break;
+                if (board[nr][nc]) break;
+                moves.push({ r: nr, c: nc, captures: [] });
+            }
+        } else {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !board[nr][nc]) moves.push({ r: nr, c: nc, captures: [] });
+        }
+    });
+    return moves;
+}
+
+function getCapturesFrom(r, c) {
+    const piece = board[r][c];
+    if (!piece) return [];
+    const captures = [];
+    const directions = [[-1,-1],[-1,1],[1,-1],[1,1]];
+    directions.forEach(([dr, dc]) => {
+        if (piece.king) {
+            let foundEnemy = false, enemyR, enemyC;
+            for (let i = 1; i < SIZE; i++) {
+                const nr = r + dr * i, nc = c + dc * i;
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) break;
+                if (board[nr][nc]) {
+                    if (foundEnemy) break;
+                    if (board[nr][nc].color !== piece.color) { foundEnemy = true; enemyR = nr; enemyC = nc; }
+                    else break;
+                } else if (foundEnemy) captures.push({ r: nr, c: nc, captures: [{ r: enemyR, c: enemyC }] });
+            }
+        } else {
+            const midR = r + dr, midC = c + dc, landR = r + dr * 2, landC = c + dc * 2;
+            if (landR >= 0 && landR < SIZE && landC >= 0 && landC < SIZE) {
+                const midPiece = board[midR][midC];
+                if (midPiece && midPiece.color !== piece.color && !board[landR][landC]) captures.push({ r: landR, c: landC, captures: [{ r: midR, c: midC }] });
+            }
+        }
+    });
+    return captures;
+}
+
+function getAllCaptures(color) {
+    const captures = [];
+    for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+            if (board[r][c] && board[r][c].color === color) {
+                const caps = getCapturesFrom(r, c);
+                caps.forEach(cap => { captures.push({ fromR: r, fromC: c, toR: cap.r, toC: cap.c, captures: cap.captures }); });
+            }
+        }
+    }
+    return captures;
+}
+
+function hasValidMoves(color) {
+    for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+            if (board[r][c] && board[r][c].color === color && getValidMoves(r, c).length > 0) return true;
+        }
+    }
+    return false;
+}
+
+function checkGameOver() {
+    const whiteHasMoves = hasValidMoves('white');
+    const blackHasMoves = hasValidMoves('black');
+    if (!whiteHasMoves || !blackHasMoves) {
+        gameOver = true;
+        if (!whiteHasMoves && !blackHasMoves) { showModal('Ничья!', 'У обоих игроков нет ходов.'); }
+        else if (!whiteHasMoves) {
+            if (isOnline) { if (myColor === 'black') { stats.wins++; showModal('Победа!', 'Соперник сдался!'); } else { stats.losses++; showModal('Поражение', 'У тебя нет ходов.'); } }
+            else { stats.losses++; showModal('Поражение', 'У тебя нет ходов. ИИ победил!'); }
+        } else {
+            if (isOnline) { if (myColor === 'white') { stats.wins++; showModal('Победа!', 'Соперник сдался!'); } else { stats.losses++; showModal('Поражение', 'У соперника нет ходов.'); } }
+            else { stats.wins++; showModal('Победа!', 'У ИИ нет ходов. Ты выиграл!'); }
+        }
+        updateStats(); saveStats();
+        if (isOnline && roomRef) {
+            const winner = !whiteHasMoves ? 'black' : 'white';
+            roomRef.update({ status: 'finished', winner: winner });
+        }
+    }
+}
+
+function handleGameEnd(winner) {
+    gameOver = true;
+    if (winner === myColor) { stats.wins++; showModal('Победа!', 'Ты выиграл!'); }
+    else if (winner) { stats.losses++; showModal('Поражение', 'Соперник победил.'); }
+    else { showModal('Ничья!', 'Игра закончилась вничью.'); }
+    updateStats(); saveStats();
+}
+
+function surrender() {
+    if (!confirm('Ты уверен, что хочешь сдаться?')) return;
+    gameOver = true;
+    stats.losses++;
+    updateStats(); saveStats();
+    if (isOnline && roomRef) {
+        const winner = currentPlayer === 'white' ? 'black' : 'white';
+        roomRef.update({ status: 'finished', winner: winner });
+    }
+    showModal('Сдача', 'Ты сдался. Поражение.');
+}
+
+function leaveGame() {
+    if (isOnline && roomRef) {
+        const winner = currentPlayer === 'white' ? 'black' : 'white';
+        roomRef.update({ status: 'finished', winner: winner });
+        roomRef.off();
+    }
+    showScreen('menu');
+}
+
+function aiTurn() {
+    if (gameOver) return;
+    if (!hasValidMoves('black')) { checkGameOver(); return; }
+    const allCaptures = getAllCaptures('black');
+    let moves = [];
+    if (allCaptures.length > 0) moves = allCaptures.map(m => ({ fromR: m.fromR, fromC: m.fromC, toR: m.toR, toC: m.toC, captures: m.captures }));
+    else {
+        for (let r = 0; r < SIZE; r++) {
+            for (let c = 0; c < SIZE; c++) {
+                if (board[r][c] && board[r][c].color === 'black') {
+                    const validMoves = getValidMoves(r, c);
+                    validMoves.forEach(m => { moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c, captures: m.captures }); });
+                }
+            }
+        }
+    }
+    if (moves.length === 0) { checkGameOver(); return; }
+    let bestMove = aiDifficulty === 'easy' ? moves[Math.floor(Math.random() * moves.length)] :
+        aiDifficulty === 'medium' ? moves.reduce((best, move) => { const score = evaluateMove(move); return score > best.score ? { move, score } : best; }, { move: moves[0], score: -Infinity }).move : findBestMove(3);
+    if (bestMove) {
+        const piece = board[bestMove.fromR][bestMove.fromC];
+        board[bestMove.toR][bestMove.toC] = piece;
+        board[bestMove.fromR][bestMove.fromC] = null;
+        bestMove.captures.forEach(cap => { board[cap.r][cap.c] = null; });
+        if (bestMove.toR === SIZE - 1) piece.king = true;
+        if (!gameOver) { currentPlayer = 'white'; render(); checkGameOver(); }
+    }
+}
+
+function evaluateMove(move) {
+    let score = 0;
+    if (move.captures.length > 0) score += 10 * move.captures.length;
+    if (move.toR === SIZE - 1) score += 5;
+    score += Math.random() * 3;
+    return score;
+}
+
+function findBestMove(depth) {
+    let bestMove = null, bestScore = -Infinity;
+    const allCaptures = getAllCaptures('black');
+    let moves = [];
+    if (allCaptures.length > 0) moves = allCaptures.map(m => ({ fromR: m.fromR, fromC: m.fromC, toR: m.toR, toC: m.toC, captures: m.captures }));
+    else {
+        for (let r = 0; r < SIZE; r++) {
+            for (let c = 0; c < SIZE; c++) {
+                if (board[r][c] && board[r][c].color === 'black') {
+                    const validMoves = getValidMoves(r, c);
+                    validMoves.forEach(m => { moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c, captures: m.captures }); });
+                }
+            }
+        }
+    }
+    moves.forEach(move => {
+        const boardCopy = JSON.parse(JSON.stringify(board));
+        const piece = board[move.fromR][move.fromC];
+        board[move.toR][move.toC] = piece;
+        board[move.fromR][move.fromC] = null;
+        move.captures.forEach(cap => { board[cap.r][cap.c] = null; });
+        if (move.toR === SIZE - 1) piece.king = true;
+        const score = minimax(depth - 1, false, -Infinity, Infinity);
+        board = boardCopy;
+        if (score > bestScore) { bestScore = score; bestMove = move; }
+    });
+    return bestMove;
+}
+
+function minimax(depth, isMaximizing, alpha, beta) {
+    if (depth === 0) return evaluateBoard();
+    const color = isMaximizing ? 'black' : 'white';
+    const allCaptures = getAllCaptures(color);
+    let moves = [];
+    if (allCaptures.length > 0) moves = allCaptures.map(m => ({ fromR: m.fromR, fromC: m.fromC, toR: m.toR, toC: m.toC, captures: m.captures }));
+    else {
+        for (let r = 0; r < SIZE; r++) {
+            for (let c = 0; c < SIZE; c++) {
+                if (board[r][c] && board[r][c].color === color) {
+                    const validMoves = getValidMoves(r, c);
+                    validMoves.forEach(m => { moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c, captures: m.captures }); });
+                }
+            }
+        }
+    }
+    if (moves.length === 0) return isMaximizing ? -100 : 100;
+    if (isMaximizing) {
+        let maxEval = -Infinity;
+        for (const move of moves) {
+            const boardCopy = JSON.parse(JSON.stringify(board));
+            const piece = board[move.fromR][move.fromC];
+            board[move.toR][move.toC] = piece;
+            board[move.fromR][move.fromC] = null;
+            move.captures.forEach(cap => { board[cap.r][cap.c] = null; });
+            if (move.toR === SIZE - 1) piece.king = true;
+            const eval_ = minimax(depth - 1, false, alpha, beta);
+            board = boardCopy;
+            maxEval = Math.max(maxEval, eval_);
+            alpha = Math.max(alpha, eval_);
+            if (beta <= alpha) break;
+        }
+        return maxEval;
+    } else {
+        let minEval = Infinity;
+        for (const move of moves) {
+            const boardCopy = JSON.parse(JSON.stringify(board));
+            const piece = board[move.fromR][move.fromC];
+            board[move.toR][move.toC] = piece;
+            board[move.fromR][move.fromC] = null;
+            move.captures.forEach(cap => { board[cap.r][cap.c] = null; });
+            if (move.toR === 0) piece.king = true;
+            const eval_ = minimax(depth - 1, true, alpha, beta);
+            board = boardCopy;
+            minEval = Math.min(minEval, eval_);
+            beta = Math.min(beta, eval_);
+            if (beta <= alpha) break;
+        }
+        return minEval;
+    }
+}
+
+function evaluateBoard() {
+    let score = 0;
+    for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+            const piece = board[r][c];
+            if (piece) { const value = piece.king ? 3 : 1; score += piece.color === 'black' ? value : -value; }
+        }
+    }
+    return score;
+}
+
+function showModal(title, text) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalText').textContent = text;
+    document.getElementById('modal').classList.add('active');
+}
+function closeModal() { document.getElementById('modal').classList.remove('active'); if (gameOver) showScreen('menu'); }
+function updateStats() { document.getElementById('wins').textContent = stats.wins; document.getElementById('losses').textContent = stats.losses; }
+function saveStats() { localStorage.setItem('checkersStats', JSON.stringify(stats)); }
+
+showScreen('menu');
+</script>
+</body>
+</html>
