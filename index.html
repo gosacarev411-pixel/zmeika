@@ -2,63 +2,55 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Шашки Online</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,sans-serif;user-select:none}
+*{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
 body{background:linear-gradient(135deg,#1e3c72,#2a5298);min-height:100vh;color:#fff;display:flex;flex-direction:column}
 .header{background:rgba(0,0,0,0.3);padding:12px 20px;text-align:center;border-bottom:2px solid #ffd700}
-.header h1{font-size:26px;color:#ffd700}
-.stats{display:flex;justify-content:center;gap:15px;margin-top:8px;flex-wrap:wrap}
-.stat{background:rgba(255,215,0,0.1);padding:6px 14px;border-radius:20px;border:1px solid rgba(255,215,0,0.3);font-size:13px}
+.header h1{font-size:24px;color:#ffd700}
+.stats{display:flex;justify-content:center;gap:15px;margin-top:8px}
+.stat{background:rgba(255,215,0,0.1);padding:6px 14px;border-radius:20px;font-size:13px}
 .stat span{color:#ffd700;font-weight:bold}
 .container{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;gap:15px}
 .menu-screen{width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
-.menu-btn{padding:18px 24px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:12px;color:#000;font-weight:bold;font-size:16px;cursor:pointer;box-shadow:0 4px 15px rgba(255,215,0,0.3);display:flex;align-items:center;gap:12px;justify-content:center}
+.menu-btn{padding:18px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:12px;color:#000;font-weight:bold;font-size:16px;cursor:pointer}
 .menu-btn.secondary{background:rgba(255,255,255,0.1);color:#fff;border:2px solid rgba(255,255,255,0.3)}
-.board-wrapper{background:rgba(0,0,0,0.3);padding:10px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,0.5);width:100%;max-width:560px}
+.board-wrapper{background:rgba(0,0,0,0.3);padding:10px;border-radius:15px;width:100%;max-width:500px}
 .board{display:grid;grid-template-columns:repeat(8,1fr);gap:0;border-radius:10px;overflow:hidden;width:100%;aspect-ratio:1}
-.cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .cell.light{background:#f0d9b5}
 .cell.dark{background:#b58863}
-.cell.selected{background:#7fc97f !important}
-.cell.valid{background:#fff700 !important}
+.cell.selected{background:#7fc97f!important}
+.cell.valid{background:#fff700!important}
 .cell.valid::after{content:'';width:30%;height:30%;background:rgba(0,0,0,0.3);border-radius:50%}
-.piece{width:85%;height:85%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 4px 8px rgba(0,0,0,0.4);position:relative}
-.piece.white{background:linear-gradient(135deg,#fff,#e0e0e0);border:3px solid #999}
-.piece.black{background:linear-gradient(135deg,#444,#111);border:3px solid #666;color:#fff}
-.piece.king::before{content:'♔';position:absolute;font-size:clamp(16px,5vw,28px);color:#ffd700}
-.piece.must-capture{animation:pulse 0.8s infinite;box-shadow:0 0 20px #ff0000}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-.info-panel{background:rgba(0,0,0,0.3);padding:12px 30px;border-radius:15px;text-align:center;font-size:18px;font-weight:bold;min-width:250px}
-.info-panel.white-turn{border:2px solid #fff}
-.info-panel.black-turn{border:2px solid #444}
-.info-panel.waiting{border:2px solid #ffd700;animation:blink 1.5s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.5}}
-.room-code{background:rgba(255,215,0,0.2);border:2px solid #ffd700;padding:15px 25px;border-radius:12px;text-align:center;margin:15px 0}
-.room-code-label{font-size:12px;opacity:0.7;margin-bottom:5px}
+.piece{width:85%;height:85%;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 3px 6px rgba(0,0,0,0.4)}
+.piece.white{background:linear-gradient(135deg,#fff,#ddd);border:3px solid #999}
+.piece.black{background:linear-gradient(135deg,#444,#111);border:3px solid #666}
+.piece.king::before{content:'♔';position:absolute;font-size:20px;color:#ffd700}
+.info-panel{background:rgba(0,0,0,0.3);padding:12px 30px;border-radius:15px;text-align:center;font-size:18px;font-weight:bold;margin-top:10px}
+.info-panel.waiting{border:2px solid #ffd700}
+.room-code{background:rgba(255,215,0,0.2);border:2px solid #ffd700;padding:15px;border-radius:12px;text-align:center;margin:15px 0}
 .room-code-value{font-size:32px;font-weight:bold;color:#ffd700;letter-spacing:5px;font-family:monospace}
-.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.btn{padding:12px 24px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:10px;color:#000;font-weight:bold;font-size:14px;cursor:pointer}
+.controls{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.btn{padding:12px 24px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:10px;color:#000;font-weight:bold;cursor:pointer}
 .btn.secondary{background:rgba(255,255,255,0.1);color:#fff;border:2px solid rgba(255,255,255,0.3)}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center;padding:20px}
 .modal.active{display:flex}
-.modal-content{background:linear-gradient(135deg,#1e3c72,#2a5298);border-radius:20px;padding:30px;max-width:400px;width:100%;text-align:center;border:3px solid #ffd700}
+.modal-content{background:#1e3c72;border-radius:20px;padding:30px;max-width:400px;width:100%;text-align:center;border:3px solid #ffd700}
 .modal h2{font-size:28px;margin-bottom:15px;color:#ffd700}
-.modal p{margin-bottom:20px;font-size:16px}
-.modal input{width:100%;padding:12px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:16px;text-align:center;letter-spacing:3px;font-family:monospace}
+.modal p{margin-bottom:20px}
+.modal input{width:100%;padding:12px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:20px;text-align:center;letter-spacing:5px;font-family:monospace}
 .searching{text-align:center;padding:30px}
 .searching .spinner{width:60px;height:60px;border:4px solid rgba(255,215,0,0.3);border-top-color:#ffd700;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .online-badge{background:rgba(0,255,136,0.2);color:#00ff88;padding:4px 12px;border-radius:10px;font-size:11px;margin-left:10px}
-.offline-badge{background:rgba(255,100,100,0.2);color:#ff6464;padding:4px 12px;border-radius:10px;font-size:11px;margin-left:10px}
-@media(max-width:600px){.header h1{font-size:22px}.board-wrapper{max-width:95vw}.btn,.menu-btn{padding:10px 18px;font-size:13px}}
 </style>
 </head>
 <body>
 
 <div class="header">
-<h1>♟️ Шашки Online <span id="onlineBadge" class="offline-badge">ОФФЛАЙН</span></h1>
+<h1>♟️ Шашки Online <span id="onlineBadge" class="online-badge">ОНЛАЙН</span></h1>
 <div class="stats">
 <div class="stat">Победы: <span id="wins">0</span></div>
 <div class="stat">Поражения: <span id="losses">0</span></div>
@@ -67,45 +59,38 @@ body{background:linear-gradient(135deg,#1e3c72,#2a5298);min-height:100vh;color:#
 
 <div class="container">
 <div class="menu-screen" id="menuScreen">
-<button class="menu-btn" onclick="startAIGame()">🤖 Играть с ИИ</button>
+<button class="menu-btn" onclick="startAI()">🤖 Играть с ИИ</button>
 <button class="menu-btn" onclick="createRoom()">👥 Создать комнату</button>
-<button class="menu-btn" onclick="showJoinScreen()">🔗 Присоединиться по коду</button>
+<button class="menu-btn" onclick="showJoin()">🔗 Присоединиться</button>
 <button class="menu-btn" onclick="quickMatch()">⚡ Быстрая игра</button>
 </div>
 
 <div class="menu-screen" id="createRoomScreen" style="display:none">
-<h2 style="text-align:center;color:#ffd700">Создать комнату</h2>
-<p style="text-align:center;opacity:0.8">Отправь этот код другу:</p>
-<div class="room-code">
-<div class="room-code-label">КОД КОМНАТЫ</div>
-<div class="room-code-value" id="roomCodeDisplay">------</div>
-</div>
-<button class="menu-btn" onclick="copyRoomCode()">📋 Скопировать код</button>
-<p style="text-align:center;opacity:0.7">Ожидание второго игрока...</p>
+<h2 style="text-align:center;color:#ffd700">Комната создана</h2>
+<p style="text-align:center;opacity:0.8">Отправь код другу:</p>
+<div class="room-code"><div class="room-code-value" id="roomCodeDisplay">------</div></div>
+<button class="menu-btn" onclick="copyCode()">📋 Скопировать</button>
+<p style="text-align:center;opacity:0.7">Ждём второго игрока...</p>
 <button class="menu-btn secondary" onclick="cancelRoom()">Отмена</button>
 </div>
 
 <div class="menu-screen" id="joinScreen" style="display:none">
-<h2 style="text-align:center;color:#ffd700">Присоединиться</h2>
-<p style="text-align:center;opacity:0.8">Введи код комнаты:</p>
+<h2 style="text-align:center;color:#ffd700">Введи код</h2>
 <input type="text" id="joinCodeInput" placeholder="------" maxlength="6">
-<button class="menu-btn" onclick="joinRoom()">Присоединиться</button>
+<button class="menu-btn" onclick="joinRoom()">Войти</button>
 <button class="menu-btn secondary" onclick="showMenu()">Назад</button>
 </div>
 
 <div class="menu-screen" id="searchingScreen" style="display:none">
 <div class="searching">
 <div class="spinner"></div>
-<h2 style="color:#ffd700">Поиск соперника...</h2>
-<p style="opacity:0.8">Ищем игрока</p>
+<h2 style="color:#ffd700">Поиск...</h2>
 </div>
 <button class="menu-btn secondary" onclick="cancelSearch()">Отмена</button>
 </div>
 
-<div id="gameScreen" style="display:none;width:100%;max-width:560px">
-<div class="board-wrapper">
-<div class="board" id="board"></div>
-</div>
+<div id="gameScreen" style="display:none;width:100%;max-width:500px">
+<div class="board-wrapper"><div class="board" id="boardEl"></div></div>
 <div class="info-panel" id="infoPanel">Твой ход</div>
 <div class="controls">
 <button class="btn secondary" onclick="surrender()">Сдаться</button>
@@ -125,11 +110,11 @@ body{background:linear-gradient(135deg,#1e3c72,#2a5298);min-height:100vh;color:#
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script>
-const SIZE=8;
-let board=[],currentPlayer='white',selected=null,gameOver=false,myColor='white',isOnline=false,roomId=null,roomRef=null,gameMode='ai',aiDifficulty='medium',stats={wins:0,losses:0},firebaseReady=false,db=null;
+const N=8;
+let board=[],cur='white',sel=null,over=false,myColor='white',online=false,rId=null,rRef=null,stats={w:0,l:0};
 
-const saved=localStorage.getItem('checkersStats');
-if(saved){try{stats=JSON.parse(saved)}catch(e){}}
+const s=localStorage.getItem('cs');
+if(s)try{stats=JSON.parse(s)}catch(e){}
 
 firebase.initializeApp({
 apiKey:"AIzaSyAzSOfIQgBZCWgUIbmelgScYUkASQnEuUY",
@@ -140,514 +125,417 @@ storageBucket:"checkers-online-e69c7.firebasestorage.app",
 messagingSenderId:"1096047488420",
 appId:"1:1096047488420:web:ca70692d2259244dabe531"
 });
-db=firebase.database();
-firebaseReady=true;
-document.getElementById('onlineBadge').textContent='ОНЛАЙН';
-document.getElementById('onlineBadge').className='online-badge';
-console.log('✅ Firebase подключен');
+const db=firebase.database();
 
-function showMenu(){
-document.getElementById('menuScreen').style.display='flex';
-document.getElementById('createRoomScreen').style.display='none';
-document.getElementById('joinScreen').style.display='none';
-document.getElementById('searchingScreen').style.display='none';
-document.getElementById('gameScreen').style.display='none';
-}
+function updStats(){document.getElementById('wins').textContent=stats.w;document.getElementById('losses').textContent=stats.l}
+function saveS(){localStorage.setItem('cs',JSON.stringify(stats))}
 
-function showJoinScreen(){
-document.getElementById('menuScreen').style.display='none';
-document.getElementById('createRoomScreen').style.display='none';
-document.getElementById('searchingScreen').style.display='none';
-document.getElementById('gameScreen').style.display='none';
-document.getElementById('joinScreen').style.display='flex';
-}
-
-function updateStats(){
-const w=document.getElementById('wins');
-const l=document.getElementById('losses');
-if(w)w.textContent=stats.wins;
-if(l)l.textContent=stats.losses;
-}
-
-function saveStats(){localStorage.setItem('checkersStats',JSON.stringify(stats))}
-
-function showModal(title,text){
-document.getElementById('modalTitle').textContent=title;
-document.getElementById('modalText').textContent=text;
-document.getElementById('modal').classList.add('active');
-}
-
-function closeModal(){
-document.getElementById('modal').classList.remove('active');
-if(gameOver)showMenu();
-}
-
-function initBoard(){
+function initB(){
 board=[];
-for(let r=0;r<SIZE;r++){
-board[r]=[];
-for(let c=0;c<SIZE;c++){
-if((r+c)%2===1){
-if(r<3)board[r][c]={color:'black',king:false};
-else if(r>4)board[r][c]={color:'white',king:false};
+for(let r=0;r<N;r++){board[r]=[];for(let c=0;c<N;c++){
+if((r+c)%2===1){if(r<3)board[r][c]={c:'b',k:false};else if(r>4)board[r][c]={c:'w',k:false};else board[r][c]=null}
 else board[r][c]=null;
-}else board[r][c]=null;
-}
-}
+}}
 }
 
-function boardToData(){return board.map(row=>row.map(cell=>cell?{color:cell.color,king:cell.king}:null))}
+function toD(){return board.map(r=>r.map(c=>c?{c:c.c,k:c.k}:null))}
+function fromD(d){if(!d)return[];return d.map(r=>r.map(c=>c?{c:c.c,k:c.k}:null))}
 
-function dataToBoard(data){
-if(!data)return[];
-return data.map(row=>row.map(cell=>cell?{color:cell.color,king:cell.king}:null));
-}
-
-function generateRoomCode(){
-const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-let code='';
-for(let i=0;i<6;i++)code+=chars[Math.floor(Math.random()*chars.length)];
-return code;
-}
+function genCode(){const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=ch[Math.floor(Math.random()*ch.length)];return c}
 
 function render(){
-const boardEl=document.getElementById('board');
-if(!boardEl)return;
-boardEl.innerHTML='';
-const validMoves=selected?getValidMoves(selected.r,selected.c):[];
-const allCaptures=getAllCaptures(currentPlayer);
-for(let r=0;r<SIZE;r++){
-for(let c=0;c<SIZE;c++){
+const el=document.getElementById('boardEl');
+if(!el)return;
+el.innerHTML='';
+const vm=sel?getMoves(sel.r,sel.c):[];
+const ac=getAllCap(cur);
+for(let r=0;r<N;r++)for(let c=0;c<N;c++){
 const cell=document.createElement('div');
 cell.className='cell '+((r+c)%2===0?'light':'dark');
-if(selected&&selected.r===r&&selected.c===c)cell.classList.add('selected');
-if(validMoves.some(m=>m.r===r&&m.c===c))cell.classList.add('valid');
-const piece=board[r]&&board[r][c];
-if(piece){
-const pieceEl=document.createElement('div');
-pieceEl.className='piece '+piece.color+(piece.king?' king':'');
-if(allCaptures.some(m=>m.fromR===r&&m.fromC===c))pieceEl.classList.add('must-capture');
-cell.appendChild(pieceEl);
+if(sel&&sel.r===r&&sel.c===c)cell.classList.add('selected');
+if(vm.some(m=>m.r===r&&m.c===c))cell.classList.add('valid');
+const p=board[r]&&board[r][c];
+if(p){
+const pe=document.createElement('div');
+pe.className='piece '+(p.c==='w'?'white':'black')+(p.k?' king':'');
+if(ac.some(m=>m.fr===r&&m.fc===c))pe.style.boxShadow='0 0 15px #ff0000';
+cell.appendChild(pe);
 }
-cell.onclick=(()=>{const rr=r,cc=c;return()=>handleCellClick(rr,cc)})();
-boardEl.appendChild(cell);
+const rr=r,cc=c;
+cell.onclick=()=>click(rr,cc);
+el.appendChild(cell);
 }
-}
-updateInfo();
+updInfo();
 }
 
-function updateInfo(){
-const panel=document.getElementById('infoPanel');
-if(!panel)return;
-if(gameOver){panel.textContent='Игра окончена';panel.className='info-panel'}
-else if(isOnline){
-if(currentPlayer===myColor){panel.textContent='Твой ход!';panel.className='info-panel white-turn'}
-else{panel.textContent='Ход соперника...';panel.className='info-panel waiting'}
+function updInfo(){
+const p=document.getElementById('infoPanel');
+if(!p)return;
+if(over){p.textContent='Игра окончена';p.className='info-panel'}
+else if(online){
+if(cur===myColor){p.textContent='Твой ход!';p.className='info-panel'}
+else{p.textContent='Ход соперника...';p.className='info-panel waiting'}
 }else{
-panel.textContent=currentPlayer==='white'?'Твой ход (белые)':'Ход ИИ (чёрные)';
-panel.className='info-panel '+(currentPlayer==='white'?'white-turn':'black-turn');
+p.textContent=cur==='w'?'Твой ход (белые)':'Ход ИИ (чёрные)';
+p.className='info-panel';
 }
 }
 
-function handleCellClick(r,c){
-if(gameOver)return;
-if(isOnline&&currentPlayer!==myColor)return;
-if(!isOnline&&currentPlayer!=='white')return;
-const piece=board[r]&&board[r][c];
-const allCaptures=getAllCaptures(currentPlayer);
-if(selected){
-const moves=getValidMoves(selected.r,selected.c);
-const move=moves.find(m=>m.r===r&&m.c===c);
-if(move){executeMove(selected.r,selected.c,move);return}
-if(piece&&piece.color===currentPlayer){
-if(allCaptures.length>0&&!allCaptures.some(m=>m.fromR===r&&m.fromC===c))return;
-selected={r,c};render();
-}else{selected=null;render()}
-}else if(piece&&piece.color===currentPlayer){
-if(allCaptures.length>0&&!allCaptures.some(m=>m.fromR===r&&m.fromC===c))return;
-selected={r,c};render();
+function click(r,c){
+if(over)return;
+if(online&&cur!==myColor)return;
+if(!online&&cur!=='w')return;
+const p=board[r]&&board[r][c];
+const ac=getAllCap(cur);
+if(sel){
+const mv=getMoves(sel.r,sel.c);
+const m=mv.find(x=>x.r===r&&x.c===c);
+if(m){doMove(sel.r,sel.c,m);return}
+if(p&&p.c===cur){
+if(ac.length>0&&!ac.some(x=>x.fr===r&&x.fc===c))return;
+sel={r,c};render();
+}else{sel=null;render()}
+}else if(p&&p.c===cur){
+if(ac.length>0&&!ac.some(x=>x.fr===r&&x.fc===c))return;
+sel={r,c};render();
 }
 }
 
-function executeMove(fromR,fromC,move){
-if(!board[move.r]||!board[fromR]){console.error('Ошибка доски');return}
-const piece=board[fromR][fromC];
-if(!piece)return;
-board[move.r][move.c]=piece;
-board[fromR][fromC]=null;
-move.captures.forEach(cap=>{if(board[cap.r])board[cap.r][cap.c]=null});
-if((piece.color==='white'&&move.r===0)||(piece.color==='black'&&move.r===SIZE-1))piece.king=true;
-if(move.captures.length>0&&!gameOver){
-const further=getCapturesFrom(move.r,move.c);
-if(further.length>0){selected={r:move.r,c:move.c};render();return}
+function doMove(fr,fc,m){
+const p=board[fr][fc];
+if(!p)return;
+board[m.r][m.c]=p;
+board[fr][fc]=null;
+m.caps.forEach(x=>{if(board[x.r])board[x.r][x.c]=null});
+if((p.c==='w'&&m.r===0)||(p.c==='b'&&m.r===N-1))p.k=true;
+if(m.caps.length>0&&!over){
+const fc2=getCaps(m.r,m.c);
+if(fc2.length>0){sel={r:m.r,c:m.c};render();return}
 }
-selected=null;
-if(!gameOver){
-currentPlayer=currentPlayer==='white'?'black':'white';
-if(isOnline&&roomRef){
-roomRef.update({board:boardToData(),currentPlayer:currentPlayer}).catch(e=>console.error(e));
-}
+sel=null;
+if(!over){
+cur=cur==='w'?'b':'w';
+if(online&&rRef)rRef.update({board:toD(),cur:cur}).catch(e=>console.error(e));
 render();
-checkGameOver();
-if(!gameOver&&!isOnline&&currentPlayer==='black')setTimeout(aiTurn,600);
+checkEnd();
+if(!over&&!online&&cur==='b')setTimeout(aiMove,500);
 }
 }
 
-function getValidMoves(r,c){
-const piece=board[r]&&board[r][c];
-if(!piece)return[];
-const captures=getCapturesFrom(r,c);
-if(captures.length>0)return captures;
-const moves=[];
-const directions=piece.king?[[-1,-1],[-1,1],[1,-1],[1,1]]:piece.color==='white'?[[-1,-1],[-1,1]]:[[1,-1],[1,1]];
-directions.forEach(([dr,dc])=>{
-if(piece.king){
-for(let i=1;i<SIZE;i++){
+function getMoves(r,c){
+const p=board[r]&&board[r][c];
+if(!p)return[];
+const caps=getCaps(r,c);
+if(caps.length>0)return caps;
+const mv=[];
+const dirs=p.k?[[-1,-1],[-1,1],[1,-1],[1,1]]:p.c==='w'?[[-1,-1],[-1,1]]:[[1,-1],[1,1]];
+dirs.forEach(([dr,dc])=>{
+if(p.k){
+for(let i=1;i<N;i++){
 const nr=r+dr*i,nc=c+dc*i;
-if(nr<0||nr>=SIZE||nc<0||nc>=SIZE)break;
+if(nr<0||nr>=N||nc<0||nc>=N)break;
 if(board[nr]&&board[nr][nc])break;
-moves.push({r:nr,c:nc,captures:[]});
+mv.push({r:nr,c:nc,caps:[]});
 }
 }else{
 const nr=r+dr,nc=c+dc;
-if(nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&(!board[nr]||!board[nr][nc]))moves.push({r:nr,c:nc,captures:[]});
+if(nr>=0&&nr<N&&nc>=0&&nc<N&&(!board[nr]||!board[nr][nc]))mv.push({r:nr,c:nc,caps:[]});
 }
 });
-return moves;
+return mv;
 }
 
-function getCapturesFrom(r,c){
-const piece=board[r]&&board[r][c];
-if(!piece)return[];
-const captures=[];
-const directions=[[-1,-1],[-1,1],[1,-1],[1,1]];
-directions.forEach(([dr,dc])=>{
-if(piece.king){
-let found=false,er,ec;
-for(let i=1;i<SIZE;i++){
+function getCaps(r,c){
+const p=board[r]&&board[r][c];
+if(!p)return[];
+const caps=[];
+[[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dr,dc])=>{
+if(p.k){
+let f=false,er,ec;
+for(let i=1;i<N;i++){
 const nr=r+dr*i,nc=c+dc*i;
-if(nr<0||nr>=SIZE||nc<0||nc>=SIZE)break;
+if(nr<0||nr>=N||nc<0||nc>=N)break;
 if(board[nr]&&board[nr][nc]){
-if(found)break;
-if(board[nr][nc].color!==piece.color){found=true;er=nr;ec=nc}
+if(f)break;
+if(board[nr][nc].c!==p.c){f=true;er=nr;ec=nc}
 else break;
-}else if(found)captures.push({r:nr,c:nc,captures:[{r:er,c:ec}]});
+}else if(f)caps.push({r:nr,c:nc,caps:[{r:er,c:ec}]});
 }
 }else{
-const midR=r+dr,midC=c+dc,landR=r+dr*2,landC=c+dc*2;
-if(landR>=0&&landR<SIZE&&landC>=0&&landC<SIZE){
-const mid=board[midR]&&board[midR][midC];
-if(mid&&mid.color!==piece.color&&(!board[landR]||!board[landR][landC]))captures.push({r:landR,c:landC,captures:[{r:midR,c:midC}]});
+const mr=r+dr,mc=c+dc,lr=r+dr*2,lc=c+dc*2;
+if(lr>=0&&lr<N&&lc>=0&&lc<N){
+const mid=board[mr]&&board[mr][mc];
+if(mid&&mid.c!==p.c&&(!board[lr]||!board[lr][lc]))caps.push({r:lr,c:lc,caps:[{r:mr,c:mc}]});
 }
 }
 });
-return captures;
+return caps;
 }
 
-function getAllCaptures(color){
-const captures=[];
-for(let r=0;r<SIZE;r++){
-for(let c=0;c<SIZE;c++){
-if(board[r]&&board[r][c]&&board[r][c].color===color){
-const caps=getCapturesFrom(r,c);
-caps.forEach(cap=>captures.push({fromR:r,fromC:c,toR:cap.r,toC:cap.c,captures:cap.captures}));
+function getAllCap(color){
+const caps=[];
+for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+if(board[r]&&board[r][c]&&board[r][c].c===color){
+const cp=getCaps(r,c);
+cp.forEach(x=>caps.push({fr:r,fc:c,tr:x.r,tc:x.c,caps:x.caps}));
 }
 }
-}
-return captures;
+return caps;
 }
 
-function hasValidMoves(color){
-for(let r=0;r<SIZE;r++){
-for(let c=0;c<SIZE;c++){
-if(board[r]&&board[r][c]&&board[r][c].color===color){
-if(getValidMoves(r,c).length>0)return true;
-}
-}
+function hasMoves(color){
+for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+if(board[r]&&board[r][c]&&board[r][c].c===color&&getMoves(r,c).length>0)return true;
 }
 return false;
 }
 
-function checkGameOver(){
-const w=hasValidMoves('white'),b=hasValidMoves('black');
+function checkEnd(){
+const w=hasMoves('w'),b=hasMoves('b');
 if(!w||!b){
-gameOver=true;
-if(!w&&!b)showModal('Ничья!','У обоих нет ходов');
+over=true;
+if(!w&&!b)showModal('Ничья!','Нет ходов у обоих');
 else if(!w){
-if(isOnline){if(myColor==='black'){stats.wins++;showModal('Победа!','Соперник сдался!')}else{stats.losses++;showModal('Поражение','У тебя нет ходов')}}
-else{stats.losses++;showModal('Поражение','У тебя нет ходов. ИИ победил!')}
+if(online){if(myColor==='b'){stats.w++;showModal('Победа!','Соперник сдался!')}else{stats.l++;showModal('Поражение','Нет ходов')}}
+else{stats.l++;showModal('Поражение','ИИ победил!')}
 }else{
-if(isOnline){if(myColor==='white'){stats.wins++;showModal('Победа!','Соперник сдался!')}else{stats.losses++;showModal('Поражение','У соперника нет ходов')}}
-else{stats.wins++;showModal('Победа!','У ИИ нет ходов. Ты выиграл!')}
+if(online){if(myColor==='w'){stats.w++;showModal('Победа!','Соперник сдался!')}else{stats.l++;showModal('Поражение','Нет ходов у соперника')}}
+else{stats.w++;showModal('Победа!','Ты выиграл!')}
 }
-updateStats();saveStats();
-if(isOnline&&roomRef){
-const winner=!w?'black':'white';
-roomRef.update({status:'finished',winner:winner});
-}
+updStats();saveS();
+if(online&&rRef)rRef.update({status:'finished',winner:!w?'b':'w'});
 }
 }
 
-function handleGameEnd(winner){
-if(gameOver)return;
-gameOver=true;
-if(winner===myColor){stats.wins++;showModal('Победа!','Ты выиграл!')}
-else if(winner){stats.losses++;showModal('Поражение','Соперник победил')}
-else showModal('Ничья!','Игра закончилась вничью');
-updateStats();saveStats();
+function handleEnd(w){
+if(over)return;
+over=true;
+if(w===myColor){stats.w++;showModal('Победа!','Ты выиграл!')}
+else if(w){stats.l++;showModal('Поражение','Соперник победил')}
+else showModal('Ничья!','Ничья');
+updStats();saveS();
 }
 
 function surrender(){
-if(!confirm('Ты уверен?'))return;
-gameOver=true;stats.losses++;updateStats();saveStats();
-if(isOnline&&roomRef){
-const winner=currentPlayer==='white'?'black':'white';
-roomRef.update({status:'finished',winner:winner});
-}
-showModal('Сдача','Ты сдался. Поражение.');
+if(!confirm('Сдаться?'))return;
+over=true;stats.l++;updStats();saveS();
+if(online&&rRef)rRef.update({status:'finished',winner:cur==='w'?'b':'w'});
+showModal('Сдача','Поражение');
 }
 
 function leaveGame(){
-if(isOnline&&roomRef){
-const winner=currentPlayer==='white'?'black':'white';
-roomRef.update({status:'finished',winner:winner});
-roomRef.off();
-}
+if(online&&rRef){rRef.update({status:'finished',winner:cur==='w'?'b':'w'});rRef.off()}
 showMenu();
 }
 
-function aiTurn(){
-if(gameOver)return;
-if(!hasValidMoves('black')){checkGameOver();return}
-const all=getAllCaptures('black');
-let moves=[];
-if(all.length>0)moves=all.map(m=>({fromR:m.fromR,fromC:m.fromC,toR:m.toR,toC:m.toC,captures:m.captures}));
+function aiMove(){
+if(over)return;
+if(!hasMoves('b')){checkEnd();return}
+const ac=getAllCap('b');
+let mv=[];
+if(ac.length>0)mv=ac.map(m=>({fr:m.fr,fc:m.fc,tr:m.tr,tc:m.tc,caps:m.caps}));
 else{
-for(let r=0;r<SIZE;r++){
-for(let c=0;c<SIZE;c++){
-if(board[r]&&board[r][c]&&board[r][c].color==='black'){
-const vm=getValidMoves(r,c);
-vm.forEach(m=>moves.push({fromR:r,fromC:c,toR:m.r,toC:m.c,captures:m.captures}));
+for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+if(board[r]&&board[r][c]&&board[r][c].c==='b'){
+const vm=getMoves(r,c);
+vm.forEach(m=>mv.push({fr:r,fc:c,tr:m.r,tc:m.c,caps:m.caps}));
 }
 }
 }
-}
-if(moves.length===0){checkGameOver();return}
-let best=moves[Math.floor(Math.random()*moves.length)];
-let bestScore=-Infinity;
-moves.forEach(move=>{
-let score=0;
-if(move.captures.length>0)score+=10*move.captures.length;
-if(move.toR===SIZE-1)score+=5;
-score+=Math.random()*3;
-if(score>bestScore){bestScore=score;best=move}
+if(mv.length===0){checkEnd();return}
+let best=mv[Math.floor(Math.random()*mv.length)];
+let bs=-999;
+mv.forEach(m=>{
+let sc=0;
+if(m.caps.length>0)sc+=10*m.caps.length;
+if(m.tr===N-1)sc+=5;
+sc+=Math.random()*3;
+if(sc>bs){bs=sc;best=m}
 });
 if(best){
-const piece=board[best.fromR][best.fromC];
-board[best.toR][best.toC]=piece;
-board[best.fromR][best.fromC]=null;
-best.captures.forEach(cap=>{if(board[cap.r])board[cap.r][cap.c]=null});
-if(best.toR===SIZE-1)piece.king=true;
-if(!gameOver){currentPlayer='white';render();checkGameOver()}
+const p=board[best.fr][best.fc];
+board[best.tr][best.tc]=p;
+board[best.fr][best.fc]=null;
+best.caps.forEach(x=>{if(board[x.r])board[x.r][x.c]=null});
+if(best.tr===N-1)p.k=true;
+if(!over){cur='w';render();checkEnd()}
 }
 }
 
-function startAIGame(){
-gameMode='ai';isOnline=false;
-initBoard();currentPlayer='white';myColor='white';selected=null;gameOver=false;
+function showMenu(){
+['menuScreen','createRoomScreen','joinScreen','searchingScreen','gameScreen'].forEach(id=>document.getElementById(id).style.display='none');
+document.getElementById('menuScreen').style.display='flex';
+}
+
+function showJoin(){
+['menuScreen','createRoomScreen','searchingScreen','gameScreen'].forEach(id=>document.getElementById(id).style.display='none');
+document.getElementById('joinScreen').style.display='flex';
+}
+
+function showModal(t,tx){document.getElementById('modalTitle').textContent=t;document.getElementById('modalText').textContent=tx;document.getElementById('modal').classList.add('active')}
+function closeModal(){document.getElementById('modal').classList.remove('active');if(over)showMenu()}
+
+function startAI(){
+online=false;initB();cur='w';myColor='w';sel=null;over=false;
 document.getElementById('menuScreen').style.display='none';
 document.getElementById('gameScreen').style.display='block';
 render();
 }
 
 function createRoom(){
-if(!firebaseReady){alert('Firebase не подключен');return}
-roomId=generateRoomCode();
-roomRef=db.ref('rooms/'+roomId);
-initBoard();
-roomRef.set({
-status:'waiting',creator:'player1',board:boardToData(),currentPlayer:'white',
-createdAt:Date.now(),player1Color:'white',player2Color:'black'
-}).then(()=>{
-console.log('✅ Комната создана:',roomId);
-document.getElementById('roomCodeDisplay').textContent=roomId;
+rId=genCode();
+rRef=db.ref('rooms/'+rId);
+initB();
+rRef.set({status:'waiting',board:toD(),cur:'w',p1:'me',p1c:'w',p2c:'b'}).then(()=>{
+document.getElementById('roomCodeDisplay').textContent=rId;
 document.getElementById('menuScreen').style.display='none';
 document.getElementById('createRoomScreen').style.display='flex';
-roomRef.on('value',snapshot=>{
-const data=snapshot.val();
-if(!data)return;
-if(data.status==='playing'&&!isOnline){
-console.log('✅ Второй игрок присоединился');
-isOnline=true;myColor='white';gameMode='online';
-if(data.board){board=dataToBoard(data.board);currentPlayer=data.currentPlayer||'white'}
-gameOver=false;
+rRef.on('value',snap=>{
+const d=snap.val();
+if(!d)return;
+if(d.status==='playing'&&!online){
+online=true;myColor='w';
+if(d.board)board=fromD(d.board);
+cur=d.cur||'w';
+over=false;
 document.getElementById('createRoomScreen').style.display='none';
 document.getElementById('gameScreen').style.display='block';
 render();
 }
-if(data.status==='finished')handleGameEnd(data.winner);
+if(d.status==='finished')handleEnd(d.winner);
 });
-}).catch(err=>{console.error(err);alert('Не удалось создать комнату')});
+}).catch(e=>{console.error(e);alert('Ошибка')});
 }
 
-function copyRoomCode(){
-navigator.clipboard.writeText(roomId).then(()=>alert('Код скопирован!'));
-}
-
-function cancelRoom(){
-if(roomRef)roomRef.remove();
-showMenu();
-}
+function copyCode(){navigator.clipboard.writeText(rId).then(()=>alert('Скопировано: '+rId))}
+function cancelRoom(){if(rRef)rRef.remove();showMenu()}
 
 function joinRoom(){
-if(!firebaseReady){alert('Firebase не подключен');return}
 const code=document.getElementById('joinCodeInput').value.trim().toUpperCase();
-if(code.length!==6){alert('Введи 6-значный код');return}
-roomRef=db.ref('rooms/'+code);
-roomRef.once('value',snapshot=>{
-const data=snapshot.val();
-if(!data){alert('Комната не найдена');return}
-if(data.status!=='waiting'){alert('Комната уже занята');return}
-console.log('✅ Присоединяемся к комнате');
-roomId=code;isOnline=true;myColor='black';gameMode='online';
-roomRef.update({status:'playing',player2:'player2',joinedAt:Date.now()}).then(()=>{
-if(data.board){board=dataToBoard(data.board);currentPlayer=data.currentPlayer||'white'}
-gameOver=false;
+if(code.length!==6){alert('6 символов');return}
+rRef=db.ref('rooms/'+code);
+rRef.once('value',snap=>{
+const d=snap.val();
+if(!d){alert('Не найдена');return}
+if(d.status!=='waiting'){alert('Занята');return}
+rId=code;online=true;myColor='b';
+rRef.update({status:'playing',p2:'you'}).then(()=>{
+if(d.board)board=fromD(d.board);
+cur=d.cur||'w';
+over=false;
 document.getElementById('joinScreen').style.display='none';
 document.getElementById('gameScreen').style.display='block';
 render();
-roomRef.on('value',snap=>{
-const d=snap.val();
-if(!d)return;
-if(d.board&&d.currentPlayer!==currentPlayer&&!gameOver){
-board=dataToBoard(d.board);currentPlayer=d.currentPlayer;render();
-}
-if(d.status==='finished')handleGameEnd(d.winner);
+rRef.on('value',snap=>{
+const dd=snap.val();
+if(!dd)return;
+if(dd.board&&dd.cur!==cur&&!over){board=fromD(dd.board);cur=dd.cur;render()}
+if(dd.status==='finished')handleEnd(dd.winner);
 });
-}).catch(err=>{console.error(err);alert('Не удалось присоединиться')});
-}).catch(err=>{console.error(err);alert('Ошибка подключения')});
+}).catch(e=>{console.error(e);alert('Ошибка')});
+}).catch(e=>{console.error(e);alert('Ошибка')});
 }
 
-let quickSearchInterval=null;
-let quickGameStarted=false;
+let qInt=null,qDone=false;
 
 function quickMatch(){
-if(!firebaseReady){alert('Firebase не подключен');return}
 document.getElementById('menuScreen').style.display='none';
 document.getElementById('searchingScreen').style.display='flex';
-
-const queueRef=db.ref('quickQueue');
-const myId='player_'+Date.now();
-quickGameStarted=false;
+qDone=false;
+const qRef=db.ref('quickQueue');
+const myId='p'+Date.now();
 
 function tryFind(){
-if(quickGameStarted)return;
-queueRef.once('value',snap=>{
-if(quickGameStarted)return;
-const players=snap.val();
-if(players){
-const waiting=Object.keys(players).filter(id=>id!==myId&&players[id].status==='waiting');
-if(waiting.length>0){
-const oppId=waiting[0];
-const oppData=players[oppId];
-console.log('✅ Соперник найден:',oppId);
-quickGameStarted=true;
-if(quickSearchInterval)clearInterval(quickSearchInterval);
-queueRef.child(oppId).remove();
-queueRef.child(myId).remove();
-joinQuickRoom(oppData.roomId,'black');
+if(qDone)return;
+qRef.once('value',snap=>{
+if(qDone)return;
+const pl=snap.val();
+if(pl){
+const w=Object.keys(pl).filter(id=>id!==myId&&pl[id].s==='w');
+if(w.length>0){
+const oid=w[0];
+const od=pl[oid];
+qDone=true;
+if(qInt)clearInterval(qInt);
+qRef.child(oid).remove();
+qRef.child(myId).remove();
+joinQR(od.rid,'b');
 return;
 }
 }
-console.log('⏳ Становимся в очередь...');
-const myRoomId='quick_'+myId;
-queueRef.child(myId).set({status:'waiting',timestamp:Date.now(),roomId:myRoomId}).then(()=>{
-createQuickRoom(myRoomId,'white',myId);
+const rid='q'+myId;
+qRef.child(myId).set({s:'w',rid:rid}).then(()=>{
+createQR(rid,'w',myId,qRef);
 });
 });
 }
 
-function createQuickRoom(roomId,color,playerId){
-if(quickGameStarted)return;
-roomRef=db.ref('rooms/'+roomId);
-initBoard();
-isOnline=true;myColor=color;gameMode='online';gameOver=false;currentPlayer='white';
-roomRef.set({
-status:'waiting',board:boardToData(),currentPlayer:'white',
-player1:playerId,player1Color:'white',player2Color:'black',createdAt:Date.now()
-}).then(()=>{
-console.log('✅ Ждем соперника...');
-roomRef.on('value',snap=>{
-const data=snap.val();
-if(!data||quickGameStarted)return;
-if(data.status==='playing'&&data.player2){
-console.log('✅ Соперник присоединился!');
-quickGameStarted=true;
-if(quickSearchInterval)clearInterval(quickSearchInterval);
-queueRef.child(playerId).remove();
-if(data.board){board=dataToBoard(data.board);currentPlayer=data.currentPlayer||'white'}
-document.getElementById('searchingScreen').style.display='none';
-document.getElementById('gameScreen').style.display='block';
-render();
-roomRef.on('value',s=>{
-const d=s.val();
-if(!d)return;
-if(d.board&&d.currentPlayer!==currentPlayer&&!gameOver){
-board=dataToBoard(d.board);currentPlayer=d.currentPlayer;render();
-}
-if(d.status==='finished')handleGameEnd(d.winner);
-});
-}
-});
-}).catch(err=>{console.error(err);alert('Ошибка');showMenu()});
-}
-
-function joinQuickRoom(roomId,color){
-roomRef=db.ref('rooms/'+roomId);
-roomRef.once('value',snap=>{
-const data=snap.val();
-if(!data){alert('Комната не найдена');showMenu();return}
-initBoard();isOnline=true;myColor=color;gameMode='online';gameOver=false;currentPlayer='white';
-roomRef.update({status:'playing',player2:myId}).then(()=>{
-console.log('✅ Присоединились');
-if(data.board){board=dataToBoard(data.board);currentPlayer=data.currentPlayer||'white'}
-document.getElementById('searchingScreen').style.display='none';
-document.getElementById('gameScreen').style.display='block';
-render();
-roomRef.on('value',snap=>{
+function createQR(rid,color,pid,qRef){
+if(qDone)return;
+rRef=db.ref('rooms/'+rid);
+initB();
+online=true;myColor=color;over=false;cur='w';
+rRef.set({status:'waiting',board:toD(),cur:'w',p1:pid,p1c:'w',p2c:'b'}).then(()=>{
+rRef.on('value',snap=>{
 const d=snap.val();
-if(!d)return;
-if(d.board&&d.currentPlayer!==currentPlayer&&!gameOver){
-board=dataToBoard(d.board);currentPlayer=d.currentPlayer;render();
-}
-if(d.status==='finished')handleGameEnd(d.winner);
+if(!d||qDone)return;
+if(d.status==='playing'&&d.p2){
+qDone=true;
+if(qInt)clearInterval(qInt);
+qRef.child(pid).remove();
+if(d.board)board=fromD(d.board);
+cur=d.cur||'w';
+document.getElementById('searchingScreen').style.display='none';
+document.getElementById('gameScreen').style.display='block';
+render();
+rRef.on('value',s=>{
+const dd=s.val();
+if(!dd)return;
+if(dd.board&&dd.cur!==cur&&!over){board=fromD(dd.board);cur=dd.cur;render()}
+if(dd.status==='finished')handleEnd(dd.winner);
 });
-}).catch(err=>{console.error(err);alert('Ошибка');showMenu()});
+}
+});
+}).catch(e=>{console.error(e);alert('Ошибка');showMenu()});
+}
+
+function joinQR(rid,color){
+rRef=db.ref('rooms/'+rid);
+rRef.once('value',snap=>{
+const d=snap.val();
+if(!d){alert('Не найдена');showMenu();return}
+initB();online=true;myColor=color;over=false;cur='w';
+rRef.update({status:'playing',p2:'you'}).then(()=>{
+if(d.board)board=fromD(d.board);
+cur=d.cur||'w';
+document.getElementById('searchingScreen').style.display='none';
+document.getElementById('gameScreen').style.display='block';
+render();
+rRef.on('value',snap=>{
+const dd=snap.val();
+if(!dd)return;
+if(dd.board&&dd.cur!==cur&&!over){board=fromD(dd.board);cur=dd.cur;render()}
+if(dd.status==='finished')handleEnd(dd.winner);
+});
+}).catch(e=>{console.error(e);alert('Ошибка');showMenu()});
 });
 }
 
 tryFind();
-quickSearchInterval=setInterval(()=>{if(!quickGameStarted)tryFind()},3000);
+qInt=setInterval(()=>{if(!qDone)tryFind()},3000);
 setTimeout(()=>{
-if(!quickGameStarted){
-quickGameStarted=true;
-if(quickSearchInterval)clearInterval(quickSearchInterval);
-queueRef.child(myId).remove();
-if(roomRef)roomRef.remove();
-alert('Не удалось найти соперника за 30 секунд');
-showMenu();
-}
+if(!qDone){qDone=true;if(qInt)clearInterval(qInt);qRef.child(myId).remove();if(rRef)rRef.remove();alert('Не нашли за 30 сек');showMenu()}
 },30000);
 }
 
 function cancelSearch(){
-if(firebaseReady)db.ref('quickQueue').remove();
-quickGameStarted=true;
-if(quickSearchInterval)clearInterval(quickSearchInterval);
+qDone=true;
+if(qInt)clearInterval(qInt);
+if(db)db.ref('quickQueue').remove();
 showMenu();
 }
 
-updateStats();
+updStats();
 showMenu();
 </script>
 </body>
