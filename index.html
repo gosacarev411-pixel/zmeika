@@ -73,8 +73,8 @@ body { background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%); min-height:10
 
 <div class="container" id="mainContainer">
     <div class="menu-screen" id="menuScreen">
-        <button class="menu-btn" onclick="startAIGame()"><span class="icon">🤖</span> Играть с ИИ</button>
-        <button class="menu-btn" onclick="createRoom()"><span class="icon">👥</span> Создать комнату</button>
+        <button class="menu-btn" onclick="startAIGame()"><span class="icon"></span> Играть с ИИ</button>
+        <button class="menu-btn" onclick="createRoom()"><span class="icon"></span> Создать комнату</button>
         <button class="menu-btn" onclick="showScreen('join')"><span class="icon"></span> Присоединиться по коду</button>
         <button class="menu-btn" onclick="quickMatch()"><span class="icon">⚡</span> Быстрая игра</button>
     </div>
@@ -145,11 +145,8 @@ let stats = { wins: 0, losses: 0 };
 let firebaseReady = false;
 let db = null;
 
-// Загрузка статистики
 const saved = localStorage.getItem('checkersStats');
-if (saved) {
-    try { stats = JSON.parse(saved); } catch(e) {}
-}
+if (saved) { try { stats = JSON.parse(saved); } catch(e) {} }
 
 // ====== FIREBASE INIT ======
 function initFirebase() {
@@ -175,22 +172,22 @@ function initFirebase() {
                     firebaseReady = true;
                     document.getElementById('onlineBadge').textContent = 'ОНЛАЙН';
                     document.getElementById('onlineBadge').className = 'online-badge';
-                    console.log('Firebase подключен');
+                    console.log('✅ Firebase подключен');
                 } catch(e) {
-                    console.error('Firebase ошибка:', e);
-                    document.getElementById('onlineBadge').textContent = 'ОШИБКА FB';
+                    console.error('❌ Firebase ошибка:', e);
+                    document.getElementById('onlineBadge').textContent = 'ОШИБКА';
                 }
                 resolve();
             };
             script2.onerror = () => {
-                console.error('Firebase DB не загрузился');
+                console.error('❌ Firebase DB не загрузился');
                 document.getElementById('onlineBadge').textContent = 'НЕТ FB';
                 resolve();
             };
             document.head.appendChild(script2);
         };
         script1.onerror = () => {
-            console.error('Firebase App не загрузился');
+            console.error('❌ Firebase App не загрузился');
             document.getElementById('onlineBadge').textContent = 'НЕТ FB';
             resolve();
         };
@@ -217,9 +214,7 @@ function updateStats() {
     if (l) l.textContent = stats.losses;
 }
 
-function saveStats() { 
-    localStorage.setItem('checkersStats', JSON.stringify(stats)); 
-}
+function saveStats() { localStorage.setItem('checkersStats', JSON.stringify(stats)); }
 
 function showModal(title, text) {
     document.getElementById('modalTitle').textContent = title;
@@ -368,7 +363,7 @@ function executeMove(fromR, fromC, move) {
             roomRef.update({ 
                 board: boardToData(), 
                 currentPlayer: currentPlayer 
-            });
+            }).catch(err => console.error('Ошибка обновления:', err));
         }
         render();
         checkGameOver();
@@ -730,41 +725,53 @@ function startAIGame() {
 
 function createRoom() {
     if (!firebaseReady) {
-        alert('Firebase не подключен. Проверь интернет или настройки.');
+        alert('Firebase не подключен. Проверь интернет.');
         return;
     }
     
     roomId = generateRoomCode();
     roomRef = db.ref('rooms/' + roomId);
     initBoard();
+    
     roomRef.set({
         status: 'waiting',
         creator: 'player1',
         board: boardToData(),
         currentPlayer: 'white',
-        createdAt: Date.now()
-    });
-    document.getElementById('roomCodeDisplay').textContent = roomId;
-    document.getElementById('menuScreen').style.display = 'none';
-    document.getElementById('createRoomScreen').style.display = 'flex';
-    
-    roomRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
-        if (data.status === 'playing' && !isOnline) {
-            isOnline = true;
-            myColor = 'white';
-            gameMode = 'online';
-            if (data.board) {
-                board = dataToBoard(data.board);
-                currentPlayer = data.currentPlayer || 'white';
+        createdAt: Date.now(),
+        player1Color: 'white',
+        player2Color: 'black'
+    }).then(() => {
+        console.log('✅ Комната создана:', roomId);
+        document.getElementById('roomCodeDisplay').textContent = roomId;
+        document.getElementById('menuScreen').style.display = 'none';
+        document.getElementById('createRoomScreen').style.display = 'flex';
+        
+        roomRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+            
+            console.log('📡 Данные комнаты:', data.status);
+            
+            if (data.status === 'playing' && !isOnline) {
+                console.log('✅ Второй игрок присоединился');
+                isOnline = true;
+                myColor = 'white';
+                gameMode = 'online';
+                if (data.board) {
+                    board = dataToBoard(data.board);
+                    currentPlayer = data.currentPlayer || 'white';
+                }
+                gameOver = false;
+                document.getElementById('createRoomScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+                render();
             }
-            gameOver = false;
-            document.getElementById('createRoomScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'block';
-            render();
-        }
-        if (data.status === 'finished') handleGameEnd(data.winner);
+            if (data.status === 'finished') handleGameEnd(data.winner);
+        });
+    }).catch(err => {
+        console.error('❌ Ошибка создания комнаты:', err);
+        alert('Не удалось создать комнату. Попробуй еще раз.');
     });
 }
 
@@ -786,41 +793,65 @@ function joinRoom() {
     const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
     if (code.length !== 6) { alert('Введи 6-значный код'); return; }
     
+    console.log('🔍 Поиск комнаты:', code);
     roomRef = db.ref('rooms/' + code);
+    
     roomRef.once('value', (snapshot) => {
         const data = snapshot.val();
-        if (!data) { alert('Комната не найдена'); return; }
-        if (data.status !== 'waiting') { alert('Комната уже занята'); return; }
+        if (!data) { 
+            alert('Комната не найдена. Проверь код.'); 
+            return; 
+        }
+        if (data.status !== 'waiting') { 
+            alert('Комната уже занята или игра началась.'); 
+            return; 
+        }
         
+        console.log('✅ Комната найдена, присоединяемся...');
         roomId = code;
         isOnline = true;
         myColor = 'black';
         gameMode = 'online';
         
-        roomRef.on('value', (snap) => {
-            const d = snap.val();
-            if (!d) return;
+        // Обновляем статус комнаты
+        roomRef.update({ 
+            status: 'playing',
+            player2: 'player2',
+            joinedAt: Date.now()
+        }).then(() => {
+            console.log('✅ Присоединились к комнате');
             
-            if (d.status === 'playing') {
-                if (d.board) {
+            // Загружаем начальное состояние
+            if (data.board) {
+                board = dataToBoard(data.board);
+                currentPlayer = data.currentPlayer || 'white';
+            }
+            gameOver = false;
+            
+            document.getElementById('joinScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            render();
+            
+            // Слушаем изменения
+            roomRef.on('value', (snap) => {
+                const d = snap.val();
+                if (!d) return;
+                
+                if (d.board && d.currentPlayer !== currentPlayer && !gameOver) {
                     board = dataToBoard(d.board);
-                    currentPlayer = d.currentPlayer || 'white';
+                    currentPlayer = d.currentPlayer;
+                    render();
                 }
-                gameOver = false;
-                document.getElementById('joinScreen').style.display = 'none';
-                document.getElementById('gameScreen').style.display = 'block';
-                render();
-                roomRef.update({ player2: 'player2' });
-            }
-            
-            if (d.status === 'finished') handleGameEnd(d.winner);
-            
-            if (d.board && d.currentPlayer !== currentPlayer && !gameOver) {
-                board = dataToBoard(d.board);
-                currentPlayer = d.currentPlayer;
-                render();
-            }
+                
+                if (d.status === 'finished') handleGameEnd(d.winner);
+            });
+        }).catch(err => {
+            console.error('❌ Ошибка присоединения:', err);
+            alert('Не удалось присоединиться. Попробуй еще раз.');
         });
+    }).catch(err => {
+        console.error('❌ Ошибка поиска комнаты:', err);
+        alert('Ошибка подключения к Firebase.');
     });
 }
 
@@ -836,32 +867,62 @@ function quickMatch() {
     const searchRef = db.ref('quickMatch');
     const myId = 'player_' + Date.now();
     
-    searchRef.child(myId).set({ timestamp: Date.now(), status: 'searching', color: 'white' });
-    
+    // Проверяем есть ли кто-то в очереди
     searchRef.once('value', (snapshot) => {
         const players = snapshot.val();
-        if (!players) return;
+        let foundOpponent = false;
         
-        const waitingPlayers = Object.keys(players).filter(id => 
-            id !== myId && players[id].status === 'searching'
-        );
+        if (players) {
+            const waitingPlayers = Object.keys(players).filter(id => 
+                id !== myId && players[id].status === 'waiting'
+            );
+            
+            if (waitingPlayers.length > 0) {
+                // Нашли соперника!
+                foundOpponent = true;
+                const opponentId = waitingPlayers[0];
+                const opponentData = players[opponentId];
+                
+                console.log('✅ Соперник найден:', opponentId);
+                
+                // Удаляем запись соперника из очереди
+                searchRef.child(opponentId).remove();
+                
+                // Создаем комнату
+                startQuickGame(myId, opponentId, 'black'); // Мы второй игрок - черный
+            }
+        }
         
-        if (waitingPlayers.length > 0) {
-            const opponentId = waitingPlayers[0];
-            searchRef.child(myId).update({ color: 'black' });
-            startQuickGame(myId, opponentId, searchRef, 'black');
-        } else {
-            searchRef.child(myId).on('value', (snap) => {
-                const data = snap.val();
-                if (data && data.status === 'matched') {
-                    startQuickGame(myId, data.opponent, searchRef, data.color);
-                }
+        if (!foundOpponent) {
+            // Становимся в очередь
+            console.log('⏳ Становимся в очередь...');
+            searchRef.child(myId).set({ 
+                status: 'waiting',
+                timestamp: Date.now()
             });
             
+            // Ждем соперника
+            const checkInterval = setInterval(() => {
+                searchRef.child(myId).once('value', (snap) => {
+                    const data = snap.val();
+                    if (!data) {
+                        // Кто-то удалил нас из очереди - нашли соперника!
+                        clearInterval(checkInterval);
+                        return;
+                    }
+                    if (data.status === 'matched' && data.opponent) {
+                        clearInterval(checkInterval);
+                        startQuickGame(myId, data.opponent, data.color || 'black');
+                    }
+                });
+            }, 2000);
+            
+            // Таймаут 30 секунд
             setTimeout(() => {
+                clearInterval(checkInterval);
                 searchRef.child(myId).remove();
                 if (document.getElementById('searchingScreen').style.display !== 'none') {
-                    alert('Не удалось найти соперника.');
+                    alert('Не удалось найти соперника за 30 секунд.');
                     showScreen('menu');
                 }
             }, 30000);
@@ -869,11 +930,10 @@ function quickMatch() {
     });
 }
 
-function startQuickGame(myId, opponentId, searchRef, myAssignedColor) {
-    searchRef.child(myId).update({ status: 'matched', opponent: opponentId });
-    searchRef.child(opponentId).update({ status: 'matched', opponent: myId });
+function startQuickGame(myId, opponentId, myAssignedColor) {
+    console.log('🎮 Начинаем быструю игру:', { myId, opponentId, myColor: myAssignedColor });
     
-    roomId = 'quick_' + Date.now();
+    const roomId = 'quick_' + Date.now();
     roomRef = db.ref('rooms/' + roomId);
     initBoard();
     
@@ -887,25 +947,32 @@ function startQuickGame(myId, opponentId, searchRef, myAssignedColor) {
         status: 'playing', 
         board: boardToData(), 
         currentPlayer: 'white', 
-        player1: myId,
-        player2: opponentId
-    });
-    
-    document.getElementById('searchingScreen').style.display = 'none';
-    document.getElementById('gameScreen').style.display = 'block';
-    render();
-    
-    roomRef.on('value', (snapshot) => {
-        const d = snapshot.val();
-        if (!d) return;
+        player1: opponentId,
+        player2: myId,
+        player1Color: 'white',
+        player2Color: 'black'
+    }).then(() => {
+        console.log('✅ Комната быстрой игры создана');
+        document.getElementById('searchingScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
+        render();
         
-        if (d.board && d.currentPlayer !== currentPlayer && !gameOver) {
-            board = dataToBoard(d.board);
-            currentPlayer = d.currentPlayer;
-            render();
-        }
-        
-        if (d.status === 'finished') handleGameEnd(d.winner);
+        roomRef.on('value', (snapshot) => {
+            const d = snapshot.val();
+            if (!d) return;
+            
+            if (d.board && d.currentPlayer !== currentPlayer && !gameOver) {
+                board = dataToBoard(d.board);
+                currentPlayer = d.currentPlayer;
+                render();
+            }
+            
+            if (d.status === 'finished') handleGameEnd(d.winner);
+        });
+    }).catch(err => {
+        console.error('❌ Ошибка создания быстрой игры:', err);
+        alert('Не удалось создать игру.');
+        showScreen('menu');
     });
 }
 
