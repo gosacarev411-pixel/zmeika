@@ -3,69 +3,183 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎰 Казино</title>
+<title>🎰 Royal Casino</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
-body{background:linear-gradient(135deg,#1a0033,#000);min-height:100vh;color:#fff;padding:20px}
-.header{text-align:center;margin-bottom:30px}
-.header h1{font-size:48px;color:#ffd700;text-shadow:0 0 20px #ffd700}
-.balance{font-size:32px;color:#00ff88;margin:20px 0}
-.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;max-width:1200px;margin:0 auto}
-.game{background:rgba(255,255,255,0.1);border:2px solid #ffd700;border-radius:20px;padding:30px;text-align:center}
-.game h2{color:#ffd700;margin-bottom:20px;font-size:28px}
-.game input{width:100%;padding:15px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:18px;text-align:center}
-.game button{width:100%;padding:15px;margin:10px 0;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:10px;color:#000;font-weight:bold;font-size:18px;cursor:pointer}
-.game button:hover{transform:scale(1.05)}
-.result{font-size:24px;margin:20px 0;min-height:60px}
-.slots{display:flex;justify-content:center;gap:10px;margin:20px 0}
-.slot{width:80px;height:80px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:48px}
-.roulette{width:200px;height:200px;margin:20px auto;border-radius:50%;border:5px solid #ffd700;position:relative;transition:transform 3s}
-.dice{font-size:100px;margin:20px 0}
-.coin{font-size:100px;margin:20px 0;transition:transform 1s}
-.donate{background:rgba(255,215,0,0.1);border:2px solid #ffd700;border-radius:20px;padding:30px;max-width:600px;margin:40px auto;text-align:center}
-.donate h2{color:#ffd700;margin-bottom:20px}
-.donate button{padding:15px 30px;margin:10px;background:linear-gradient(135deg,#00ff88,#00cc66);border:none;border-radius:10px;color:#000;font-weight:bold;font-size:16px;cursor:pointer}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{background:linear-gradient(135deg,#0a0e27 0%,#1a1f3a 50%,#0f1429 100%);min-height:100vh;color:#fff;overflow-x:hidden}
+
+/* Анимации */
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-50px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(255,215,0,0.5)}50%{box-shadow:0 0 40px rgba(255,215,0,0.8)}}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes confetti{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* Экран входа */
+.auth-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0a0e27,#1a1f3a);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn 0.5s}
+.auth-box{background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:2px solid rgba(255,215,0,0.3);border-radius:25px;padding:40px;max-width:450px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:float 3s ease-in-out infinite}
+.auth-box h1{font-size:42px;color:#ffd700;text-align:center;margin-bottom:10px;text-shadow:0 0 30px rgba(255,215,0,0.8);animation:pulse 2s infinite}
+.auth-box .subtitle{text-align:center;color:#aaa;margin-bottom:30px;font-size:16px}
+.auth-tabs{display:flex;gap:10px;margin-bottom:25px}
+.auth-tab{flex:1;padding:12px;background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;cursor:pointer;transition:all 0.3s;text-align:center;font-weight:bold}
+.auth-tab.active{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;border-color:#ffd700}
+.auth-input{width:100%;padding:15px;margin:10px 0;border-radius:12px;border:2px solid rgba(255,215,0,0.3);background:rgba(0,0,0,0.5);color:#fff;font-size:16px;transition:all 0.3s}
+.auth-input:focus{outline:none;border-color:#ffd700;box-shadow:0 0 20px rgba(255,215,0,0.3)}
+.auth-btn{width:100%;padding:16px;margin-top:15px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:12px;color:#000;font-weight:bold;font-size:18px;cursor:pointer;transition:all 0.3s;animation:glow 2s infinite}
+.auth-btn:hover{transform:scale(1.05);box-shadow:0 10px 30px rgba(255,215,0,0.5)}
+.auth-error{color:#ff4444;text-align:center;margin-top:10px;font-size:14px;min-height:20px}
+.bonus-badge{background:linear-gradient(135deg,#00ff88,#00cc66);color:#000;padding:8px 16px;border-radius:20px;text-align:center;margin-top:15px;font-weight:bold;animation:pulse 1.5s infinite}
+
+/* Главный экран */
+.main-screen{display:none;animation:fadeIn 0.5s}
+.header{background:rgba(0,0,0,0.5);backdrop-filter:blur(20px);padding:20px;border-bottom:2px solid #ffd700;position:sticky;top:0;z-index:100}
+.header-content{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+.logo{font-size:32px;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.8);animation:glow 2s infinite}
+.user-info{display:flex;align-items:center;gap:20px}
+.balance-display{background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,204,102,0.1));border:2px solid #00ff88;padding:12px 24px;border-radius:15px;font-size:24px;font-weight:bold;color:#00ff88;animation:glow 2s infinite}
+.user-avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#ffd700,#ff8c00);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;transition:all 0.3s;border:2px solid #ffd700}
+.user-avatar:hover{transform:scale(1.1)}
+.logout-btn{background:rgba(255,68,68,0.2);border:2px solid #ff4444;color:#ff4444;padding:10px 20px;border-radius:10px;cursor:pointer;transition:all 0.3s}
+.logout-btn:hover{background:#ff4444;color:#fff}
+
+/* Игры */
+.games-container{max-width:1200px;margin:30px auto;padding:0 20px}
+.games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:25px}
+.game-card{background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);border:2px solid rgba(255,215,0,0.3);border-radius:20px;padding:30px;transition:all 0.3s;animation:fadeIn 0.5s}
+.game-card:hover{transform:translateY(-10px);border-color:#ffd700;box-shadow:0 20px 40px rgba(255,215,0,0.3)}
+.game-card h2{color:#ffd700;font-size:28px;margin-bottom:20px;text-align:center;text-shadow:0 0 20px rgba(255,215,0,0.5)}
+.game-visual{min-height:150px;display:flex;align-items:center;justify-content:center;margin:20px 0;font-size:80px}
+.game-input{width:100%;padding:15px;margin:10px 0;border-radius:12px;border:2px solid rgba(255,215,0,0.3);background:rgba(0,0,0,0.5);color:#fff;font-size:18px;text-align:center;transition:all 0.3s}
+.game-input:focus{outline:none;border-color:#ffd700;box-shadow:0 0 20px rgba(255,215,0,0.3)}
+.game-select{width:100%;padding:15px;margin:10px 0;border-radius:12px;border:2px solid rgba(255,215,0,0.3);background:rgba(0,0,0,0.5);color:#fff;font-size:18px;cursor:pointer}
+.game-btn{width:100%;padding:16px;margin:10px 0;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:12px;color:#000;font-weight:bold;font-size:18px;cursor:pointer;transition:all 0.3s;animation:glow 2s infinite}
+.game-btn:hover{transform:scale(1.05);box-shadow:0 10px 30px rgba(255,215,0,0.5)}
+.game-btn:disabled{opacity:0.5;cursor:not-allowed;animation:none}
+.game-result{font-size:24px;text-align:center;margin:20px 0;min-height:60px;font-weight:bold}
+
+/* Слоты */
+.slots-container{display:flex;justify-content:center;gap:15px;margin:20px 0}
+.slot-reel{width:100px;height:100px;background:linear-gradient(135deg,#fff,#ddd);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:60px;box-shadow:0 10px 30px rgba(0,0,0,0.5);border:3px solid #ffd700;transition:all 0.3s}
+.slot-reel.spinning{animation:spin 0.2s linear infinite}
+
+/* Рулетка */
+.roulette-wheel{width:200px;height:200px;margin:20px auto;border-radius:50%;border:8px solid #ffd700;background:conic-gradient(#ff4444 0deg 9.73deg,#000 9.73deg 19.46deg,#ff4444 19.46deg 29.19deg,#000 29.19deg 38.92deg,#ff4444 38.92deg 48.65deg,#000 48.65deg 58.38deg,#ff4444 58.38deg 68.11deg,#000 68.11deg 77.84deg,#ff4444 77.84deg 87.57deg,#000 87.57deg 97.3deg,#ff4444 97.3deg 107.03deg,#000 107.03deg 116.76deg,#ff4444 116.76deg 126.49deg,#000 126.49deg 136.22deg,#ff4444 136.22deg 145.95deg,#000 145.95deg 155.68deg,#ff4444 155.68deg 165.41deg,#000 165.41deg 175.14deg,#00ff88 175.14deg 184.87deg,#ff4444 184.87deg 194.6deg,#000 194.6deg 204.33deg,#ff4444 204.33deg 214.06deg,#000 214.06deg 223.79deg,#ff4444 223.79deg 233.52deg,#000 233.52deg 243.25deg,#ff4444 243.25deg 252.98deg,#000 252.98deg 262.71deg,#ff4444 262.71deg 272.44deg,#000 272.44deg 282.17deg,#ff4444 282.17deg 291.9deg,#000 291.9deg 301.63deg,#ff4444 301.63deg 311.36deg,#000 311.36deg 321.09deg,#ff4444 321.09deg 330.82deg,#000 330.82deg 340.55deg,#ff4444 340.55deg 350.28deg,#000 350.28deg 360deg);box-shadow:0 0 40px rgba(255,215,0,0.5);transition:transform 3s cubic-bezier(0.17,0.67,0.32,1)}
+
+/* Кости */
+.dice-display{font-size:120px;margin:20px 0;animation:float 2s ease-in-out infinite}
+
+/* Монетка */
+.coin-display{font-size:120px;margin:20px 0;transition:transform 1s}
+.coin-display.flipping{animation:spin 1s linear infinite}
+
+/* Донат */
+.donate-section{max-width:800px;margin:40px auto;padding:0 20px}
+.donate-card{background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,140,0,0.05));border:2px solid #ffd700;border-radius:25px;padding:40px;text-align:center;animation:glow 3s infinite}
+.donate-card h2{font-size:36px;color:#ffd700;margin-bottom:20px;text-shadow:0 0 30px rgba(255,215,0,0.8)}
+.donate-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:30px}
+.donate-btn{padding:20px;background:linear-gradient(135deg,#00ff88,#00cc66);border:none;border-radius:15px;color:#000;font-weight:bold;font-size:18px;cursor:pointer;transition:all 0.3s}
+.donate-btn:hover{transform:scale(1.1);box-shadow:0 10px 30px rgba(0,255,136,0.5)}
+
+/* Модальное окно */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2000;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s}
+.modal.active{display:flex}
+.modal-content{background:linear-gradient(135deg,#1a1f3a,#0f1429);border-radius:25px;padding:40px;max-width:500px;width:100%;text-align:center;border:3px solid #ffd700;box-shadow:0 0 50px rgba(255,215,0,0.5);animation:float 3s ease-in-out infinite}
+.modal-content h2{font-size:32px;color:#ffd700;margin-bottom:20px}
+.modal-content p{font-size:18px;margin-bottom:30px;line-height:1.6}
+.modal-btn{padding:15px 40px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:12px;color:#000;font-weight:bold;font-size:18px;cursor:pointer;transition:all 0.3s}
+.modal-btn:hover{transform:scale(1.1)}
+
+/* Конфетти */
+.confetti{position:fixed;width:10px;height:10px;pointer-events:none;z-index:3000;animation:confetti 3s linear forwards}
+
+@media(max-width:768px){
+.auth-box h1{font-size:32px}
+.logo{font-size:24px}
+.balance-display{font-size:18px;padding:10px 16px}
+.games-grid{grid-template-columns:1fr}
+.game-card{padding:20px}
+}
 </style>
 </head>
 <body>
 
+<!-- Экран авторизации -->
+<div class="auth-screen" id="authScreen">
+<div class="auth-box">
+<h1>🎰 ROYAL CASINO</h1>
+<p class="subtitle">Добро пожаловать в мир азарта!</p>
+<div class="auth-tabs">
+<div class="auth-tab active" onclick="switchTab('login')">Вход</div>
+<div class="auth-tab" onclick="switchTab('register')">Регистрация</div>
+</div>
+<div id="loginForm">
+<input type="text" class="auth-input" id="loginUsername" placeholder="Имя пользователя">
+<input type="password" class="auth-input" id="loginPassword" placeholder="Пароль">
+<button class="auth-btn" onclick="login()">Войти</button>
+</div>
+<div id="registerForm" style="display:none">
+<input type="text" class="auth-input" id="regUsername" placeholder="Придумай имя">
+<input type="password" class="auth-input" id="regPassword" placeholder="Придумай пароль">
+<input type="password" class="auth-input" id="regPasswordConfirm" placeholder="Повтори пароль">
+<button class="auth-btn" onclick="register()">Создать аккаунт</button>
+<div class="bonus-badge">🎁 Приветственный бонус: 50₽</div>
+</div>
+<div class="auth-error" id="authError"></div>
+</div>
+</div>
+
+<!-- Главный экран -->
+<div class="main-screen" id="mainScreen">
 <div class="header">
-<h1>🎰 КАЗИНО</h1>
-<div class="balance">💰 Баланс: <span id="balance">1000</span>₽</div>
+<div class="header-content">
+<div class="logo">🎰 ROYAL CASINO</div>
+<div class="user-info">
+<div class="balance-display">💰 <span id="balanceDisplay">0</span>₽</div>
+<div class="user-avatar" id="userAvatar">👤</div>
+<button class="logout-btn" onclick="logout()">Выйти</button>
+</div>
+</div>
 </div>
 
-<div class="games">
+<div class="games-container">
+<div class="games-grid">
 
-<div class="game">
+<!-- Слоты -->
+<div class="game-card">
 <h2>🎰 Слоты</h2>
-<div class="slots">
-<div class="slot" id="slot1">🍒</div>
-<div class="slot" id="slot2"></div>
-<div class="slot" id="slot3">🍊</div>
+<div class="slots-container">
+<div class="slot-reel" id="slot1">🍒</div>
+<div class="slot-reel" id="slot2"></div>
+<div class="slot-reel" id="slot3">🍊</div>
 </div>
-<input type="number" id="slotsBet" placeholder="Ставка" value="100">
-<button onclick="playSlots()">Крутить</button>
-<div class="result" id="slotsResult"></div>
+<input type="number" class="game-input" id="slotsBet" placeholder="Ставка" value="100">
+<button class="game-btn" onclick="playSlots()"> Крутить</button>
+<div class="game-result" id="slotsResult"></div>
 </div>
 
-<div class="game">
-<h2> Рулетка</h2>
-<div class="roulette" id="roulette"></div>
-<input type="number" id="rouletteBet" placeholder="Ставка" value="100">
-<select id="rouletteColor" style="width:100%;padding:15px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:18px">
+<!-- Рулетка -->
+<div class="game-card">
+<h2>🎡 Рулетка</h2>
+<div class="roulette-wheel" id="rouletteWheel"></div>
+<input type="number" class="game-input" id="rouletteBet" placeholder="Ставка" value="100">
+<select class="game-select" id="rouletteColor">
 <option value="red">🔴 Красное (x2)</option>
 <option value="black">⚫ Чёрное (x2)</option>
-<option value="green"> Зелёное (x14)</option>
+<option value="green">🟢 Зелёное (x14)</option>
 </select>
-<button onclick="playRoulette()">Крутить</button>
-<div class="result" id="rouletteResult"></div>
+<button class="game-btn" onclick="playRoulette()">🎡 Крутить</button>
+<div class="game-result" id="rouletteResult"></div>
 </div>
 
-<div class="game">
-<h2> Кости</h2>
-<div class="dice" id="dice">🎲</div>
-<input type="number" id="diceBet" placeholder="Ставка" value="100">
-<select id="diceNumber" style="width:100%;padding:15px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:18px">
+<!-- Кости -->
+<div class="game-card">
+<h2>🎲 Кости</h2>
+<div class="dice-display" id="diceDisplay">🎲</div>
+<input type="number" class="game-input" id="diceBet" placeholder="Ставка" value="100">
+<select class="game-select" id="diceNumber">
 <option value="1">1 (x6)</option>
 <option value="2">2 (x6)</option>
 <option value="3">3 (x6)</option>
@@ -73,86 +187,195 @@ body{background:linear-gradient(135deg,#1a0033,#000);min-height:100vh;color:#fff
 <option value="5">5 (x6)</option>
 <option value="6">6 (x6)</option>
 </select>
-<button onclick="playDice()">Бросить</button>
-<div class="result" id="diceResult"></div>
+<button class="game-btn" onclick="playDice()">🎲 Бросить</button>
+<div class="game-result" id="diceResult"></div>
 </div>
 
-<div class="game">
+<!-- Монетка -->
+<div class="game-card">
 <h2>🪙 Монетка</h2>
-<div class="coin" id="coin">🪙</div>
-<input type="number" id="coinBet" placeholder="Ставка" value="100">
-<select id="coinSide" style="width:100%;padding:15px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:18px">
-<option value="heads">Орёл (x2)</option>
-<option value="tails">Решка (x2)</option>
+<div class="coin-display" id="coinDisplay">🪙</div>
+<input type="number" class="game-input" id="coinBet" placeholder="Ставка" value="100">
+<select class="game-select" id="coinSide">
+<option value="heads">👑 Орёл (x2)</option>
+<option value="tails">🌟 Решка (x2)</option>
 </select>
-<button onclick="playCoin()">Подбросить</button>
-<div class="result" id="coinResult"></div>
+<button class="game-btn" onclick="playCoin()"> Подбросить</button>
+<div class="game-result" id="coinResult"></div>
 </div>
 
 </div>
+</div>
 
-<div class="donate">
+<!-- Донат -->
+<div class="donate-section">
+<div class="donate-card">
 <h2>💳 Пополнить баланс</h2>
-<p style="margin:20px 0;font-size:18px">Выбери способ оплаты:</p>
-<button onclick="donateYooMoney()">💳 ЮMoney</button>
-<button onclick="donateCrypto()"> Криптовалюта</button>
-<button onclick="donateCard()">💳 Карта</button>
-<p style="margin-top:20px;opacity:0.7;font-size:14px">Минимальная сумма: 100₽</p>
+<p style="font-size:18px;margin:20px 0">Выбери удобный способ оплаты</p>
+<div class="donate-options">
+<button class="donate-btn" onclick="donateYooMoney()">💳 ЮMoney</button>
+<button class="donate-btn" onclick="donateCrypto()">₿ Крипто</button>
+<button class="donate-btn" onclick="donateCard()">💳 Карта</button>
+</div>
+<p style="margin-top:30px;opacity:0.7">Минимальная сумма: 100₽</p>
+</div>
+</div>
+</div>
+
+<!-- Модальное окно -->
+<div class="modal" id="modal">
+<div class="modal-content">
+<h2 id="modalTitle">🎉 Поздравляем!</h2>
+<p id="modalText"></p>
+<button class="modal-btn" onclick="closeModal()">OK</button>
+</div>
 </div>
 
 <script>
-let balance=1000;
+let currentUser=null;
+let balance=0;
 
-const saved=localStorage.getItem('casinoBalance');
-if(saved)balance=parseInt(saved);
-
-function updateBalance(){
-document.getElementById('balance').textContent=balance;
-localStorage.setItem('casinoBalance',balance);
+// Переключение вкладок
+function switchTab(tab){
+document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+event.target.classList.add('active');
+if(tab==='login'){
+document.getElementById('loginForm').style.display='block';
+document.getElementById('registerForm').style.display='none';
+}else{
+document.getElementById('loginForm').style.display='none';
+document.getElementById('registerForm').style.display='block';
+}
+document.getElementById('authError').textContent='';
 }
 
+// Регистрация
+function register(){
+const username=document.getElementById('regUsername').value.trim();
+const password=document.getElementById('regPassword').value;
+const passwordConfirm=document.getElementById('regPasswordConfirm').value;
+const errorEl=document.getElementById('authError');
+
+if(!username||!password){errorEl.textContent='Заполни все поля';return}
+if(username.length<3){errorEl.textContent='Имя минимум 3 символа';return}
+if(password.length<4){errorEl.textContent='Пароль минимум 4 символа';return}
+if(password!==passwordConfirm){errorEl.textContent='Пароли не совпадают';return}
+
+const users=JSON.parse(localStorage.getItem('casinoUsers')||'{}');
+if(users[username]){errorEl.textContent='Пользователь уже существует';return}
+
+users[username]={password,balance:50,createdAt:Date.now()};
+localStorage.setItem('casinoUsers',JSON.stringify(users));
+
+showModal('🎁 Добро пожаловать!','Ты получил приветственный бонус 50₽!');
+createConfetti();
+
+setTimeout(()=>{
+loginWithCredentials(username,password);
+},2000);
+}
+
+// Вход
+function login(){
+const username=document.getElementById('loginUsername').value.trim();
+const password=document.getElementById('loginPassword').value;
+const errorEl=document.getElementById('authError');
+
+if(!username||!password){errorEl.textContent='Заполни все поля';return}
+
+loginWithCredentials(username,password);
+}
+
+function loginWithCredentials(username,password){
+const users=JSON.parse(localStorage.getItem('casinoUsers')||'{}');
+const user=users[username];
+
+if(!user){document.getElementById('authError').textContent='Пользователь не найден';return}
+if(user.password!==password){document.getElementById('authError').textContent='Неверный пароль';return}
+
+currentUser=username;
+balance=user.balance;
+localStorage.setItem('casinoCurrentUser',username);
+
+document.getElementById('authScreen').style.display='none';
+document.getElementById('mainScreen').style.display='block';
+document.getElementById('userAvatar').textContent=username[0].toUpperCase();
+updateBalance();
+}
+
+// Выход
+function logout(){
+currentUser=null;
+balance=0;
+localStorage.removeItem('casinoCurrentUser');
+document.getElementById('mainScreen').style.display='none';
+document.getElementById('authScreen').style.display='flex';
+document.getElementById('loginUsername').value='';
+document.getElementById('loginPassword').value='';
+}
+
+// Обновление баланса
+function updateBalance(){
+document.getElementById('balanceDisplay').textContent=balance;
+if(currentUser){
+const users=JSON.parse(localStorage.getItem('casinoUsers')||'{}');
+if(users[currentUser]){
+users[currentUser].balance=balance;
+localStorage.setItem('casinoUsers',JSON.stringify(users));
+}
+}
+}
+
+// Игры
 function playSlots(){
 const bet=parseInt(document.getElementById('slotsBet').value);
-if(bet>balance){alert('Недостаточно средств!');return}
-if(bet<10){alert('Минимальная ставка 10₽');return}
-
-const symbols=['🍒','','🍊','🍇','','💎','7️⃣'];
-const s1=symbols[Math.floor(Math.random()*symbols.length)];
-const s2=symbols[Math.floor(Math.random()*symbols.length)];
-const s3=symbols[Math.floor(Math.random()*symbols.length)];
-
-document.getElementById('slot1').textContent=s1;
-document.getElementById('slot2').textContent=s2;
-document.getElementById('slot3').textContent=s3;
+if(bet>balance){showModal('❌ Ошибка','Недостаточно средств!');return}
+if(bet<10){showModal('❌ Ошибка','Минимальная ставка 10₽');return}
 
 balance-=bet;
+updateBalance();
 
-if(s1===s2&&s2===s3){
+const symbols=['🍒','🍋','🍊','🍇','💎','7️⃣'];
+const reels=[document.getElementById('slot1'),document.getElementById('slot2'),document.getElementById('slot3')];
+
+reels.forEach(r=>r.classList.add('spinning'));
+
+setTimeout(()=>{
+const results=[symbols[Math.floor(Math.random()*symbols.length)],symbols[Math.floor(Math.random()*symbols.length)],symbols[Math.floor(Math.random()*symbols.length)]];
+
+reels.forEach((r,i)=>{
+r.classList.remove('spinning');
+r.textContent=results[i];
+});
+
+if(results[0]===results[1]&&results[1]===results[2]){
 const win=bet*10;
 balance+=win;
 document.getElementById('slotsResult').innerHTML=`<span style="color:#00ff88">🎉 ДЖЕКПОТ! +${win}₽</span>`;
-}else if(s1===s2||s2===s3||s1===s3){
+createConfetti();
+}else if(results[0]===results[1]||results[1]===results[2]||results[0]===results[2]){
 const win=bet*2;
 balance+=win;
 document.getElementById('slotsResult').innerHTML=`<span style="color:#00ff88">✨ Выигрыш! +${win}₽</span>`;
 }else{
 document.getElementById('slotsResult').innerHTML=`<span style="color:#ff4444">😢 Проигрыш -${bet}₽</span>`;
 }
-
 updateBalance();
+},2000);
 }
 
 function playRoulette(){
 const bet=parseInt(document.getElementById('rouletteBet').value);
 const color=document.getElementById('rouletteColor').value;
-if(bet>balance){alert('Недостаточно средств!');return}
-if(bet<10){alert('Минимальная ставка 10₽');return}
+if(bet>balance){showModal('❌ Ошибка','Недостаточно средств!');return}
+if(bet<10){showModal('❌ Ошибка','Минимальная ставка 10₽');return}
 
 balance-=bet;
+updateBalance();
 
-const roulette=document.getElementById('roulette');
-const rotation=Math.floor(Math.random()*360)+720;
-roulette.style.transform=`rotate(${rotation}deg)`;
+const wheel=document.getElementById('rouletteWheel');
+const rotation=Math.floor(Math.random()*360)+1080;
+wheel.style.transform=`rotate(${rotation}deg)`;
 
 setTimeout(()=>{
 const rand=Math.random();
@@ -166,9 +389,10 @@ let win;
 if(color==='green')win=bet*14;
 else win=bet*2;
 balance+=win;
-document.getElementById('rouletteResult').innerHTML=`<span style="color:#00ff88">🎉 Выпало ${result==='red'?'🔴':result==='black'?'⚫':''}! +${win}₽</span>`;
+document.getElementById('rouletteResult').innerHTML=`<span style="color:#00ff88"> Выпало ${result==='red'?'':result==='black'?'⚫':'🟢'}! +${win}₽</span>`;
+createConfetti();
 }else{
-document.getElementById('rouletteResult').innerHTML=`<span style="color:#ff4444">😢 Выпало ${result==='red'?'🔴':result==='black'?'':'🟢'}. Проигрыш -${bet}₽</span>`;
+document.getElementById('rouletteResult').innerHTML=`<span style="color:#ff4444">😢 Выпало ${result==='red'?'🔴':result==='black'?'⚫':'🟢'}. -${bet}₽</span>`;
 }
 updateBalance();
 },3000);
@@ -177,84 +401,131 @@ updateBalance();
 function playDice(){
 const bet=parseInt(document.getElementById('diceBet').value);
 const number=parseInt(document.getElementById('diceNumber').value);
-if(bet>balance){alert('Недостаточно средств!');return}
-if(bet<10){alert('Минимальная ставка 10₽');return}
+if(bet>balance){showModal('❌ Ошибка','Недостаточно средств!');return}
+if(bet<10){showModal('❌ Ошибка','Минимальная ставка 10₽');return}
 
 balance-=bet;
+updateBalance();
 
 const diceEmojis=['⚀','⚁','⚂','⚃','⚄','⚅'];
-const result=Math.floor(Math.random()*6)+1;
-
-document.getElementById('dice').textContent=diceEmojis[result-1];
+const dice=document.getElementById('diceDisplay');
+dice.style.animation='spin 0.5s linear infinite';
 
 setTimeout(()=>{
+const result=Math.floor(Math.random()*6)+1;
+dice.textContent=diceEmojis[result-1];
+dice.style.animation='float 2s ease-in-out infinite';
+
 if(result===number){
 const win=bet*6;
 balance+=win;
 document.getElementById('diceResult').innerHTML=`<span style="color:#00ff88">🎉 Выпало ${result}! +${win}₽</span>`;
+createConfetti();
 }else{
-document.getElementById('diceResult').innerHTML=`<span style="color:#ff4444">😢 Выпало ${result}. Проигрыш -${bet}₽</span>`;
+document.getElementById('diceResult').innerHTML=`<span style="color:#ff4444">😢 Выпало ${result}. -${bet}₽</span>`;
 }
 updateBalance();
-},1000);
+},1500);
 }
 
 function playCoin(){
 const bet=parseInt(document.getElementById('coinBet').value);
 const side=document.getElementById('coinSide').value;
-if(bet>balance){alert('Недостаточно средств!');return}
-if(bet<10){alert('Минимальная ставка 10₽');return}
+if(bet>balance){showModal('❌ Ошибка','Недостаточно средств!');return}
+if(bet<10){showModal('❌ Ошибка','Минимальная ставка 10₽');return}
 
 balance-=bet;
+updateBalance();
 
-const coin=document.getElementById('coin');
-coin.style.transform='rotateY(720deg)';
+const coin=document.getElementById('coinDisplay');
+coin.classList.add('flipping');
 
 setTimeout(()=>{
 const result=Math.random()<0.5?'heads':'tails';
 coin.textContent=result==='heads'?'👑':'🌟';
+coin.classList.remove('flipping');
 
 if(result===side){
 const win=bet*2;
 balance+=win;
 document.getElementById('coinResult').innerHTML=`<span style="color:#00ff88">🎉 ${result==='heads'?'Орёл':'Решка'}! +${win}₽</span>`;
+createConfetti();
 }else{
-document.getElementById('coinResult').innerHTML=`<span style="color:#ff4444">😢 ${result==='heads'?'Орёл':'Решка'}. Проигрыш -${bet}₽</span>`;
+document.getElementById('coinResult').innerHTML=`<span style="color:#ff4444">😢 ${result==='heads'?'Орёл':'Решка'}. -${bet}₽</span>`;
 }
-coin.style.transform='rotateY(0deg)';
 updateBalance();
-},1000);
+},1500);
 }
 
+// Донат
 function donateYooMoney(){
 const amount=prompt('Введи сумму пополнения (мин. 100₽):');
-if(!amount||parseInt(amount)<100){alert('Минимальная сумма 100₽');return}
+if(!amount||parseInt(amount)<100){showModal('❌ Ошибка','Минимальная сумма 100₽');return}
 
-// Замени на свой номер кошелька ЮMoney
 const walletNumber='41001234567890';
-const url=`https://yoomoney.ru/quickpay/confirm.xml?receiver=${walletNumber}&quickpay-form=donate&targets=Пополнение+баланса&sum=${amount}&label=casino`;
+const url=`https://yoomoney.ru/quickpay/confirm.xml?receiver=${walletNumber}&quickpay-form=donate&targets=Пополнение+баланса+Royal+Casino&sum=${amount}&label=${currentUser}`;
 
 window.open(url,'_blank');
 
-// Симуляция пополнения (в реальности нужно проверять через API)
 setTimeout(()=>{
 if(confirm('Ты оплатил? Нажми OK для подтверждения')){
 balance+=parseInt(amount);
 updateBalance();
-alert(`✅ Баланс пополнен на ${amount}₽`);
+showModal('✅ Успешно!',`Баланс пополнен на ${amount}₽`);
+createConfetti();
 }
 },5000);
 }
 
 function donateCrypto(){
-alert('₿ Адрес кошелька USDT (TRC-20):\n\nTXYZ1234567890AbCdEfGhIjKlMnOpQrSt\n\nМинимум: 5 USDT\nПосле оплаты напиши в поддержку');
+showModal(' Криптовалюта','Адрес кошелька USDT (TRC-20):\n\nTXYZ1234567890AbCdEfGhIjKlMnOpQrSt\n\nМинимум: 5 USDT\nПосле оплаты напиши в поддержку');
 }
 
 function donateCard(){
-alert('💳 Для оплаты картой:\n\n1. Переведи на карту: 2200 1234 5678 9012\n2. Напиши сумму и последние 4 цифры карты в поддержку\n3. Баланс пополнится в течение 5 минут');
+showModal(' Карта','Для оплаты картой:\n\n1. Переведи на карту: 2200 1234 5678 9012\n2. Напиши сумму и последние 4 цифры карты в поддержку\n3. Баланс пополнится в течение 5 минут');
 }
 
+// Модальное окно
+function showModal(title,text){
+document.getElementById('modalTitle').textContent=title;
+document.getElementById('modalText').textContent=text;
+document.getElementById('modal').classList.add('active');
+}
+
+function closeModal(){
+document.getElementById('modal').classList.remove('active');
+}
+
+// Конфетти
+function createConfetti(){
+const colors=['#ffd700','#ff4444','#00ff88','#0088ff','#ff00ff'];
+for(let i=0;i<50;i++){
+const confetti=document.createElement('div');
+confetti.className='confetti';
+confetti.style.left=Math.random()*100+'vw';
+confetti.style.background=colors[Math.floor(Math.random()*colors.length)];
+confetti.style.animationDelay=Math.random()*2+'s';
+confetti.style.top='-10px';
+document.body.appendChild(confetti);
+setTimeout(()=>confetti.remove(),3000);
+}
+}
+
+// Авто-вход
+window.onload=()=>{
+const savedUser=localStorage.getItem('casinoCurrentUser');
+if(savedUser){
+const users=JSON.parse(localStorage.getItem('casinoUsers')||'{}');
+if(users[savedUser]){
+currentUser=savedUser;
+balance=users[savedUser].balance;
+document.getElementById('authScreen').style.display='none';
+document.getElementById('mainScreen').style.display='block';
+document.getElementById('userAvatar').textContent=currentUser[0].toUpperCase();
 updateBalance();
+}
+}
+};
 </script>
 
 </body>
