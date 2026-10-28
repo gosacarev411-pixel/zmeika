@@ -61,8 +61,8 @@ body{background:linear-gradient(135deg,#1e3c72,#2a5298);min-height:100vh;color:#
 <div class="menu-screen" id="menuScreen">
 <button class="menu-btn" onclick="startAI()">🤖 Играть с ИИ</button>
 <button class="menu-btn" onclick="createRoom()">👥 Создать комнату</button>
-<button class="menu-btn" onclick="showJoin()">🔗 Присоединиться</button>
-<button class="menu-btn" onclick="quickMatch()">⚡ Быстрая игра</button>
+<button class="menu-btn" onclick="showJoin()"> Присоединиться</button>
+<button class="menu-btn" onclick="quickMatch()"> Быстрая игра</button>
 </div>
 
 <div class="menu-screen" id="createRoomScreen" style="display:none">
@@ -132,14 +132,31 @@ function saveS(){localStorage.setItem('cs',JSON.stringify(stats))}
 
 function initB(){
 board=[];
-for(let r=0;r<N;r++){board[r]=[];for(let c=0;c<N;c++){
-if((r+c)%2===1){if(r<3)board[r][c]={c:'b',k:false};else if(r>4)board[r][c]={c:'w',k:false};else board[r][c]=null}
+for(let r=0;r<N;r++){
+board[r]=[];
+for(let c=0;c<N;c++){
+if((r+c)%2===1){
+if(r<3)board[r][c]={c:'b',k:false};
+else if(r>4)board[r][c]={c:'w',k:false};
 else board[r][c]=null;
-}}
+}else board[r][c]=null;
+}
+}
 }
 
 function toD(){return board.map(r=>r.map(c=>c?{c:c.c,k:c.k}:null))}
-function fromD(d){if(!d)return[];return d.map(r=>r.map(c=>c?{c:c.c,k:c.k}:null))}
+
+function fromD(d){
+const result=[];
+for(let r=0;r<N;r++){
+result[r]=[];
+for(let c=0;c<N;c++){
+const cell=d&&d[r]&&d[r][c];
+result[r][c]=cell?{c:cell.c,k:cell.k}:null;
+}
+}
+return result;
+}
 
 function genCode(){const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=ch[Math.floor(Math.random()*ch.length)];return c}
 
@@ -202,8 +219,9 @@ sel={r,c};render();
 }
 
 function doMove(fr,fc,m){
-const p=board[fr][fc];
+const p=board[fr]&&board[fr][fc];
 if(!p)return;
+if(!board[m.r])board[m.r]=[];
 board[m.r][m.c]=p;
 board[fr][fc]=null;
 m.caps.forEach(x=>{if(board[x.r])board[x.r][x.c]=null});
@@ -395,7 +413,7 @@ const d=snap.val();
 if(!d)return;
 if(d.status==='playing'&&!online){
 online=true;myColor='w';
-if(d.board)board=fromD(d.board);
+board=fromD(d.board);
 cur=d.cur||'w';
 over=false;
 document.getElementById('createRoomScreen').style.display='none';
@@ -420,7 +438,7 @@ if(!d){alert('Не найдена');return}
 if(d.status!=='waiting'){alert('Занята');return}
 rId=code;online=true;myColor='b';
 rRef.update({status:'playing',p2:'you'}).then(()=>{
-if(d.board)board=fromD(d.board);
+board=fromD(d.board);
 cur=d.cur||'w';
 over=false;
 document.getElementById('joinScreen').style.display='none';
@@ -483,7 +501,7 @@ if(d.status==='playing'&&d.p2){
 qDone=true;
 if(qInt)clearInterval(qInt);
 qRef.child(pid).remove();
-if(d.board)board=fromD(d.board);
+board=fromD(d.board);
 cur=d.cur||'w';
 document.getElementById('searchingScreen').style.display='none';
 document.getElementById('gameScreen').style.display='block';
@@ -506,7 +524,7 @@ const d=snap.val();
 if(!d){alert('Не найдена');showMenu();return}
 initB();online=true;myColor=color;over=false;cur='w';
 rRef.update({status:'playing',p2:'you'}).then(()=>{
-if(d.board)board=fromD(d.board);
+board=fromD(d.board);
 cur=d.cur||'w';
 document.getElementById('searchingScreen').style.display='none';
 document.getElementById('gameScreen').style.display='block';
