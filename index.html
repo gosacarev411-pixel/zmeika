@@ -3,558 +3,259 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Шашки Online</title>
+<title>🎰 Казино</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
-body{background:linear-gradient(135deg,#1e3c72,#2a5298);min-height:100vh;color:#fff;display:flex;flex-direction:column}
-.header{background:rgba(0,0,0,0.3);padding:12px 20px;text-align:center;border-bottom:2px solid #ffd700}
-.header h1{font-size:24px;color:#ffd700}
-.stats{display:flex;justify-content:center;gap:15px;margin-top:8px}
-.stat{background:rgba(255,215,0,0.1);padding:6px 14px;border-radius:20px;font-size:13px}
-.stat span{color:#ffd700;font-weight:bold}
-.container{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;gap:15px}
-.menu-screen{width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
-.menu-btn{padding:18px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:12px;color:#000;font-weight:bold;font-size:16px;cursor:pointer}
-.menu-btn.secondary{background:rgba(255,255,255,0.1);color:#fff;border:2px solid rgba(255,255,255,0.3)}
-.board-wrapper{background:rgba(0,0,0,0.3);padding:10px;border-radius:15px;width:100%;max-width:500px}
-.board{display:grid;grid-template-columns:repeat(8,1fr);gap:0;border-radius:10px;overflow:hidden;width:100%;aspect-ratio:1}
-.cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.cell.light{background:#f0d9b5}
-.cell.dark{background:#b58863}
-.cell.selected{background:#7fc97f!important}
-.cell.valid{background:#fff700!important}
-.cell.valid::after{content:'';width:30%;height:30%;background:rgba(0,0,0,0.3);border-radius:50%}
-.piece{width:85%;height:85%;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 3px 6px rgba(0,0,0,0.4)}
-.piece.white{background:linear-gradient(135deg,#fff,#ddd);border:3px solid #999}
-.piece.black{background:linear-gradient(135deg,#444,#111);border:3px solid #666}
-.piece.king::before{content:'♔';position:absolute;font-size:20px;color:#ffd700}
-.info-panel{background:rgba(0,0,0,0.3);padding:12px 30px;border-radius:15px;text-align:center;font-size:18px;font-weight:bold;margin-top:10px}
-.info-panel.waiting{border:2px solid #ffd700}
-.room-code{background:rgba(255,215,0,0.2);border:2px solid #ffd700;padding:15px;border-radius:12px;text-align:center;margin:15px 0}
-.room-code-value{font-size:32px;font-weight:bold;color:#ffd700;letter-spacing:5px;font-family:monospace}
-.controls{display:flex;gap:10px;justify-content:center;margin-top:10px}
-.btn{padding:12px 24px;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:10px;color:#000;font-weight:bold;cursor:pointer}
-.btn.secondary{background:rgba(255,255,255,0.1);color:#fff;border:2px solid rgba(255,255,255,0.3)}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center;padding:20px}
-.modal.active{display:flex}
-.modal-content{background:#1e3c72;border-radius:20px;padding:30px;max-width:400px;width:100%;text-align:center;border:3px solid #ffd700}
-.modal h2{font-size:28px;margin-bottom:15px;color:#ffd700}
-.modal p{margin-bottom:20px}
-.modal input{width:100%;padding:12px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:20px;text-align:center;letter-spacing:5px;font-family:monospace}
-.searching{text-align:center;padding:30px}
-.searching .spinner{width:60px;height:60px;border:4px solid rgba(255,215,0,0.3);border-top-color:#ffd700;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.online-badge{background:rgba(0,255,136,0.2);color:#00ff88;padding:4px 12px;border-radius:10px;font-size:11px;margin-left:10px}
+body{background:linear-gradient(135deg,#1a0033,#000);min-height:100vh;color:#fff;padding:20px}
+.header{text-align:center;margin-bottom:30px}
+.header h1{font-size:48px;color:#ffd700;text-shadow:0 0 20px #ffd700}
+.balance{font-size:32px;color:#00ff88;margin:20px 0}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;max-width:1200px;margin:0 auto}
+.game{background:rgba(255,255,255,0.1);border:2px solid #ffd700;border-radius:20px;padding:30px;text-align:center}
+.game h2{color:#ffd700;margin-bottom:20px;font-size:28px}
+.game input{width:100%;padding:15px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:18px;text-align:center}
+.game button{width:100%;padding:15px;margin:10px 0;background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:10px;color:#000;font-weight:bold;font-size:18px;cursor:pointer}
+.game button:hover{transform:scale(1.05)}
+.result{font-size:24px;margin:20px 0;min-height:60px}
+.slots{display:flex;justify-content:center;gap:10px;margin:20px 0}
+.slot{width:80px;height:80px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:48px}
+.roulette{width:200px;height:200px;margin:20px auto;border-radius:50%;border:5px solid #ffd700;position:relative;transition:transform 3s}
+.dice{font-size:100px;margin:20px 0}
+.coin{font-size:100px;margin:20px 0;transition:transform 1s}
+.donate{background:rgba(255,215,0,0.1);border:2px solid #ffd700;border-radius:20px;padding:30px;max-width:600px;margin:40px auto;text-align:center}
+.donate h2{color:#ffd700;margin-bottom:20px}
+.donate button{padding:15px 30px;margin:10px;background:linear-gradient(135deg,#00ff88,#00cc66);border:none;border-radius:10px;color:#000;font-weight:bold;font-size:16px;cursor:pointer}
 </style>
 </head>
 <body>
 
 <div class="header">
-<h1>♟️ Шашки Online <span id="onlineBadge" class="online-badge">ОНЛАЙН</span></h1>
-<div class="stats">
-<div class="stat">Победы: <span id="wins">0</span></div>
-<div class="stat">Поражения: <span id="losses">0</span></div>
-</div>
+<h1>🎰 КАЗИНО</h1>
+<div class="balance">💰 Баланс: <span id="balance">1000</span>₽</div>
 </div>
 
-<div class="container">
-<div class="menu-screen" id="menuScreen">
-<button class="menu-btn" onclick="startAI()">🤖 Играть с ИИ</button>
-<button class="menu-btn" onclick="createRoom()">👥 Создать комнату</button>
-<button class="menu-btn" onclick="showJoin()"> Присоединиться</button>
-<button class="menu-btn" onclick="quickMatch()"> Быстрая игра</button>
+<div class="games">
+
+<div class="game">
+<h2>🎰 Слоты</h2>
+<div class="slots">
+<div class="slot" id="slot1">🍒</div>
+<div class="slot" id="slot2"></div>
+<div class="slot" id="slot3">🍊</div>
+</div>
+<input type="number" id="slotsBet" placeholder="Ставка" value="100">
+<button onclick="playSlots()">Крутить</button>
+<div class="result" id="slotsResult"></div>
 </div>
 
-<div class="menu-screen" id="createRoomScreen" style="display:none">
-<h2 style="text-align:center;color:#ffd700">Комната создана</h2>
-<p style="text-align:center;opacity:0.8">Отправь код другу:</p>
-<div class="room-code"><div class="room-code-value" id="roomCodeDisplay">------</div></div>
-<button class="menu-btn" onclick="copyCode()">📋 Скопировать</button>
-<p style="text-align:center;opacity:0.7">Ждём второго игрока...</p>
-<button class="menu-btn secondary" onclick="cancelRoom()">Отмена</button>
+<div class="game">
+<h2> Рулетка</h2>
+<div class="roulette" id="roulette"></div>
+<input type="number" id="rouletteBet" placeholder="Ставка" value="100">
+<select id="rouletteColor" style="width:100%;padding:15px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:18px">
+<option value="red">🔴 Красное (x2)</option>
+<option value="black">⚫ Чёрное (x2)</option>
+<option value="green"> Зелёное (x14)</option>
+</select>
+<button onclick="playRoulette()">Крутить</button>
+<div class="result" id="rouletteResult"></div>
 </div>
 
-<div class="menu-screen" id="joinScreen" style="display:none">
-<h2 style="text-align:center;color:#ffd700">Введи код</h2>
-<input type="text" id="joinCodeInput" placeholder="------" maxlength="6">
-<button class="menu-btn" onclick="joinRoom()">Войти</button>
-<button class="menu-btn secondary" onclick="showMenu()">Назад</button>
+<div class="game">
+<h2> Кости</h2>
+<div class="dice" id="dice">🎲</div>
+<input type="number" id="diceBet" placeholder="Ставка" value="100">
+<select id="diceNumber" style="width:100%;padding:15px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:18px">
+<option value="1">1 (x6)</option>
+<option value="2">2 (x6)</option>
+<option value="3">3 (x6)</option>
+<option value="4">4 (x6)</option>
+<option value="5">5 (x6)</option>
+<option value="6">6 (x6)</option>
+</select>
+<button onclick="playDice()">Бросить</button>
+<div class="result" id="diceResult"></div>
 </div>
 
-<div class="menu-screen" id="searchingScreen" style="display:none">
-<div class="searching">
-<div class="spinner"></div>
-<h2 style="color:#ffd700">Поиск...</h2>
-</div>
-<button class="menu-btn secondary" onclick="cancelSearch()">Отмена</button>
-</div>
-
-<div id="gameScreen" style="display:none;width:100%;max-width:500px">
-<div class="board-wrapper"><div class="board" id="boardEl"></div></div>
-<div class="info-panel" id="infoPanel">Твой ход</div>
-<div class="controls">
-<button class="btn secondary" onclick="surrender()">Сдаться</button>
-<button class="btn secondary" onclick="leaveGame()">Выйти</button>
-</div>
-</div>
+<div class="game">
+<h2>🪙 Монетка</h2>
+<div class="coin" id="coin">🪙</div>
+<input type="number" id="coinBet" placeholder="Ставка" value="100">
+<select id="coinSide" style="width:100%;padding:15px;margin:10px 0;border-radius:10px;border:2px solid #ffd700;background:rgba(0,0,0,0.5);color:#fff;font-size:18px">
+<option value="heads">Орёл (x2)</option>
+<option value="tails">Решка (x2)</option>
+</select>
+<button onclick="playCoin()">Подбросить</button>
+<div class="result" id="coinResult"></div>
 </div>
 
-<div class="modal" id="modal">
-<div class="modal-content">
-<h2 id="modalTitle">Победа!</h2>
-<p id="modalText"></p>
-<button class="btn" onclick="closeModal()" style="width:100%">OK</button>
-</div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<div class="donate">
+<h2>💳 Пополнить баланс</h2>
+<p style="margin:20px 0;font-size:18px">Выбери способ оплаты:</p>
+<button onclick="donateYooMoney()">💳 ЮMoney</button>
+<button onclick="donateCrypto()"> Криптовалюта</button>
+<button onclick="donateCard()">💳 Карта</button>
+<p style="margin-top:20px;opacity:0.7;font-size:14px">Минимальная сумма: 100₽</p>
+</div>
+
 <script>
-const N=8;
-let board=[],cur='white',sel=null,over=false,myColor='white',online=false,rId=null,rRef=null,stats={w:0,l:0};
+let balance=1000;
 
-const s=localStorage.getItem('cs');
-if(s)try{stats=JSON.parse(s)}catch(e){}
+const saved=localStorage.getItem('casinoBalance');
+if(saved)balance=parseInt(saved);
 
-firebase.initializeApp({
-apiKey:"AIzaSyAzSOfIQgBZCWgUIbmelgScYUkASQnEuUY",
-authDomain:"checkers-online-e69c7.firebaseapp.com",
-databaseURL:"https://checkers-online-e69c7-default-rtdb.firebaseio.com",
-projectId:"checkers-online-e69c7",
-storageBucket:"checkers-online-e69c7.firebasestorage.app",
-messagingSenderId:"1096047488420",
-appId:"1:1096047488420:web:ca70692d2259244dabe531"
-});
-const db=firebase.database();
-
-function updStats(){document.getElementById('wins').textContent=stats.w;document.getElementById('losses').textContent=stats.l}
-function saveS(){localStorage.setItem('cs',JSON.stringify(stats))}
-
-function initB(){
-board=[];
-for(let r=0;r<N;r++){
-board[r]=[];
-for(let c=0;c<N;c++){
-if((r+c)%2===1){
-if(r<3)board[r][c]={c:'b',k:false};
-else if(r>4)board[r][c]={c:'w',k:false};
-else board[r][c]=null;
-}else board[r][c]=null;
-}
-}
+function updateBalance(){
+document.getElementById('balance').textContent=balance;
+localStorage.setItem('casinoBalance',balance);
 }
 
-function toD(){return board.map(r=>r.map(c=>c?{c:c.c,k:c.k}:null))}
+function playSlots(){
+const bet=parseInt(document.getElementById('slotsBet').value);
+if(bet>balance){alert('Недостаточно средств!');return}
+if(bet<10){alert('Минимальная ставка 10₽');return}
 
-function fromD(d){
-const result=[];
-for(let r=0;r<N;r++){
-result[r]=[];
-for(let c=0;c<N;c++){
-const cell=d&&d[r]&&d[r][c];
-result[r][c]=cell?{c:cell.c,k:cell.k}:null;
-}
-}
-return result;
-}
+const symbols=['🍒','','🍊','🍇','','💎','7️⃣'];
+const s1=symbols[Math.floor(Math.random()*symbols.length)];
+const s2=symbols[Math.floor(Math.random()*symbols.length)];
+const s3=symbols[Math.floor(Math.random()*symbols.length)];
 
-function genCode(){const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=ch[Math.floor(Math.random()*ch.length)];return c}
+document.getElementById('slot1').textContent=s1;
+document.getElementById('slot2').textContent=s2;
+document.getElementById('slot3').textContent=s3;
 
-function render(){
-const el=document.getElementById('boardEl');
-if(!el)return;
-el.innerHTML='';
-const vm=sel?getMoves(sel.r,sel.c):[];
-const ac=getAllCap(cur);
-for(let r=0;r<N;r++)for(let c=0;c<N;c++){
-const cell=document.createElement('div');
-cell.className='cell '+((r+c)%2===0?'light':'dark');
-if(sel&&sel.r===r&&sel.c===c)cell.classList.add('selected');
-if(vm.some(m=>m.r===r&&m.c===c))cell.classList.add('valid');
-const p=board[r]&&board[r][c];
-if(p){
-const pe=document.createElement('div');
-pe.className='piece '+(p.c==='w'?'white':'black')+(p.k?' king':'');
-if(ac.some(m=>m.fr===r&&m.fc===c))pe.style.boxShadow='0 0 15px #ff0000';
-cell.appendChild(pe);
-}
-const rr=r,cc=c;
-cell.onclick=()=>click(rr,cc);
-el.appendChild(cell);
-}
-updInfo();
-}
+balance-=bet;
 
-function updInfo(){
-const p=document.getElementById('infoPanel');
-if(!p)return;
-if(over){p.textContent='Игра окончена';p.className='info-panel'}
-else if(online){
-if(cur===myColor){p.textContent='Твой ход!';p.className='info-panel'}
-else{p.textContent='Ход соперника...';p.className='info-panel waiting'}
+if(s1===s2&&s2===s3){
+const win=bet*10;
+balance+=win;
+document.getElementById('slotsResult').innerHTML=`<span style="color:#00ff88">🎉 ДЖЕКПОТ! +${win}₽</span>`;
+}else if(s1===s2||s2===s3||s1===s3){
+const win=bet*2;
+balance+=win;
+document.getElementById('slotsResult').innerHTML=`<span style="color:#00ff88">✨ Выигрыш! +${win}₽</span>`;
 }else{
-p.textContent=cur==='w'?'Твой ход (белые)':'Ход ИИ (чёрные)';
-p.className='info-panel';
-}
+document.getElementById('slotsResult').innerHTML=`<span style="color:#ff4444">😢 Проигрыш -${bet}₽</span>`;
 }
 
-function click(r,c){
-if(over)return;
-if(online&&cur!==myColor)return;
-if(!online&&cur!=='w')return;
-const p=board[r]&&board[r][c];
-const ac=getAllCap(cur);
-if(sel){
-const mv=getMoves(sel.r,sel.c);
-const m=mv.find(x=>x.r===r&&x.c===c);
-if(m){doMove(sel.r,sel.c,m);return}
-if(p&&p.c===cur){
-if(ac.length>0&&!ac.some(x=>x.fr===r&&x.fc===c))return;
-sel={r,c};render();
-}else{sel=null;render()}
-}else if(p&&p.c===cur){
-if(ac.length>0&&!ac.some(x=>x.fr===r&&x.fc===c))return;
-sel={r,c};render();
-}
+updateBalance();
 }
 
-function doMove(fr,fc,m){
-const p=board[fr]&&board[fr][fc];
-if(!p)return;
-if(!board[m.r])board[m.r]=[];
-board[m.r][m.c]=p;
-board[fr][fc]=null;
-m.caps.forEach(x=>{if(board[x.r])board[x.r][x.c]=null});
-if((p.c==='w'&&m.r===0)||(p.c==='b'&&m.r===N-1))p.k=true;
-if(m.caps.length>0&&!over){
-const fc2=getCaps(m.r,m.c);
-if(fc2.length>0){sel={r:m.r,c:m.c};render();return}
-}
-sel=null;
-if(!over){
-cur=cur==='w'?'b':'w';
-if(online&&rRef)rRef.update({board:toD(),cur:cur}).catch(e=>console.error(e));
-render();
-checkEnd();
-if(!over&&!online&&cur==='b')setTimeout(aiMove,500);
-}
-}
+function playRoulette(){
+const bet=parseInt(document.getElementById('rouletteBet').value);
+const color=document.getElementById('rouletteColor').value;
+if(bet>balance){alert('Недостаточно средств!');return}
+if(bet<10){alert('Минимальная ставка 10₽');return}
 
-function getMoves(r,c){
-const p=board[r]&&board[r][c];
-if(!p)return[];
-const caps=getCaps(r,c);
-if(caps.length>0)return caps;
-const mv=[];
-const dirs=p.k?[[-1,-1],[-1,1],[1,-1],[1,1]]:p.c==='w'?[[-1,-1],[-1,1]]:[[1,-1],[1,1]];
-dirs.forEach(([dr,dc])=>{
-if(p.k){
-for(let i=1;i<N;i++){
-const nr=r+dr*i,nc=c+dc*i;
-if(nr<0||nr>=N||nc<0||nc>=N)break;
-if(board[nr]&&board[nr][nc])break;
-mv.push({r:nr,c:nc,caps:[]});
-}
-}else{
-const nr=r+dr,nc=c+dc;
-if(nr>=0&&nr<N&&nc>=0&&nc<N&&(!board[nr]||!board[nr][nc]))mv.push({r:nr,c:nc,caps:[]});
-}
-});
-return mv;
-}
+balance-=bet;
 
-function getCaps(r,c){
-const p=board[r]&&board[r][c];
-if(!p)return[];
-const caps=[];
-[[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dr,dc])=>{
-if(p.k){
-let f=false,er,ec;
-for(let i=1;i<N;i++){
-const nr=r+dr*i,nc=c+dc*i;
-if(nr<0||nr>=N||nc<0||nc>=N)break;
-if(board[nr]&&board[nr][nc]){
-if(f)break;
-if(board[nr][nc].c!==p.c){f=true;er=nr;ec=nc}
-else break;
-}else if(f)caps.push({r:nr,c:nc,caps:[{r:er,c:ec}]});
-}
-}else{
-const mr=r+dr,mc=c+dc,lr=r+dr*2,lc=c+dc*2;
-if(lr>=0&&lr<N&&lc>=0&&lc<N){
-const mid=board[mr]&&board[mr][mc];
-if(mid&&mid.c!==p.c&&(!board[lr]||!board[lr][lc]))caps.push({r:lr,c:lc,caps:[{r:mr,c:mc}]});
-}
-}
-});
-return caps;
-}
+const roulette=document.getElementById('roulette');
+const rotation=Math.floor(Math.random()*360)+720;
+roulette.style.transform=`rotate(${rotation}deg)`;
 
-function getAllCap(color){
-const caps=[];
-for(let r=0;r<N;r++)for(let c=0;c<N;c++){
-if(board[r]&&board[r][c]&&board[r][c].c===color){
-const cp=getCaps(r,c);
-cp.forEach(x=>caps.push({fr:r,fc:c,tr:x.r,tc:x.c,caps:x.caps}));
-}
-}
-return caps;
-}
-
-function hasMoves(color){
-for(let r=0;r<N;r++)for(let c=0;c<N;c++){
-if(board[r]&&board[r][c]&&board[r][c].c===color&&getMoves(r,c).length>0)return true;
-}
-return false;
-}
-
-function checkEnd(){
-const w=hasMoves('w'),b=hasMoves('b');
-if(!w||!b){
-over=true;
-if(!w&&!b)showModal('Ничья!','Нет ходов у обоих');
-else if(!w){
-if(online){if(myColor==='b'){stats.w++;showModal('Победа!','Соперник сдался!')}else{stats.l++;showModal('Поражение','Нет ходов')}}
-else{stats.l++;showModal('Поражение','ИИ победил!')}
-}else{
-if(online){if(myColor==='w'){stats.w++;showModal('Победа!','Соперник сдался!')}else{stats.l++;showModal('Поражение','Нет ходов у соперника')}}
-else{stats.w++;showModal('Победа!','Ты выиграл!')}
-}
-updStats();saveS();
-if(online&&rRef)rRef.update({status:'finished',winner:!w?'b':'w'});
-}
-}
-
-function handleEnd(w){
-if(over)return;
-over=true;
-if(w===myColor){stats.w++;showModal('Победа!','Ты выиграл!')}
-else if(w){stats.l++;showModal('Поражение','Соперник победил')}
-else showModal('Ничья!','Ничья');
-updStats();saveS();
-}
-
-function surrender(){
-if(!confirm('Сдаться?'))return;
-over=true;stats.l++;updStats();saveS();
-if(online&&rRef)rRef.update({status:'finished',winner:cur==='w'?'b':'w'});
-showModal('Сдача','Поражение');
-}
-
-function leaveGame(){
-if(online&&rRef){rRef.update({status:'finished',winner:cur==='w'?'b':'w'});rRef.off()}
-showMenu();
-}
-
-function aiMove(){
-if(over)return;
-if(!hasMoves('b')){checkEnd();return}
-const ac=getAllCap('b');
-let mv=[];
-if(ac.length>0)mv=ac.map(m=>({fr:m.fr,fc:m.fc,tr:m.tr,tc:m.tc,caps:m.caps}));
-else{
-for(let r=0;r<N;r++)for(let c=0;c<N;c++){
-if(board[r]&&board[r][c]&&board[r][c].c==='b'){
-const vm=getMoves(r,c);
-vm.forEach(m=>mv.push({fr:r,fc:c,tr:m.r,tc:m.c,caps:m.caps}));
-}
-}
-}
-if(mv.length===0){checkEnd();return}
-let best=mv[Math.floor(Math.random()*mv.length)];
-let bs=-999;
-mv.forEach(m=>{
-let sc=0;
-if(m.caps.length>0)sc+=10*m.caps.length;
-if(m.tr===N-1)sc+=5;
-sc+=Math.random()*3;
-if(sc>bs){bs=sc;best=m}
-});
-if(best){
-const p=board[best.fr][best.fc];
-board[best.tr][best.tc]=p;
-board[best.fr][best.fc]=null;
-best.caps.forEach(x=>{if(board[x.r])board[x.r][x.c]=null});
-if(best.tr===N-1)p.k=true;
-if(!over){cur='w';render();checkEnd()}
-}
-}
-
-function showMenu(){
-['menuScreen','createRoomScreen','joinScreen','searchingScreen','gameScreen'].forEach(id=>document.getElementById(id).style.display='none');
-document.getElementById('menuScreen').style.display='flex';
-}
-
-function showJoin(){
-['menuScreen','createRoomScreen','searchingScreen','gameScreen'].forEach(id=>document.getElementById(id).style.display='none');
-document.getElementById('joinScreen').style.display='flex';
-}
-
-function showModal(t,tx){document.getElementById('modalTitle').textContent=t;document.getElementById('modalText').textContent=tx;document.getElementById('modal').classList.add('active')}
-function closeModal(){document.getElementById('modal').classList.remove('active');if(over)showMenu()}
-
-function startAI(){
-online=false;initB();cur='w';myColor='w';sel=null;over=false;
-document.getElementById('menuScreen').style.display='none';
-document.getElementById('gameScreen').style.display='block';
-render();
-}
-
-function createRoom(){
-rId=genCode();
-rRef=db.ref('rooms/'+rId);
-initB();
-rRef.set({status:'waiting',board:toD(),cur:'w',p1:'me',p1c:'w',p2c:'b'}).then(()=>{
-document.getElementById('roomCodeDisplay').textContent=rId;
-document.getElementById('menuScreen').style.display='none';
-document.getElementById('createRoomScreen').style.display='flex';
-rRef.on('value',snap=>{
-const d=snap.val();
-if(!d)return;
-if(d.status==='playing'&&!online){
-online=true;myColor='w';
-board=fromD(d.board);
-cur=d.cur||'w';
-over=false;
-document.getElementById('createRoomScreen').style.display='none';
-document.getElementById('gameScreen').style.display='block';
-render();
-}
-if(d.status==='finished')handleEnd(d.winner);
-});
-}).catch(e=>{console.error(e);alert('Ошибка')});
-}
-
-function copyCode(){navigator.clipboard.writeText(rId).then(()=>alert('Скопировано: '+rId))}
-function cancelRoom(){if(rRef)rRef.remove();showMenu()}
-
-function joinRoom(){
-const code=document.getElementById('joinCodeInput').value.trim().toUpperCase();
-if(code.length!==6){alert('6 символов');return}
-rRef=db.ref('rooms/'+code);
-rRef.once('value',snap=>{
-const d=snap.val();
-if(!d){alert('Не найдена');return}
-if(d.status!=='waiting'){alert('Занята');return}
-rId=code;online=true;myColor='b';
-rRef.update({status:'playing',p2:'you'}).then(()=>{
-board=fromD(d.board);
-cur=d.cur||'w';
-over=false;
-document.getElementById('joinScreen').style.display='none';
-document.getElementById('gameScreen').style.display='block';
-render();
-rRef.on('value',snap=>{
-const dd=snap.val();
-if(!dd)return;
-if(dd.board&&dd.cur!==cur&&!over){board=fromD(dd.board);cur=dd.cur;render()}
-if(dd.status==='finished')handleEnd(dd.winner);
-});
-}).catch(e=>{console.error(e);alert('Ошибка')});
-}).catch(e=>{console.error(e);alert('Ошибка')});
-}
-
-let qInt=null,qDone=false;
-
-function quickMatch(){
-document.getElementById('menuScreen').style.display='none';
-document.getElementById('searchingScreen').style.display='flex';
-qDone=false;
-const qRef=db.ref('quickQueue');
-const myId='p'+Date.now();
-
-function tryFind(){
-if(qDone)return;
-qRef.once('value',snap=>{
-if(qDone)return;
-const pl=snap.val();
-if(pl){
-const w=Object.keys(pl).filter(id=>id!==myId&&pl[id].s==='w');
-if(w.length>0){
-const oid=w[0];
-const od=pl[oid];
-qDone=true;
-if(qInt)clearInterval(qInt);
-qRef.child(oid).remove();
-qRef.child(myId).remove();
-joinQR(od.rid,'b');
-return;
-}
-}
-const rid='q'+myId;
-qRef.child(myId).set({s:'w',rid:rid}).then(()=>{
-createQR(rid,'w',myId,qRef);
-});
-});
-}
-
-function createQR(rid,color,pid,qRef){
-if(qDone)return;
-rRef=db.ref('rooms/'+rid);
-initB();
-online=true;myColor=color;over=false;cur='w';
-rRef.set({status:'waiting',board:toD(),cur:'w',p1:pid,p1c:'w',p2c:'b'}).then(()=>{
-rRef.on('value',snap=>{
-const d=snap.val();
-if(!d||qDone)return;
-if(d.status==='playing'&&d.p2){
-qDone=true;
-if(qInt)clearInterval(qInt);
-qRef.child(pid).remove();
-board=fromD(d.board);
-cur=d.cur||'w';
-document.getElementById('searchingScreen').style.display='none';
-document.getElementById('gameScreen').style.display='block';
-render();
-rRef.on('value',s=>{
-const dd=s.val();
-if(!dd)return;
-if(dd.board&&dd.cur!==cur&&!over){board=fromD(dd.board);cur=dd.cur;render()}
-if(dd.status==='finished')handleEnd(dd.winner);
-});
-}
-});
-}).catch(e=>{console.error(e);alert('Ошибка');showMenu()});
-}
-
-function joinQR(rid,color){
-rRef=db.ref('rooms/'+rid);
-rRef.once('value',snap=>{
-const d=snap.val();
-if(!d){alert('Не найдена');showMenu();return}
-initB();online=true;myColor=color;over=false;cur='w';
-rRef.update({status:'playing',p2:'you'}).then(()=>{
-board=fromD(d.board);
-cur=d.cur||'w';
-document.getElementById('searchingScreen').style.display='none';
-document.getElementById('gameScreen').style.display='block';
-render();
-rRef.on('value',snap=>{
-const dd=snap.val();
-if(!dd)return;
-if(dd.board&&dd.cur!==cur&&!over){board=fromD(dd.board);cur=dd.cur;render()}
-if(dd.status==='finished')handleEnd(dd.winner);
-});
-}).catch(e=>{console.error(e);alert('Ошибка');showMenu()});
-});
-}
-
-tryFind();
-qInt=setInterval(()=>{if(!qDone)tryFind()},3000);
 setTimeout(()=>{
-if(!qDone){qDone=true;if(qInt)clearInterval(qInt);qRef.child(myId).remove();if(rRef)rRef.remove();alert('Не нашли за 30 сек');showMenu()}
-},30000);
+const rand=Math.random();
+let result;
+if(rand<0.48)result='red';
+else if(rand<0.96)result='black';
+else result='green';
+
+if(result===color){
+let win;
+if(color==='green')win=bet*14;
+else win=bet*2;
+balance+=win;
+document.getElementById('rouletteResult').innerHTML=`<span style="color:#00ff88">🎉 Выпало ${result==='red'?'🔴':result==='black'?'⚫':''}! +${win}₽</span>`;
+}else{
+document.getElementById('rouletteResult').innerHTML=`<span style="color:#ff4444">😢 Выпало ${result==='red'?'🔴':result==='black'?'':'🟢'}. Проигрыш -${bet}₽</span>`;
+}
+updateBalance();
+},3000);
 }
 
-function cancelSearch(){
-qDone=true;
-if(qInt)clearInterval(qInt);
-if(db)db.ref('quickQueue').remove();
-showMenu();
+function playDice(){
+const bet=parseInt(document.getElementById('diceBet').value);
+const number=parseInt(document.getElementById('diceNumber').value);
+if(bet>balance){alert('Недостаточно средств!');return}
+if(bet<10){alert('Минимальная ставка 10₽');return}
+
+balance-=bet;
+
+const diceEmojis=['⚀','⚁','⚂','⚃','⚄','⚅'];
+const result=Math.floor(Math.random()*6)+1;
+
+document.getElementById('dice').textContent=diceEmojis[result-1];
+
+setTimeout(()=>{
+if(result===number){
+const win=bet*6;
+balance+=win;
+document.getElementById('diceResult').innerHTML=`<span style="color:#00ff88">🎉 Выпало ${result}! +${win}₽</span>`;
+}else{
+document.getElementById('diceResult').innerHTML=`<span style="color:#ff4444">😢 Выпало ${result}. Проигрыш -${bet}₽</span>`;
+}
+updateBalance();
+},1000);
 }
 
-updStats();
-showMenu();
+function playCoin(){
+const bet=parseInt(document.getElementById('coinBet').value);
+const side=document.getElementById('coinSide').value;
+if(bet>balance){alert('Недостаточно средств!');return}
+if(bet<10){alert('Минимальная ставка 10₽');return}
+
+balance-=bet;
+
+const coin=document.getElementById('coin');
+coin.style.transform='rotateY(720deg)';
+
+setTimeout(()=>{
+const result=Math.random()<0.5?'heads':'tails';
+coin.textContent=result==='heads'?'👑':'🌟';
+
+if(result===side){
+const win=bet*2;
+balance+=win;
+document.getElementById('coinResult').innerHTML=`<span style="color:#00ff88">🎉 ${result==='heads'?'Орёл':'Решка'}! +${win}₽</span>`;
+}else{
+document.getElementById('coinResult').innerHTML=`<span style="color:#ff4444">😢 ${result==='heads'?'Орёл':'Решка'}. Проигрыш -${bet}₽</span>`;
+}
+coin.style.transform='rotateY(0deg)';
+updateBalance();
+},1000);
+}
+
+function donateYooMoney(){
+const amount=prompt('Введи сумму пополнения (мин. 100₽):');
+if(!amount||parseInt(amount)<100){alert('Минимальная сумма 100₽');return}
+
+// Замени на свой номер кошелька ЮMoney
+const walletNumber='41001234567890';
+const url=`https://yoomoney.ru/quickpay/confirm.xml?receiver=${walletNumber}&quickpay-form=donate&targets=Пополнение+баланса&sum=${amount}&label=casino`;
+
+window.open(url,'_blank');
+
+// Симуляция пополнения (в реальности нужно проверять через API)
+setTimeout(()=>{
+if(confirm('Ты оплатил? Нажми OK для подтверждения')){
+balance+=parseInt(amount);
+updateBalance();
+alert(`✅ Баланс пополнен на ${amount}₽`);
+}
+},5000);
+}
+
+function donateCrypto(){
+alert('₿ Адрес кошелька USDT (TRC-20):\n\nTXYZ1234567890AbCdEfGhIjKlMnOpQrSt\n\nМинимум: 5 USDT\nПосле оплаты напиши в поддержку');
+}
+
+function donateCard(){
+alert('💳 Для оплаты картой:\n\n1. Переведи на карту: 2200 1234 5678 9012\n2. Напиши сумму и последние 4 цифры карты в поддержку\n3. Баланс пополнится в течение 5 минут');
+}
+
+updateBalance();
 </script>
+
 </body>
 </html>
