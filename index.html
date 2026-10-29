@@ -1,777 +1,794 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CS Mini App</title>
-    <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            user-select: none; 
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            touch-action: none;
-        }
-        body { 
-            overflow: hidden; 
-            background: #000; 
-            font-family: Arial, sans-serif;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
-        #gameCanvas { 
-            width: 100vw; 
-            height: 100vh; 
-            display: block; 
-        }
-        
-        #crosshair {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 30px;
-            height: 30px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 100;
-        }
-        
-        #crosshair::before, #crosshair::after {
-            content: '';
-            position: absolute;
-            background: rgba(0, 255, 0, 0.9);
-            box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
-        }
-        
-        #crosshair::before {
-            width: 3px;
-            height: 30px;
-            left: 13.5px;
-            top: 0;
-        }
-        
-        #crosshair::after {
-            width: 30px;
-            height: 3px;
-            left: 0;
-            top: 13.5px;
-        }
-        
-        #hud {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
-            z-index: 100;
-            pointer-events: none;
-        }
-        
-        #health { color: #0f0; margin-bottom: 10px; font-size: 24px; }
-        #ammo { color: #ff0; font-size: 24px; }
-        
-        #mobileControls {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 100;
-            pointer-events: none;
-        }
-        
-        .joystick {
-            position: absolute;
-            width: 140px;
-            height: 140px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            border: 4px solid rgba(255,255,255,0.5);
-            pointer-events: auto;
-            touch-action: none;
-        }
-        
-        #leftJoystick { left: 30px; bottom: 120px; }
-        
-        .joystickKnob {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: rgba(255,255,255,0.6);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-        
-        #fireButton {
-            position: absolute;
-            right: 40px;
-            bottom: 140px;
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, rgba(255,50,50,0.6) 0%, rgba(255,0,0,0.4) 100%);
-            border-radius: 50%;
-            border: 5px solid rgba(255,50,50,0.9);
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            touch-action: none;
-            box-shadow: 0 0 20px rgba(255,0,0,0.5);
-        }
-        
-        #reloadButton {
-            position: absolute;
-            right: 180px;
-            bottom: 140px;
-            width: 90px;
-            height: 90px;
-            background: radial-gradient(circle, rgba(255,165,0,0.6) 0%, rgba(255,140,0,0.4) 100%);
-            border-radius: 50%;
-            border: 4px solid rgba(255,165,0,0.9);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            touch-action: none;
-        }
-        
-        #jumpButton {
-            position: absolute;
-            right: 40px;
-            bottom: 280px;
-            width: 90px;
-            height: 90px;
-            background: radial-gradient(circle, rgba(100,100,255,0.6) 0%, rgba(80,80,255,0.4) 100%);
-            border-radius: 50%;
-            border: 4px solid rgba(100,100,255,0.9);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            touch-action: none;
-        }
-        
-        #startScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            z-index: 1000;
-        }
-        
-        #startScreen h1 {
-            font-size: 42px;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(0,255,0,0.5);
-            text-align: center;
-        }
-        
-        #startScreen p {
-            font-size: 16px;
-            margin-bottom: 10px;
-            opacity: 0.9;
-            text-align: center;
-            padding: 0 20px;
-        }
-        
-        #startButton {
-            margin-top: 30px;
-            padding: 25px 70px;
-            font-size: 26px;
-            background: linear-gradient(135deg, #0f0 0%, #0a0 100%);
-            color: #000;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 0 30px rgba(0,255,0,0.6);
-        }
-        
-        #startButton:active { 
-            transform: scale(0.95); 
-            background: linear-gradient(135deg, #0a0 0%, #080 100%);
-        }
-        
-        #damageOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, transparent 30%, rgba(255,0,0,0.6) 100%);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 99;
-        }
-        
-        #lookZone {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 50%;
-            height: 100%;
-            pointer-events: auto;
-            touch-action: none;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Neon Casino</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  /* ===== ПЕРЕМЕННЫЕ И БАЗА ===== */
+  :root {
+    --bg: #0b0618;
+    --bg-2: #150a2e;
+    --panel: #1a0f38;
+    --panel-2: #241450;
+    --gold: #ffd24a;
+    --gold-2: #ffb300;
+    --violet: #a855f7;
+    --violet-2: #7c3aed;
+    --red: #ff4d6d;
+    --green: #3ddc97;
+    --text: #f5f1ff;
+    --text-dim: #a79cc9;
+    --shadow-gold: 0 0 18px rgba(255, 210, 74, 0.45);
+    --shadow-violet: 0 0 22px rgba(168, 85, 247, 0.55);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 800px at 20% -10%, #2a0f5c 0%, var(--bg) 55%) fixed;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+
+  /* ===== ШАПКА ===== */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    background: linear-gradient(180deg, rgba(26,15,56,0.95), rgba(26,15,56,0.7));
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(168,85,247,0.25);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .user { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--violet), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #1a0f38; font-size: 16px;
+    box-shadow: var(--shadow-violet);
+  }
+  .username { font-size: 14px; font-weight: 600; }
+  .balance {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--panel-2);
+    padding: 8px 12px; border-radius: 999px;
+    border: 1px solid rgba(255,210,74,0.35);
+    font-weight: 700; color: var(--gold);
+    box-shadow: var(--shadow-gold);
+  }
+  .balance .coin { font-size: 16px; }
+  .top-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--panel-2); color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    border: 1px solid rgba(168,85,247,0.3);
+  }
+
+  /* ===== КОНТЕЙНЕР ===== */
+  .container { padding: 16px; max-width: 560px; margin: 0 auto; }
+
+  /* ===== ЭКРАНЫ ===== */
+  .screen { display: none; animation: fadeIn 0.25s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ===== МЕНЮ ИГР ===== */
+  .hero {
+    text-align: center; padding: 20px 10px 10px;
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: 28px;
+    background: linear-gradient(90deg, var(--gold), var(--violet));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 30px rgba(255,210,74,0.25);
+  }
+  .hero p { color: var(--text-dim); margin: 6px 0 0; font-size: 14px; }
+
+  .games-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-top: 18px;
+  }
+  .game-card {
+    background: linear-gradient(160deg, var(--panel), var(--panel-2));
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 18px;
+    padding: 18px 12px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+  }
+  .game-card:active { transform: scale(0.97); }
+  .game-card::before {
+    content: ''; position: absolute; inset: -1px;
+    border-radius: 18px; padding: 1px;
+    background: linear-gradient(135deg, var(--gold), var(--violet));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0.5;
+  }
+  .game-card .emoji { font-size: 38px; display: block; margin-bottom: 6px; }
+  .game-card .name { font-weight: 700; font-size: 16px; }
+  .game-card .desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .game-card.wide { grid-column: 1 / -1; }
+
+  /* ===== БОНУС / КНОПКИ ===== */
+  .panel {
+    background: var(--panel);
+    border: 1px solid rgba(168,85,247,0.25);
+    border-radius: 16px;
+    padding: 14px;
+    margin-top: 14px;
+  }
+  .btn {
+    display: block; width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-weight: 700; font-size: 16px;
+    color: #1a0f38;
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    box-shadow: var(--shadow-gold);
+    transition: transform 0.1s ease, filter 0.2s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { filter: grayscale(0.6) brightness(0.7); cursor: not-allowed; }
+  .btn.secondary {
+    background: linear-gradient(135deg, var(--violet), var(--violet-2));
+    color: #fff;
+    box-shadow: var(--shadow-violet);
+  }
+  .btn.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid rgba(168,85,247,0.4);
+    box-shadow: none;
+  }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { flex: 1; }
+
+  /* ===== ИГРОВОЙ ЭКРАН (общий) ===== */
+  .game-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .back-btn {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: var(--panel-2);
+    color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    border: 1px solid rgba(168,85,247,0.3);
+  }
+  .game-title { font-size: 20px; font-weight: 700; }
+
+  /* ===== СЛОТЫ ===== */
+  .slot-machine {
+    background: linear-gradient(180deg, #2a1358, #150a2e);
+    border: 2px solid rgba(255,210,74,0.4);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: inset 0 0 30px rgba(168,85,247,0.2), var(--shadow-gold);
+  }
+  .reels {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    background: #0a0420;
+    border-radius: 14px;
+    padding: 10px;
+    border: 1px solid rgba(168,85,247,0.3);
+  }
+  .reel {
+    height: 90px;
+    background: linear-gradient(180deg, #1a0f38, #0a0420);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 54px;
+    border: 1px solid rgba(255,210,74,0.2);
+  }
+  .reel-strip {
+    position: absolute; left: 0; right: 0;
+    display: flex; flex-direction: column; align-items: center;
+    transition: transform 2.2s cubic-bezier(0.22, 0.9, 0.3, 1.1);
+  }
+  .reel-strip span { height: 90px; display: flex; align-items: center; justify-content: center; width: 100%; }
+
+  .slot-info {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px; color: var(--text-dim); font-size: 13px;
+  }
+  .slot-result {
+    text-align: center; min-height: 22px;
+    margin-top: 10px; font-weight: 700; color: var(--gold);
+    font-size: 15px;
+  }
+
+  .bet-controls {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; margin-top: 14px;
+  }
+  .bet-btn {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: var(--panel-2); color: var(--gold);
+    font-size: 20px; font-weight: 700;
+    border: 1px solid rgba(255,210,74,0.3);
+  }
+  .bet-display {
+    min-width: 110px; text-align: center;
+    padding: 10px 14px;
+    background: #0a0420;
+    border-radius: 12px;
+    color: var(--gold); font-weight: 700; font-size: 18px;
+    border: 1px solid rgba(255,210,74,0.3);
+  }
+
+  .paytable {
+    margin-top: 14px;
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 12px;
+    border: 1px solid rgba(168,85,247,0.25);
+  }
+  .paytable h3 {
+    margin: 0 0 8px; font-size: 14px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .paytable-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; font-size: 14px;
+    border-bottom: 1px dashed rgba(168,85,247,0.15);
+  }
+  .paytable-row:last-child { border-bottom: none; }
+  .paytable-row .mult { color: var(--gold); font-weight: 700; }
+
+  /* ===== ТОAST ===== */
+  .toast {
+    position: fixed; left: 50%; bottom: 30px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--panel-2);
+    color: var(--text);
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,210,74,0.4);
+    box-shadow: var(--shadow-gold);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 100; font-size: 14px; font-weight: 600;
+    max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== МОДАЛКА ===== */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(5, 2, 15, 0.75);
+    backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; padding: 20px;
+  }
+  .modal-backdrop.show { display: flex; animation: fadeIn 0.2s ease; }
+  .modal {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid rgba(255,210,74,0.35);
+    border-radius: 18px;
+    padding: 20px;
+    width: 100%; max-width: 360px;
+    box-shadow: var(--shadow-gold);
+    text-align: center;
+  }
+  .modal h2 { margin: 0 0 8px; color: var(--gold); }
+  .modal p { color: var(--text-dim); margin: 0 0 16px; font-size: 14px; }
+
+  /* ===== АДАПТИВ ===== */
+  @media (min-width: 500px) {
+    .reel { height: 110px; font-size: 64px; }
+    .reel-strip span { height: 110px; }
+  }
+</style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div id="crosshair"></div>
-    <div id="damageOverlay"></div>
-    
-    <div id="hud">
-        <div id="health">❤️ 200</div>
-        <div id="ammo"> 30 / 90</div>
+
+<!-- ===== ШАПКА ===== -->
+<header class="topbar">
+  <div class="user">
+    <div class="avatar" id="avatar">?</div>
+    <div class="username" id="username">Игрок</div>
+  </div>
+  <div class="balance" title="Баланс">
+    <span class="coin">🪙</span>
+    <span id="balance">1000</span>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="soundBtn" title="Звук">🔊</button>
+    <button class="icon-btn" id="closeBtn" title="Закрыть">✕</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ===== ГЛАВНОЕ МЕНЮ ===== -->
+  <section class="screen active" id="screen-menu">
+    <div class="hero">
+      <h1>✨ NEON CASINO ✨</h1>
+      <p>Играй на виртуальные монеты — без риска</p>
     </div>
-    
-    <div id="mobileControls">
-        <div id="leftJoystick" class="joystick">
-            <div class="joystickKnob"></div>
+
+    <div class="games-grid">
+      <button class="game-card" data-game="slots">
+        <span class="emoji">🎰</span>
+        <div class="name">Слоты</div>
+        <div class="desc">Крути барабаны</div>
+      </button>
+      <button class="game-card" data-game="roulette">
+        <span class="emoji">🎡</span>
+        <div class="name">Рулетка</div>
+        <div class="desc">Скоро</div>
+      </button>
+      <button class="game-card" data-game="crash">
+        <span class="emoji">🚀</span>
+        <div class="name">Краш</div>
+        <div class="desc">Скоро</div>
+      </button>
+      <button class="game-card" data-game="coin">
+        <span class="emoji">🪙</span>
+        <div class="name">Монетка</div>
+        <div class="desc">Скоро</div>
+      </button>
+      <button class="game-card wide" data-game="mines">
+        <span class="emoji">💣</span>
+        <div class="name">Мины</div>
+        <div class="desc">Скоро</div>
+      </button>
+    </div>
+
+    <!-- Ежедневный бонус -->
+    <div class="panel" id="bonusPanel">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div>
+          <div style="font-weight:700; font-size:15px;">🎁 Ежедневный бонус</div>
+          <div style="color:var(--text-dim); font-size:12px;" id="bonusTimer">+200 монет</div>
         </div>
-        <div id="fireButton">ОГОНЬ</div>
-        <div id="reloadButton">R</div>
-        <div id="jumpButton">↑</div>
-        <div id="lookZone"></div>
-    </div>
-    
-    <div id="startScreen">
-        <h1>🎯 CS MINI</h1>
-        <p>Левый джойстик - движение</p>
-        <p>Правая половина экрана - обзор</p>
-        <p>Красная кнопка - стрельба</p>
-        <p>Оранжевая - перезарядка</p>
-        <p>Синяя - прыжок</p>
-        <button id="startButton">ИГРАТЬ</button>
+        <button class="btn" id="claimBonus" style="width:auto; padding:10px 18px;">Забрать</button>
+      </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        // Инициализация
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb);
-        scene.fog = new THREE.Fog(0x87ceeb, 20, 80);
+    <!-- Аварийные монеты -->
+    <div class="panel" id="rescuePanel" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div>
+          <div style="font-weight:700; font-size:15px;">💸 Монеты закончились?</div>
+          <div style="color:var(--text-dim); font-size:12px;" id="rescueTimer">Получи 500 монет</div>
+        </div>
+        <button class="btn secondary" id="claimRescue" style="width:auto; padding:10px 18px;">+500</button>
+      </div>
+    </div>
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ 
-            canvas: document.getElementById('gameCanvas'), 
-            antialias: true 
-        });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    <!-- Топ игроков (заглушка) -->
+    <div class="panel">
+      <h3 style="margin:0 0 10px; color:var(--gold); font-size:14px;">🏆 ТОП ИГРОКОВ</h3>
+      <div id="leaderboard" style="font-size:14px; color:var(--text-dim);">Загрузка...</div>
+    </div>
+  </section>
 
-        // Процедурные текстуры
-        function createTexture(color1, color2, size = 64) {
-            const canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            
-            for (let i = 0; i < size; i += 8) {
-                for (let j = 0; j < size; j += 8) {
-                    ctx.fillStyle = Math.random() > 0.5 ? color1 : color2;
-                    ctx.fillRect(i, j, 8, 8);
-                }
-            }
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            return texture;
-        }
+  <!-- ===== СЛОТЫ ===== -->
+  <section class="screen" id="screen-slots">
+    <div class="game-header">
+      <button class="back-btn" data-back>←</button>
+      <div class="game-title">🎰 Слоты</div>
+    </div>
 
-        const floorTexture = createTexture('#666', '#777', 128);
-        floorTexture.repeat.set(10, 10);
-        
-        const wallTexture = createTexture('#555', '#666', 64);
-        wallTexture.repeat.set(2, 2);
+    <div class="slot-machine">
+      <div class="reels">
+        <div class="reel"><div class="reel-strip" id="reel0"></div></div>
+        <div class="reel"><div class="reel-strip" id="reel1"></div></div>
+        <div class="reel"><div class="reel-strip" id="reel2"></div></div>
+      </div>
 
-        // Освещение
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
+      <div class="slot-result" id="slotResult">Сделай ставку и крути!</div>
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(50, 100, 50);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.camera.left = -50;
-        directionalLight.shadow.camera.right = 50;
-        directionalLight.shadow.camera.top = 50;
-        directionalLight.shadow.camera.bottom = -50;
-        scene.add(directionalLight);
+      <div class="bet-controls">
+        <button class="bet-btn" id="betMinus">−</button>
+        <div class="bet-display">🪙 <span id="betAmount">10</span></div>
+        <button class="bet-btn" id="betPlus">+</button>
+      </div>
 
-        // Пол
-        const floorGeometry = new THREE.PlaneGeometry(100, 100);
-        const floorMaterial = new THREE.MeshLambertMaterial({ map: floorTexture });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.rotation.x = -Math.PI / 2;
-        floor.receiveShadow = true;
-        scene.add(floor);
+      <div style="margin-top:14px;">
+        <button class="btn" id="spinBtn">🎰 КРУТИТЬ</button>
+      </div>
+    </div>
 
-        // Стены
-        const wallMaterial = new THREE.MeshLambertMaterial({ map: wallTexture });
-        const walls = [];
-        
-        function createWall(x, z, width, depth) {
-            const wallGeometry = new THREE.BoxGeometry(width, 4, depth);
-            const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-            wall.position.set(x, 2, z);
-            wall.castShadow = true;
-            wall.receiveShadow = true;
-            scene.add(wall);
-            walls.push(wall);
-        }
+    <div class="paytable">
+      <h3>Таблица выигрышей (×ставка)</h3>
+      <div class="paytable-row"><span>7️⃣ 7️⃣ 7️⃣</span><span class="mult">×50</span></div>
+      <div class="paytable-row"><span>💎 💎 💎</span><span class="mult">×25</span></div>
+      <div class="paytable-row"><span>⭐ ⭐ ⭐</span><span class="mult">×15</span></div>
+      <div class="paytable-row"><span>🔔 🔔 🔔</span><span class="mult">×10</span></div>
+      <div class="paytable-row"><span>🍋 🍋 🍋</span><span class="mult">×5</span></div>
+      <div class="paytable-row"><span>🍒 🍒 🍒</span><span class="mult">×3</span></div>
+      <div class="paytable-row"><span>Две одинаковые</span><span class="mult">×1.5</span></div>
+    </div>
+  </section>
 
-        createWall(0, -20, 40, 2);
-        createWall(0, 20, 40, 2);
-        createWall(-20, 0, 2, 40);
-        createWall(20, 0, 2, 40);
-        createWall(-10, -10, 4, 4);
-        createWall(10, 10, 4, 4);
-        createWall(5, -5, 3, 3);
+  <!-- Заглушки для будущих игр -->
+  <section class="screen" id="screen-roulette">
+    <div class="game-header">
+      <button class="back-btn" data-back>←</button>
+      <div class="game-title">🎡 Рулетка</div>
+    </div>
+    <div class="panel" style="text-align:center;">
+      <div style="font-size:60px;">🎡</div>
+      <p style="color:var(--text-dim);">Игра в разработке. Напиши «рулетка» — и я добавлю её.</p>
+      <button class="btn" data-back>В меню</button>
+    </div>
+  </section>
+  <section class="screen" id="screen-crash">
+    <div class="game-header"><button class="back-btn" data-back>←</button><div class="game-title">🚀 Краш</div></div>
+    <div class="panel" style="text-align:center;"><div style="font-size:60px;">🚀</div><p style="color:var(--text-dim);">Скоро. Напиши «краш».</p><button class="btn" data-back>В меню</button></div>
+  </section>
+  <section class="screen" id="screen-coin">
+    <div class="game-header"><button class="back-btn" data-back>←</button><div class="game-title">🪙 Монетка</div></div>
+    <div class="panel" style="text-align:center;"><div style="font-size:60px;">🪙</div><p style="color:var(--text-dim);">Скоро. Напиши «монетка».</p><button class="btn" data-back>В меню</button></div>
+  </section>
+  <section class="screen" id="screen-mines">
+    <div class="game-header"><button class="back-btn" data-back>←</button><div class="game-title">💣 Мины</div></div>
+    <div class="panel" style="text-align:center;"><div style="font-size:60px;">💣</div><p style="color:var(--text-dim);">Скоро. Напиши «мины».</p><button class="btn" data-back>В меню</button></div>
+  </section>
 
-        // Игрок
-        const player = {
-            position: new THREE.Vector3(0, 1.7, 0),
-            velocity: new THREE.Vector3(0, 0, 0),
-            health: 200,
-            maxHealth: 200,
-            ammo: 30,
-            maxAmmo: 30,
-            reserveAmmo: 90,
-            isReloading: false,
-            rotation: { x: 0, y: 0 }
-        };
+</div>
 
-        camera.position.copy(player.position);
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-        // Боты
-        const bots = [];
-        const botGeometry = new THREE.BoxGeometry(1, 2, 1);
-        const botMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+<!-- Модалка -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h2 id="modalTitle">Заголовок</h2>
+    <p id="modalText">Текст</p>
+    <button class="btn" id="modalClose">ОК</button>
+  </div>
+</div>
 
-        function createBot(x, z) {
-            const bot = new THREE.Mesh(botGeometry, botMaterial);
-            bot.position.set(x, 1, z);
-            bot.castShadow = true;
-            scene.add(bot);
-            
-            bots.push({
-                mesh: bot,
-                health: 100,
-                lastShot: 0,
-                moveDirection: new THREE.Vector3(Math.random() - 0.5, 0, Math.random() - 0.5).normalize()
-            });
-        }
+<script>
+/* =========================================================
+   NEON CASINO — учебный проект на виртуальные монеты
+   ========================================================= */
 
-        createBot(-15, -15);
-        createBot(15, 15);
-        createBot(-15, 15);
-        createBot(15, -15);
+/* ---------- 1. Telegram WebApp ---------- */
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  // Подстраиваем тему под Telegram, если тёмная
+  if (tg.colorScheme === 'dark') {
+    document.documentElement.style.setProperty('--bg', '#0b0618');
+  }
+}
 
-        // Эффекты
-        function createBulletTrail(from, to) {
-            const material = new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: 3 });
-            const points = [from, to];
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const line = new THREE.Line(geometry, material);
-            scene.add(line);
-            
-            setTimeout(() => scene.remove(line), 150);
-        }
+// Имя и аватар из Telegram
+const tgUser = tg?.initDataUnsafe?.user;
+const displayName = tgUser
+  ? (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '')
+  : 'Игрок';
+document.getElementById('username').textContent = displayName || 'Игрок';
+document.getElementById('avatar').textContent = (displayName || '?').trim().charAt(0).toUpperCase();
 
-        function createImpactEffect(position) {
-            const particleCount = 10;
-            const particles = [];
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.08, 4, 4),
-                    new THREE.MeshBasicMaterial({ color: 0xffaa00 })
-                );
-                particle.position.copy(position);
-                particle.userData.velocity = new THREE.Vector3(
-                    (Math.random() - 0.5) * 6,
-                    Math.random() * 6,
-                    (Math.random() - 0.5) * 6
-                );
-                particle.userData.life = 1.0;
-                scene.add(particle);
-                particles.push(particle);
-            }
-            
-            setTimeout(() => {
-                particles.forEach(p => scene.remove(p));
-            }, 600);
-        }
+// Кнопка закрытия
+document.getElementById('closeBtn').addEventListener('click', () => {
+  if (tg) tg.close();
+  else window.close();
+});
 
-        // Мобильное управление
-        let moveVector = { x: 0, y: 0 };
-        let isFiring = false;
+/* ---------- 2. Утилиты ---------- */
+const $ = (id) => document.getElementById(id);
+const LS = {
+  get: (k, def) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+};
 
-        // Левый джойстик
-        const leftJoystick = document.getElementById('leftJoystick');
-        const leftKnob = leftJoystick.querySelector('.joystickKnob');
-        let joystickTouchId = null;
-        let joystickCenter = { x: 0, y: 0 };
+// Честный RNG через WebCrypto (возвращает число от 0 до max-1)
+function secureRandomInt(max) {
+  if (max <= 0) return 0;
+  const arr = new Uint32Array(1);
+  crypto.getRandomValues(arr);
+  return arr[0] % max;
+}
+// Случайный элемент массива
+function pick(arr) { return arr[secureRandomInt(arr.length)]; }
 
-        leftJoystick.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const touch = e.changedTouches[0];
-            joystickTouchId = touch.identifier;
-            const rect = leftJoystick.getBoundingClientRect();
-            joystickCenter = {
-                x: rect.left + rect.width / 2,
-                y: rect.top + rect.height / 2
-            };
-            updateJoystick(touch);
-        }, { passive: false });
+// Тост-уведомление
+let toastTimer;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
 
-        leftJoystick.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                if (e.changedTouches[i].identifier === joystickTouchId) {
-                    updateJoystick(e.changedTouches[i]);
-                    break;
-                }
-            }
-        }, { passive: false });
+// Модалка
+function showModal(title, text) {
+  $('modalTitle').textContent = title;
+  $('modalText').textContent = text;
+  $('modal').classList.add('show');
+}
+$('modalClose').addEventListener('click', () => $('modal').classList.remove('show'));
 
-        leftJoystick.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                if (e.changedTouches[i].identifier === joystickTouchId) {
-                    joystickTouchId = null;
-                    moveVector = { x: 0, y: 0 };
-                    leftKnob.style.transform = 'translate(-50%, -50%)';
-                    break;
-                }
-            }
-        }, { passive: false });
+/* ---------- 3. Состояние и баланс ---------- */
+const state = {
+  balance: LS.get('nc_balance', 1000),
+  bet: LS.get('nc_bet', 10),
+  lastBonus: LS.get('nc_lastBonus', 0),     // timestamp
+  lastRescue: LS.get('nc_lastRescue', 0),   // timestamp
+  soundOn: LS.get('nc_sound', true),
+};
+const BET_STEPS = [5, 10, 25, 50, 100, 250, 500];
 
-        function updateJoystick(touch) {
-            const dx = touch.clientX - joystickCenter.x;
-            const dy = touch.clientY - joystickCenter.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const maxDistance = 50;
-            
-            let clampedX = dx;
-            let clampedY = dy;
-            
-            if (distance > maxDistance) {
-                clampedX = (dx / distance) * maxDistance;
-                clampedY = (dy / distance) * maxDistance;
-            }
-            
-            leftKnob.style.transform = `translate(calc(-50% + ${clampedX}px), calc(-50% + ${clampedY}px))`;
-            
-            moveVector = {
-                x: clampedX / maxDistance,
-                y: clampedY / maxDistance
-            };
-        }
+function saveBalance() {
+  LS.set('nc_balance', state.balance);
+  $('balance').textContent = state.balance;
+  // Показываем/скрываем панель "закончились монеты"
+  $('rescuePanel').style.display = state.balance < 5 ? 'block' : 'none';
+}
+saveBalance();
 
-        // Обзор камеры - ПРАВАЯ ПОЛОВИНА ЭКРАНА (отдельная зона)
-        const lookZone = document.getElementById('lookZone');
-        let lookTouchId = null;
-        let lastLookX = 0;
-        let lastLookY = 0;
+/* ---------- 4. Звуки (простые, через WebAudio) ---------- */
+let audioCtx;
+function beep(freq = 440, dur = 0.08, type = 'sine', vol = 0.08) {
+  if (!state.soundOn) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.value = vol;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.stop(audioCtx.currentTime + dur);
+  } catch (e) {}
+}
+const sfx = {
+  click: () => beep(600, 0.05, 'square', 0.05),
+  spin:  () => beep(300, 0.12, 'sawtooth', 0.06),
+  win:   () => { beep(660, 0.1, 'triangle', 0.08); setTimeout(()=>beep(880,0.14,'triangle',0.08),110); },
+  lose:  () => beep(180, 0.18, 'sine', 0.06),
+};
 
-        lookZone.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const touch = e.changedTouches[0];
-            lookTouchId = touch.identifier;
-            lastLookX = touch.clientX;
-            lastLookY = touch.clientY;
-        }, { passive: false });
+$('soundBtn').textContent = state.soundOn ? '🔊' : '🔇';
+$('soundBtn').addEventListener('click', () => {
+  state.soundOn = !state.soundOn;
+  LS.set('nc_sound', state.soundOn);
+  $('soundBtn').textContent = state.soundOn ? '🔊' : '🔇';
+  if (state.soundOn) sfx.click();
+});
 
-        lookZone.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                const touch = e.changedTouches[i];
-                if (touch.identifier === lookTouchId) {
-                    const dx = touch.clientX - lastLookX;
-                    const dy = touch.clientY - lastLookY;
-                    
-                    player.rotation.y -= dx * 0.01;
-                    player.rotation.x -= dy * 0.01;
-                    player.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotation.x));
-                    
-                    lastLookX = touch.clientX;
-                    lastLookY = touch.clientY;
-                    break;
-                }
-            }
-        }, { passive: false });
+/* ---------- 5. Навигация между экранами ---------- */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.querySelectorAll('[data-game]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    sfx.click();
+    const game = btn.dataset.game;
+    if (game === 'slots') showScreen('screen-slots');
+    else showScreen('screen-' + game); // заглушки
+  });
+});
+document.querySelectorAll('[data-back]').forEach(btn => {
+  btn.addEventListener('click', () => { sfx.click(); showScreen('screen-menu'); });
+});
 
-        lookZone.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                if (e.changedTouches[i].identifier === lookTouchId) {
-                    lookTouchId = null;
-                    break;
-                }
-            }
-        }, { passive: false });
+/* ---------- 6. Ежедневный бонус (раз в 24 часа, +200) ---------- */
+const DAY_MS = 24 * 60 * 60 * 1000;
+function updateBonusUI() {
+  const now = Date.now();
+  const diff = DAY_MS - (now - state.lastBonus);
+  const btn = $('claimBonus');
+  const timer = $('bonusTimer');
+  if (diff <= 0) {
+    btn.disabled = false;
+    timer.textContent = '+200 монет доступно!';
+  } else {
+    btn.disabled = true;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    timer.textContent = `Через ${h}ч ${m}м ${s}с`;
+  }
+}
+$('claimBonus').addEventListener('click', () => {
+  const now = Date.now();
+  if (now - state.lastBonus < DAY_MS) return;
+  state.lastBonus = now;
+  LS.set('nc_lastBonus', now);
+  state.balance += 200;
+  saveBalance();
+  sfx.win();
+  toast('🎁 +200 монет!');
+  updateBonusUI();
+});
+setInterval(updateBonusUI, 1000);
+updateBonusUI();
 
-        // Кнопки
-        document.getElementById('fireButton').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            isFiring = true;
-            if (navigator.vibrate) navigator.vibrate(30);
-        }, { passive: false });
+/* ---------- 7. Аварийные 500 монет (раз в час) ---------- */
+const HOUR_MS = 60 * 60 * 1000;
+function updateRescueUI() {
+  const now = Date.now();
+  const diff = HOUR_MS - (now - state.lastRescue);
+  const btn = $('claimRescue');
+  const timer = $('rescueTimer');
+  if (state.balance >= 5) { $('rescuePanel').style.display = 'none'; return; }
+  if (diff <= 0) {
+    btn.disabled = false;
+    timer.textContent = 'Готово! +500 монет';
+  } else {
+    btn.disabled = true;
+    const m = Math.floor(diff / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    timer.textContent = `Через ${m}м ${s}с`;
+  }
+}
+$('claimRescue').addEventListener('click', () => {
+  if (Date.now() - state.lastRescue < HOUR_MS) return;
+  state.lastRescue = Date.now();
+  LS.set('nc_lastRescue', state.lastRescue);
+  state.balance += 500;
+  saveBalance();
+  sfx.win();
+  toast('💸 +500 монет!');
+  updateRescueUI();
+});
+setInterval(updateRescueUI, 1000);
+updateRescueUI();
 
-        document.getElementById('fireButton').addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            isFiring = false;
-        }, { passive: false });
+/* ---------- 8. Топ игроков (локальная заглушка) ---------- */
+function renderLeaderboard() {
+  // В будущем сюда придёт запрос к серверу. Пока — фейковые данные + игрок.
+  const fake = [
+    { name: 'Alex',   score: 125400 },
+    { name: 'Maria',  score: 98200  },
+    { name: 'Ivan',   score: 74100  },
+    { name: 'Olga',   score: 51300  },
+  ];
+  const me = { name: (displayName || 'Ты') + ' (ты)', score: state.balance, me: true };
+  const list = [...fake, me].sort((a, b) => b.score - a.score).slice(0, 5);
+  $('leaderboard').innerHTML = list.map((p, i) => `
+    <div style="display:flex; justify-content:space-between; padding:6px 0;
+                ${p.me ? 'color:var(--gold); font-weight:700;' : ''}">
+      <span>${['🥇','🥈','🥉','4.','5.'][i]} ${p.name}</span>
+      <span>🪙 ${p.score}</span>
+    </div>
+  `).join('');
+}
+renderLeaderboard();
+// Обновляем при изменении баланса
+const _origSave = saveBalance;
+// (чтобы не дублировать — просто вызываем renderLeaderboard в конце saveBalance ниже)
 
-        document.getElementById('reloadButton').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            reload();
-            if (navigator.vibrate) navigator.vibrate(50);
-        }, { passive: false });
+/* ---------- 9. СЛОТЫ ---------- */
+const SLOT_SYMBOLS = ['🍒','🍋','🔔','⭐','💎','7️⃣'];
+const SLOT_PAYS = { '7️⃣': 50, '💎': 25, '⭐': 15, '🔔': 10, '🍋': 5, '🍒': 3 };
 
-        document.getElementById('jumpButton').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (player.position.y <= 1.7) {
-                player.velocity.y = 6;
-                if (navigator.vibrate) navigator.vibrate(40);
-            }
-        }, { passive: false });
+// Инициализация барабанов: длинная полоса символов для анимации
+function buildReelStrip(el) {
+  // 30 случайных символов + финальный
+  const items = [];
+  for (let i = 0; i < 30; i++) items.push(pick(SLOT_SYMBOLS));
+  el.innerHTML = items.map(s => `<span>${s}</span>`).join('');
+  return items;
+}
+const reels = [0,1,2].map(i => {
+  const el = $('reel' + i);
+  buildReelStrip(el);
+  return el;
+});
 
-        // Стрельба
-        let lastShot = 0;
-        const fireRate = 120;
+// Ставка
+function renderBet() {
+  $('betAmount').textContent = state.bet;
+}
+renderBet();
+$('betMinus').addEventListener('click', () => {
+  const idx = BET_STEPS.indexOf(state.bet);
+  if (idx > 0) { state.bet = BET_STEPS[idx - 1]; LS.set('nc_bet', state.bet); renderBet(); sfx.click(); }
+});
+$('betPlus').addEventListener('click', () => {
+  const idx = BET_STEPS.indexOf(state.bet);
+  if (idx >= 0 && idx < BET_STEPS.length - 1) {
+    state.bet = BET_STEPS[idx + 1];
+    LS.set('nc_bet', state.bet); renderBet(); sfx.click();
+  }
+});
 
-        function shoot() {
-            const now = Date.now();
-            if (now - lastShot < fireRate || player.isReloading || player.ammo <= 0) return;
-            
-            lastShot = now;
-            player.ammo--;
-            updateHUD();
+// Логика выигрыша
+function calcSlotWin(a, b, c) {
+  if (a === b && b === c) return SLOT_PAYS[a] || 3;     // три в ряд
+  if (a === b || b === c || a === c) return 1.5;        // две одинаковые
+  return 0;
+}
 
-            // Отдача
-            player.rotation.x += 0.04;
+let spinning = false;
+$('spinBtn').addEventListener('click', () => {
+  if (spinning) return;
+  if (state.balance < state.bet) {
+    toast('Недостаточно монет!'); sfx.lose(); return;
+  }
+  spinning = true;
+  state.balance -= state.bet;
+  saveBalance();
+  $('slotResult').textContent = 'Крутим...';
+  sfx.spin();
 
-            // Вибрация
-            if (navigator.vibrate) navigator.vibrate(20);
+  // Выбираем финальные символы ЧЕСТНО через crypto
+  const finals = [pick(SLOT_SYMBOLS), pick(SLOT_SYMBOLS), pick(SLOT_SYMBOLS)];
 
-            // Raycast
-            const raycaster = new THREE.Raycaster();
-            const center = new THREE.Vector2(0, 0);
-            raycaster.setFromCamera(center, camera);
-            
-            const botMeshes = bots.map(b => b.mesh);
-            const intersects = raycaster.intersectObjects([...botMeshes, ...walls]);
+  // Для каждого барабана: перестраиваем ленту так, чтобы финальный символ был на нужной позиции
+  reels.forEach((el, i) => {
+    const items = [];
+    // 25 случайных + финальный
+    for (let k = 0; k < 25; k++) items.push(pick(SLOT_SYMBOLS));
+    items.push(finals[i]);
+    el.innerHTML = items.map(s => `<span>${s}</span>`).join('');
+    // сбрасываем позицию
+    el.style.transition = 'none';
+    el.style.transform = 'translateY(0)';
+    // форсим reflow
+    void el.offsetHeight;
+    // высота одного символа (90px на мобиле, 110px на планшете)
+    const itemH = el.querySelector('span').offsetHeight;
+    const targetY = -(items.length - 1) * itemH;
+    // задержка для эффекта "лесенки"
+    const delay = 200 + i * 250;
+    setTimeout(() => {
+      el.style.transition = `transform ${1.6 + i*0.25}s cubic-bezier(0.22, 0.9, 0.3, 1.05)`;
+      el.style.transform = `translateY(${targetY}px)`;
+    }, delay);
+  });
 
-            if (intersects.length > 0) {
-                const hit = intersects[0];
-                createBulletTrail(camera.position.clone(), hit.point.clone());
-                
-                const hitBot = bots.find(b => b.mesh === hit.object);
-                if (hitBot) {
-                    hitBot.health -= 25;
-                    createImpactEffect(hit.point);
-                    
-                    if (hitBot.health <= 0) {
-                        scene.remove(hitBot.mesh);
-                        bots.splice(bots.indexOf(hitBot), 1);
-                    }
-                } else {
-                    createImpactEffect(hit.point);
-                }
-            }
+  // Финал — через максимальное время анимации
+  const totalTime = 200 + 2*250 + 1000 + 2*250 + 700;
+  setTimeout(() => {
+    const mult = calcSlotWin(...finals);
+    if (mult > 0) {
+      const win = Math.floor(state.bet * mult);
+      state.balance += win;
+      $('slotResult').textContent = `🎉 Выигрыш: +${win} монет (×${mult})`;
+      sfx.win();
+    } else {
+      $('slotResult').textContent = 'Не повезло. Попробуй ещё!';
+      sfx.lose();
+    }
+    saveBalance();
+    renderLeaderboard();
+    spinning = false;
+  }, totalTime);
+});
 
-            if (player.ammo <= 0 && player.reserveAmmo > 0) {
-                reload();
-            }
-        }
+// Обновляем лидерборд при каждом изменении баланса
+const __save = saveBalance;
+saveBalance = function() {
+  __save();
+  renderLeaderboard();
+  updateRescueUI();
+};
+saveBalance(); // перерисовать сразу
 
-        // Перезарядка
-        function reload() {
-            if (player.isReloading || player.ammo === player.maxAmmo || player.reserveAmmo <= 0) return;
-            
-            player.isReloading = true;
-            document.getElementById('ammo').textContent = '🔄 ПЕРЕЗАРЯДКА...';
-            
-            setTimeout(() => {
-                const needed = player.maxAmmo - player.ammo;
-                const toLoad = Math.min(needed, player.reserveAmmo);
-                player.ammo += toLoad;
-                player.reserveAmmo -= toLoad;
-                player.isReloading = false;
-                updateHUD();
-            }, 2500);
-        }
-
-        // Обновление HUD
-        function updateHUD() {
-            document.getElementById('health').textContent = `❤️ ${player.health}`;
-            document.getElementById('ammo').textContent = ` ${player.ammo} / ${player.reserveAmmo}`;
-        }
-
-        // Движение игрока
-        function updatePlayer(delta) {
-            const speed = 6;
-            const direction = new THREE.Vector3();
-
-            direction.x = moveVector.x;
-            direction.z = moveVector.y;
-            
-            if (direction.length() > 0) {
-                direction.normalize();
-                direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
-                
-                player.position.x += direction.x * speed * delta;
-                player.position.z += direction.z * speed * delta;
-            }
-
-            // Гравитация
-            player.velocity.y -= 10 * delta;
-            player.position.y += player.velocity.y * delta;
-
-            if (player.position.y < 1.7) {
-                player.position.y = 1.7;
-                player.velocity.y = 0;
-            }
-
-            // Ограничение арены
-            player.position.x = Math.max(-19, Math.min(19, player.position.x));
-            player.position.z = Math.max(-19, Math.min(19, player.position.z));
-
-            camera.position.copy(player.position);
-            camera.rotation.order = 'YXZ';
-            camera.rotation.y = player.rotation.y;
-            camera.rotation.x = player.rotation.x;
-        }
-
-        // ИИ ботов - УМЕНЬШЕН УРОН
-        function updateBots(delta) {
-            bots.forEach(bot => {
-                const distance = bot.mesh.position.distanceTo(player.position);
-                
-                // Движение к игроку
-                if (distance > 8) {
-                    const direction = new THREE.Vector3()
-                        .subVectors(player.position, bot.mesh.position)
-                        .normalize();
-                    
-                    bot.mesh.position.x += direction.x * 2.5 * delta;
-                    bot.mesh.position.z += direction.z * 2.5 * delta;
-                } else if (distance < 5) {
-                    // Отступление если близко
-                    const direction = new THREE.Vector3()
-                        .subVectors(bot.mesh.position, player.position)
-                        .normalize();
-                    
-                    bot.mesh.position.x += direction.x * 2 * delta;
-                    bot.mesh.position.z += direction.z * 2 * delta;
-                }
-
-                // Ограничение арены
-                bot.mesh.position.x = Math.max(-18, Math.min(18, bot.mesh.position.x));
-                bot.mesh.position.z = Math.max(-18, Math.min(18, bot.mesh.position.z));
-
-                // Стрельба - УМЕНЬШЕН УРОН (было 8, стало 3)
-                const now = Date.now();
-                if (distance < 20 && now - bot.lastShot > 1500) {
-                    bot.lastShot = now;
-                    player.health -= 3;
-                    updateHUD();
-                    
-                    // Эффект урона
-                    const overlay = document.getElementById('damageOverlay');
-                    overlay.style.opacity = '1';
-                    setTimeout(() => overlay.style.opacity = '0', 250);
-                    
-                    if (navigator.vibrate) navigator.vibrate(100);
-                    
-                    if (player.health <= 0) {
-                        alert('Ты проиграл! Перезагрузи страницу.');
-                        location.reload();
-                    }
-                }
-
-                bot.mesh.lookAt(player.position.x, bot.mesh.position.y, player.position.z);
-            });
-        }
-
-        // Игровой цикл
-        let lastTime = Date.now();
-
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            const now = Date.now();
-            const delta = Math.min((now - lastTime) / 1000, 0.1);
-            lastTime = now;
-
-            updatePlayer(delta);
-            updateBots(delta);
-
-            if (isFiring) shoot();
-
-            renderer.render(scene, camera);
-        }
-
-        // Старт
-        document.getElementById('startButton').addEventListener('click', () => {
-            document.getElementById('startScreen').style.display = 'none';
-            document.getElementById('mobileControls').style.display = 'block';
-            animate();
-        });
-
-        // Адаптация
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Запрет скролла
-        document.addEventListener('touchmove', (e) => {
-            if (e.target === document.body) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-    </script>
+/* ---------- 10. Инициализация ---------- */
+// Первый запуск — если нет баланса, даём 1000
+if (LS.get('nc_balance', null) === null) {
+  state.balance = 1000;
+  saveBalance();
+}
+</script>
 </body>
 </html>
