@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Морской бой</title>
+<style>
+  :root{
+    --bg:#0b1d2e; --panel:#12304a; --water:#1c4d73; --water2:#235b86;
+    --ship:#8fa6b8; --hit:#e5483b; --sunk:#7a1f1a; --miss:#cfe3f1; --accent:#f5b83d; --text:#eaf3fa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  h1{margin:0 0 4px;font-size:28px;text-align:center}
+  .wrap{max-width:1000px;margin:0 auto;padding:16px}
+  .panel{background:var(--panel);border-radius:14px;padding:16px;margin:12px auto}
+  .hidden{display:none!important}
+  .group{margin:12px 0}
+  .group>label.title{display:block;margin-bottom:6px;font-weight:600;color:var(--accent)}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg input{display:none}
+  .seg label{padding:8px 14px;border-radius:8px;background:#0e2740;border:2px solid transparent;cursor:pointer;user-select:none}
+  .seg input:checked+label{border-color:var(--accent);background:#17405f}
+  button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 18px;background:var(--accent);color:#1b1b1b;font-weight:700}
+  button.sec{background:#2b5576;color:var(--text)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .hint{opacity:.75;font-size:14px}
+  #status{text-align:center;font-size:18px;min-height:28px;margin:8px 0;font-weight:600}
+  .boards{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+  .boardbox{text-align:center}
+  .boardbox h2{font-size:16px;margin:0 0 6px;font-weight:600}
+  .board{--cell:clamp(20px,calc((min(100vw,520px) - 48px) / (var(--n) + 1)),38px);
+    display:grid;grid-template-columns:repeat(calc(var(--n) + 1),var(--cell));
+    grid-auto-rows:var(--cell);gap:1px;background:#0a2236;padding:2px;border-radius:8px;width:max-content;margin:0 auto}
+  .lbl{display:flex;align-items:center;justify-content:center;font-size:calc(var(--cell)*.4);opacity:.7}
+  .cell{background:var(--water);display:flex;align-items:center;justify-content:center;position:relative;font-size:calc(var(--cell)*.6);line-height:1}
+  .cell:nth-child(even){background:var(--water2)}
+  .enemy .cell.free{cursor:crosshair}
+  .enemy.active .cell.free:hover{outline:2px solid var(--accent);outline-offset:-2px}
+  .cell.ship{background:var(--ship)}
+  .cell.miss::after{content:"";width:22%;height:22%;border-radius:50%;background:var(--miss)}
+  .cell.hit{background:var(--hit)}
+  .cell.hit::after{content:"✕";color:#fff;font-weight:700}
+  .cell.sunk{background:var(--sunk)}
+  .cell.sunk::after{content:"✕";color:#ffb3ac;font-weight:700}
+  .cell.last{outline:2px solid #fff;outline-offset:-2px}
+  .info{margin-top:6px;font-size:14px;opacity:.85}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⚓ Морской бой</h1>
+
+  <!-- Настройки -->
+  <div id="setup" class="panel">
+    <div class="group">
+      <label class="title">Размер поля</label>
+      <div class="seg" id="sizeSeg">
+        <input type="radio" name="size" id="s8" value="8"><label for="s8">8 × 8</label>
+        <input type="radio" name="size" id="s10" value="10" checked><label for="s10">10 × 10</label>
+        <input type="radio" name="size" id="s12" value="12"><label for="s12">12 × 12</label>
+      </div>
+      <div class="hint" id="fleetInfo"></div>
+    </div>
+    <div class="group">
+      <label class="title">Сложность ИИ</label>
+      <div class="seg" id="diffSeg">
+        <input type="radio" name="diff" id="d1" value="easy"><label for="d1">Лёгкая</label>
+        <input type="radio" name="diff" id="d2" value="medium" checked><label for="d2">Средняя</label>
+        <input type="radio" name="diff" id="d3" value="hard"><label for="d3">Сложная</label>
+      </div>
+      <div class="hint" id="diffInfo"></div>
+    </div>
+    <div class="group">
+      <label class="title">Твоя расстановка</label>
+      <div class="boards"><div id="preview"></div></div>
+      <div class="row" style="justify-content:center">
+        <button class="sec" id="shuffle">🔀 Расставить заново</button>
+        <button id="start">▶ Начать бой</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Игра -->
+  <div id="game" class="hidden">
+    <div id="status"></div>
+    <div class="boards">
+      <div class="boardbox"><h2>Твой флот</h2><div id="myBoard"></div><div class="info" id="myInfo"></div></div>
+      <div class="boardbox"><h2>Флот противника</h2><div id="enBoard"></div><div class="info" id="enInfo"></div></div>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="sec" id="menu">⚙ В меню</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const FLEETS = {
+    8:  [3,2,2,1,1],
+    10: [4,3,3,2,2,2,1,1,1,1],
+    12: [5,4,4,3,3,3,2,2,2,1,1,1,1]
+  };
+  const LETTERS = "АБВГДЕЖЗИКЛМ";
+  const DIFF_TEXT = {
+    easy:   "ИИ стреляет наугад.",
+    medium: "ИИ добивает раненые корабли, но ищет новые случайно.",
+    hard:   "ИИ считает вероятности расположения кораблей и почти не промахивается зря."
+  };
+
+  const $ = id => document.getElementById(id);
+  const val = name => document.querySelector('input[name="'+name+'"]:checked').value;
+
+  let N, diff, me, en, myTurn, over, lastEn=-1, lastMe=-1, stats;
+
+  /* ---------- Модель ---------- */
+  function newBoard(n){
+    return {n, cells:Array.from({length:n*n},()=>({ship:-1,shot:false})), ships:[]};
+  }
+  function neighbors(n,i,diag=true){
+    const x=i%n, y=(i/n)|0, res=[];
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+      if(!dx&&!dy) continue;
+      if(!diag && dx&&dy) continue;
+      const nx=x+dx, ny=y+dy;
+      if(nx>=0&&ny>=0&&nx<n&&ny<n) res.push(ny*n+nx);
+    }
+    return res;
+  }
+  function placeFleet(n){
+    const fleet = FLEETS[n];
+    for(let attempt=0; attempt<200; attempt++){
+      const b = newBoard(n);
+      let ok = true;
+      for(const len of fleet){
+        let placed = false;
+        for(let t=0;t<500 && !placed;t++){
+          const horiz = Math.random()<.5;
+          const x = (Math.random()*(horiz? n-len+1 : n))|0;
+          const y = (Math.random()*(horiz? n : n-len+1))|0;
+          const cells = [];
+          for(let k=0;k<len;k++) cells.push((horiz? y : y+k)*n + (horiz? x+k : x));
+          // никакие соседи (включая диагонали) не должны быть заняты
+          const bad = cells.some(c => b.cells[c].ship>=0 || neighbors(n,c).some(m=>b.cells[m].ship>=0));
+          if(bad) continue;
+          const id = b.ships.length;
+          b.ships.push({cells, hits:0, sunk:false, len});
+          cells.forEach(c=>b.cells[c].ship=id);
+          placed = true;
+        }
+        if(!placed){ ok=false; break; }
+      }
+      if(ok) return b;
+    }
+    throw new Error("Не удалось расставить корабли");
+  }
+  // возвращает 'miss' | 'hit' | 'sunk'
+  function shoot(b,i){
+    const c = b.cells[i];
+    c.shot = true;
+    if(c.ship<0) return 'miss';
+    const s = b.ships[c.ship];
+    s.hits++;
+    if(s.hits===s.cells.length){
+      s.sunk = true;
+      s.cells.forEach(ci => neighbors(b.n,ci).forEach(m => { if(b.cells[m].ship<0) b.cells[m].shot = true; }));
+      return 'sunk';
+    }
+    return 'hit';
+  }
+  const allSunk = b => b.ships.every(s=>s.sunk);
+
+  /* ---------- ИИ ---------- */
+  function unshot(b){ const r=[]; b.cells.forEach((c,i)=>{ if(!c.shot) r.push(i); }); return r; }
+  function liveHits(b){
+    const r=[]; b.cells.forEach((c,i)=>{ if(c.shot && c.ship>=0 && !b.ships[c.ship].sunk) r.push(i); });
+    return r;
+  }
+  const pick = arr => arr[(Math.random()*arr.length)|0];
+
+  function aiEasy(b){ return pick(unshot(b)); }
+
+  function aiMedium(b){
+    const n=b.n, hits=liveHits(b);
+    if(hits.length){
+      let cand = [];
+      if(hits.length>=2){
+        // корабль уже направлен — продолжаем по линии
+        const sameRow = hits.every(h=>((h/n)|0)===((hits[0]/n)|0));
+        const sameCol = hits.every(h=>h%n===hits[0]%n);
+        hits.forEach(h=>{
+          neighbors(n,h,false).forEach(m=>{
+            if(b.cells[m].shot) return;
+            const horiz = ((m/n)|0)===((h/n)|0);
+            if((sameRow&&horiz)||(sameCol&&!horiz)) cand.push(m);
+          });
+        });
+      }
+      if(!cand.length) hits.forEach(h=>neighbors(n,h,false).forEach(m=>{ if(!b.cells[m].shot) cand.push(m); }));
+      if(cand.length) return pick(cand);
+    }
+    const free = unshot(b);
+    const par = free.filter(i => ((i%n)+((i/n)|0))%2===0);
+    return pick(par.length? par : free);
+  }
+
+  function aiHard(b){
+    const n=b.n, hits=liveHits(b);
+    const score = new Array(n*n).fill(0);
+    const lens = b.ships.filter(s=>!s.sunk).map(s=>s.len);
+    const usable = c => !c.shot || (c.ship>=0 && !b.ships[c.ship].sunk);
+    for(const len of new Set(lens)){
+      const count = lens.filter(l=>l===len).length;
+      for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+        for(const horiz of [true,false]){
+          if(horiz? x+len>n : y+len>n) continue;
+          const cells=[]; let ok=true, k=0;
+          for(let t=0;t<len;t++){
+            const i=(horiz? y : y+t)*n+(horiz? x+t : x);
+            const c=b.cells[i];
+            if(!usable(c)){ ok=false; break; }
+            if(c.shot) k++;
+            cells.push(i);
+          }
+          if(!ok) continue;
+          const w = (k>0 ? 100*k : 1) * count;
+          cells.forEach(i=>{ if(!b.cells[i].shot) score[i]+=w; });
+        }
+      }
+    }
+    let best=-1, bi=[];
+    unshot(b).forEach(i=>{
+      if(score[i]>best){ best=score[i]; bi=[i]; }
+      else if(score[i]===best) bi.push(i);
+    });
+    return pick(bi);
+  }
+
+  function aiMove(){
+    const f = diff==='easy'? aiEasy : diff==='medium'? aiMedium : aiHard;
+    return f(me);
+  }
+
+  /* ---------- Отрисовка ---------- */
+  function renderBoard(container, b, isEnemy, last){
+    const n=b.n;
+    container.innerHTML="";
+    const el=document.createElement("div");
+    el.className="board"+(isEnemy?" enemy"+(myTurn&&!over?" active":""):"");
+    el.style.setProperty("--n",n);
+    el.appendChild(document.createElement("div")).className="lbl";
+    for(let x=0;x<n;x++){ const d=document.createElement("div"); d.className="lbl"; d.textContent=LETTERS[x]; el.appendChild(d); }
+    for(let y=0;y<n;y++){
+      const l=document.createElement("div"); l.className="lbl"; l.textContent=y+1; el.appendChild(l);
+      for(let x=0;x<n;x++){
+        const i=y*n+x, c=b.cells[i];
+        const d=document.createElement("div");
+        let cls="cell";
+        if(c.shot){
+          if(c.ship>=0) cls += b.ships[c.ship].sunk? " sunk":" hit";
+          else cls += " miss";
+        } else {
+          if(!isEnemy && c.ship>=0) cls += " ship";
+          if(isEnemy) cls += " free";
+        }
+        // на чужом поле показываем потопленные корабли
+        if(i===last) cls+=" last";
+        d.className=cls;
+        if(isEnemy && !c.shot) d.addEventListener("click",()=>playerShot(i));
+        el.appendChild(d);
+      }
+    }
+    container.appendChild(el);
+  }
+  function setStatus(t){ $("status").textContent=t; }
+  function render(){
+    renderBoard($("myBoard"),me,false,lastMe);
+    renderBoard($("enBoard"),en,true,lastEn);
+    $("myInfo").textContent = "Кораблей осталось: "+me.ships.filter(s=>!s.sunk).length+" из "+me.ships.length;
+    $("enInfo").textContent = "Кораблей осталось: "+en.ships.filter(s=>!s.sunk).length+" из "+en.ships.length
+      + " · выстрелов: "+stats.shots+", попаданий: "+stats.hits;
+  }
+  const cellName = i => LETTERS[i%N]+((i/N)|0)+1 > "" ? LETTERS[i%N]+(((i/N)|0)+1) : "";
+
+  /* ---------- Ход игры ---------- */
+  function playerShot(i){
+    if(!myTurn||over||en.cells[i].shot) return;
+    stats.shots++;
+    lastEn=i;
+    const r=shoot(en,i);
+    if(r!=='miss') stats.hits++;
+    if(allSunk(en)){ over=true; myTurn=false; render(); setStatus("🏆 Победа! Весь флот противника потоплен."); showEnd(); return; }
+    if(r==='miss'){
+      myTurn=false; render();
+      setStatus("Мимо ("+cellName(i)+"). Ходит ИИ…");
+      setTimeout(aiTurn,650);
+    } else {
+      render();
+      setStatus(r==='sunk' ? "Корабль потоплен! Стреляй ещё." : "Попадание! Стреляй ещё.");
+    }
+  }
+  function aiTurn(){
+    if(over) return;
+    const i=aiMove();
+    lastMe=i;
+    const r=shoot(me,i);
+    render();
+    if(allSunk(me)){ over=true; setStatus("💀 Поражение. ИИ потопил весь твой флот."); showEnd(); return; }
+    if(r==='miss'){
+      myTurn=true; render();
+      setStatus("ИИ промахнулся ("+cellName(i)+"). Твой ход.");
+    } else {
+      setStatus("ИИ "+(r==='sunk'?"потопил корабль":"попал")+" ("+cellName(i)+")…");
+      setTimeout(aiTurn,700);
+    }
+  }
+  function showEnd(){
+    // показать оставшиеся корабли противника
+    en.cells.forEach(c=>{ /* показываем как неподбитые корабли */ });
+    const box=$("enBoard").querySelector(".board");
+    if(box){
+      const cells=box.querySelectorAll(".cell");
+      en.cells.forEach((c,i)=>{ if(c.ship>=0 && !c.shot) cells[i].classList.add("ship"); });
+      box.classList.remove("active");
+    }
+    const row=document.createElement("div");
+    row.className="row"; row.style.justifyContent="center";
+    const b=document.createElement("button"); b.textContent="🔁 Сыграть ещё";
+    b.onclick=startGame; row.appendChild(b);
+    if(!document.getElementById("again")){ row.id="again"; $("game").appendChild(row); }
+  }
+
+  /* ---------- Меню ---------- */
+  let previewBoard=null;
+  function updateInfo(){
+    const n=+val("size");
+    const f=FLEETS[n], cnt={};
+    f.forEach(l=>cnt[l]=(cnt[l]||0)+1);
+    $("fleetInfo").textContent="Флот: "+Object.keys(cnt).sort((a,b)=>b-a).map(l=>cnt[l]+"×"+l+"-палубных").join(", ");
+    $("diffInfo").textContent=DIFF_TEXT[val("diff")];
+  }
+  function newPreview(){
+    previewBoard=placeFleet(+val("size"));
+    const c=$("preview");
+    renderBoard(c,previewBoard,false,-1);
+  }
+  function startGame(){
+    N=+val("size"); diff=val("diff");
+    me=previewBoard && previewBoard.n===N ? previewBoard : placeFleet(N);
+    previewBoard=null;
+    en=placeFleet(N);
+    myTurn=true; over=false; lastEn=lastMe=-1; stats={shots:0,hits:0};
+    const old=document.getElementById("again"); if(old) old.remove();
+    $("setup").classList.add("hidden");
+    $("game").classList.remove("hidden");
+    render();
+    setStatus("Твой ход — стреляй по полю противника.");
+  }
+
+  document.querySelectorAll('input[name="size"]').forEach(r=>r.addEventListener("change",()=>{ updateInfo(); newPreview(); }));
+  document.querySelectorAll('input[name="diff"]').forEach(r=>r.addEventListener("change",updateInfo));
+  $("shuffle").onclick=newPreview;
+  $("start").onclick=()=>{ startGame(); };
+  $("menu").onclick=()=>{
+    over=true; myTurn=false;
+    $("game").classList.add("hidden");
+    $("setup").classList.remove("hidden");
+    previewBoard=null; newPreview();
+  };
+
+  updateInfo();
+  newPreview();
+})();
+</script>
+</body>
+</html>
